@@ -1,65 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- Page Title - This will be dynamic -->
-    <title>{{ title or site.defaultTitle }}</title>
-    
-    <meta name="description" content="{{ description or site.defaultDescription }}">
-    
-    <!-- Tailwind CSS - This path is correct for the final build -->
-    <link rel="stylesheet" href="/output.css">
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet">
-    
-    <!-- Favicon (using root path) -->
-    <link rel="icon" href="/favicon.ico" sizes="any">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Use page 'title' from front matter, or a default -->
+  <title>{{ title }} - Southern Sense</title>
 
+  <!-- Favicon Link -->
+  <link rel="icon" href="/src/logo.webp" type="image/webp" />
+
+  <!-- Tailwind CSS -->
+  <link rel="stylesheet" href="/output.css" />
+
+  <!-- Google Fonts: Playfair Display, Roboto, Great Vibes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap"
+    rel="stylesheet" />
+
+  <!-- Firebase Loader (Global) -->
+  <!-- This script must run before all other page logic to initialize auth and cart -->
+  <script type_DISABLED="module" src="/src/firebase-loader.js"></script>
 </head>
-<body class="bg-parchment text-charcoal font-body">
 
-    <!-- Header Placeholder -->
-    <!-- main.js will populate this -->
-    <div id="header-placeholder"></div>
+<body
+  class="flex flex-col min-h-full bg-parchment font-roboto text-charcoal selection:bg-burnt-orange selection:text-white">
+  <!-- 
+    This layout uses Nunjucks templating.
+    '{{ content | safe }}' is where Eleventy injects the page content 
+    (from files like index.html, about.html, etc.)
+  -->
 
-    <!-- Cart Sidebar Placeholder -->
-    <!-- cart.js will manage this -->
-    <div id="cart-sidebar" class="fixed top-0 right-0 z-50 h-full w-full max-w-sm transform translate-x-full bg-white shadow-lg transition-transform duration-300 ease-in-out">
-        <!-- Cart content will be loaded here -->
-    </div>
-    <!-- Cart overlay -->
-    <div id="cart-overlay" class="fixed inset-0 z-40 bg-black bg-opacity-50 hidden"></div>
+  <!-- Site Header -->
+  <!-- 'include "header.html"' is Eleventy's way of importing another file -->
+  {% include "header.html" %}
 
-    <!-- Main Content Area -->
-    <main>
-        <!-- 
-          This is the most important part of the layout.
-          Eleventy will inject the content from index.html (and other pages)
-          right here.
-        -->
-        {{ content | safe }}
-    </main>
+  <!-- Main Content -->
+  <!-- This 'content' variable is the HTML from the page file -->
+  <main class="flex-grow">
+    {{ content | safe }}
+  </main>
 
-    <!-- Footer Placeholder -->
-    <!-- main.js will populate this -->
-    <div id="footer-placeholder"></div>
+  <!-- Site Footer -->
+  {% include "footer.html" %}
 
-    <!-- 
-      Firebase and Main Scripts 
-      These are placed at the end of the <body> to ensure the HTML
-      content (from {{ content | safe }}) exists before they run.
-      All paths are root-relative, which is correct for the _site build.
-    -->
-    <script src="/firebase-loader.js" type="module"></script>
-    <script src="/auth.js" type="module"></script>
-    <script src="/main.js" type="module"></script>
-    <script src="/cart.js" type="module"></script>
-
+  <!-- 
+    Global JS for header/nav functionality
+    This runs on every page.
+  -->
+  <script type="module" src="/src/main.js"></script>
 </body>
-</html>
 
+</html>

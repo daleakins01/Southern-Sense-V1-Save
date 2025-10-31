@@ -1,0 +1,158 @@
+---
+layout: layout.html
+title: "Login"
+---
+
+<main class="container mx-auto px-4 py-16 min-h-[70vh]">
+  <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-xl">
+    <h1
+      class="font-playfair text-3xl font-semibold text-charcoal text-center mb-6">
+      Sign In
+    </h1>
+
+    <!-- Error Message Container -->
+    <div id="error-message"
+      class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-4"
+      role="alert">
+      <span class="block sm:inline" id="error-text"></span>
+    </div>
+
+    <!-- Login Form -->
+    <form id="login-form" class="space-y-6">
+      <!-- Email -->
+      <div>
+        <label for="email"
+          class="block text-sm font-medium text-charcoal mb-1">Email</label>
+        <input type="email" id="email" name="email" required
+          autocomplete="email"
+          class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent" />
+      </div>
+
+      <!-- Password -->
+      <div>
+        <label for="password"
+          class="block text-sm font-medium text-charcoal mb-1">Password</label>
+        <input type="password" id="password" name="password" required
+          autocomplete="current-password"
+          class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent" />
+      </div>
+
+      <!-- (Future Feature): Add "Forgot Password" link here -->
+      <!-- <div class="text-sm text-right">
+        <a href="#" class="font-medium text-burnt-orange hover:text-opacity-80">
+          Forgot password?
+        </a>
+      </div> -->
+
+      <!-- Submit Button -->
+      <div>
+        <button type="submit" id="login-button"
+          class="w-full bg-burnt-orange text-white font-roboto px-6 py-3 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 flex items-center justify-center">
+          <svg id="button-spinner"
+            class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden"
+            xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10"
+              stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
+          </svg>
+          <span id="button-text">Sign In</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Register Link -->
+    <p class="mt-8 text-center text-stone">
+      Don't have an account?
+      <a href="/register.html"
+        class="font-medium text-burnt-orange hover:text-opacity-80">
+        Sign up
+      </a>
+    </p>
+  </div>
+</main>
+
+<script type="module">
+  import {
+    auth,
+    signInWithEmailAndPassword,
+    onAuthStateChanged,
+  } from "/src/firebase-loader.js";
+  import { mergeLocalCartWithFirestore } from "/src/cart.js";
+
+  const loginForm = document.getElementById("login-form");
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const errorMessage = document.getElementById("error-message");
+  const errorText = document.getElementById("error-text");
+  const loginButton = document.getElementById("login-button");
+  const buttonSpinner = document.getElementById("button-spinner");
+  const buttonText = document.getElementById("button-text");
+
+  // Check if user is already logged in
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      console.log("User already signed in. Redirecting to account.");
+      // Redirect to account page if already logged in
+      window.location.href = "/account.html";
+    }
+  });
+
+  // Show error message
+  function showAuthError(message) {
+    let friendlyMessage = message;
+    console.warn("Auth Error:", message);
+
+    if (
+      message.includes("auth/user-not-found") ||
+      message.includes("auth/wrong-password") ||
+      message.includes("auth/invalid-credential")
+    ) {
+      friendlyMessage = "Invalid email or password. Please try again.";
+    } else {
+      friendlyMessage =
+        "An unexpected error occurred. Please try again later.";
+    }
+
+    errorText.textContent = friendlyMessage;
+    errorMessage.style.display = "block";
+  }
+
+  // Handle form submission
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // Show loading state
+    loginButton.disabled = true;
+    buttonSpinner.style.display = "inline-block";
+    buttonText.textContent = "Signing In...";
+    errorMessage.style.display = "none";
+
+    const email = emailInput.value;
+    const password = passwordInput.value;
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      console.log("User signed in:", user.uid);
+
+      // (Pillar 1 Fix): Merge local cart with Firestore cart
+      await mergeLocalCartWithFirestore(user.uid);
+
+      // Redirect to account page
+      window.location.href = "/account.html";
+    } catch (error) {
+      showAuthError(error.message);
+      // Hide loading state
+      loginButton.disabled = false;
+      buttonSpinner.style.display = "none";
+      buttonText.textContent = "Sign In";
+    }
+  });
+</script>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Functions Guide</title>
+    <link rel="stylesheet" href="/output.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <!-- 
+      NOTE: This is a standalone app. 
+      It does NOT use Eleventy layouts.
+    -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+        .content {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-charcoal">
+    <header class="bg-charcoal text-white p-6 shadow-lg">
+        <h1 class="text-3xl font-bold">Admin Panel Functions Guide</h1>
+    </header>
+
+    <div class="content">
+        <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Overview</h2>
+        <p class="mb-4">This guide explains the functions of the Admin Panel. The panel is connected directly to the Firestore database. All changes are <strong class="text-red-600">live and permanent</strong>.</p>
+
+        <section class="mb-6">
+            <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Products Tab</h2>
+            
+            <h3 class="text-xl font-semibold mt-4">Add New Product</h3>
+            <p>Click the "Add New Product" button to open the form. Fill in all fields. The <code>imageUrl</code> must match a file name in the <code>/src/</code> folder (e.g., <code>my-new-candle.webp</code>). The <code>longDescription</code> field can accept basic HTML like <code>&lt;p&gt;</code> tags.</p>
+
+            <h3 class="text-xl font-semibold mt-4">Edit Product</h3>
+            <p>Click the "Edit" button on any product row. The form will be pre-filled with that product's data. You can change any value and click "Save Product" to update it.</p>
+
+            <h3 class="text-xl font-semibold mt-4">Delete Product</h3>
+            <p>After clicking "Edit", a "Delete Product" button will appear. This will <strong class="text-red-600">permanently delete</strong> the product from the database. This action cannot be undone.</p>
+        </section>
+
+        <section class="mb-6">
+            <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Orders Tab</h2>
+            <p>This tab displays all customer orders, sorted by the most recent. You can view the Order ID, date, customer name/email, total, and current status.</p>
+            <p class="mt-2"><strong>(Future Feature)</strong>: Clicking "View" will open a detailed modal to update the order status (e.g., from "processing" to "shipped") and see the items purchased.</p>
+        </section>
+
+        <section class="mb-6">
+            <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Reviews Tab</h2>
+            <p><strong>(Pillar 2 - Not Implemented)</strong>: This panel will allow you to approve or deny new customer reviews before they appear on the product pages.</p>
+        </section>
+
+        <section>
+            <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Site Content Tab</h2>
+            <p><strong>(Pillar 2 - Not Implemented)</strong>: This panel will allow you to edit text on pages like "About Us" or "Refill Program" without needing to deploy new code.</p>
+        </section>
+    </div>
+</body>
+</html>

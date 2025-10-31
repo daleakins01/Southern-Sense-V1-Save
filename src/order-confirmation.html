@@ -1,0 +1,62 @@
+---
+layout: layout.html
+title: "Order Confirmed!"
+---
+
+<main
+  class="container mx-auto px-4 py-16 text-center min-h-[70vh] flex items-center justify-center">
+  <div>
+    <h1 class="text-5xl font-playfair font-bold text-charcoal">
+      Thank You!
+    </h1>
+    <h2 class="mt-4 text-3xl font-playfair font-semibold text-charcoal">
+      Your Order is Confirmed
+    </h2>
+    <p class="mt-4 text-lg text-stone max-w-lg mx-auto">
+      We are now preparing your order. You will receive an email
+      confirmation shortly with your order details.
+    </p>
+    <p class="mt-2 text-lg text-stone max-w-lg mx-auto">
+      Your Order ID is:
+      <strong id="order-id" class="text-charcoal">Loading...</strong>
+    </p>
+    <div class="mt-8 space-x-4">
+      <a href="/shop.html"
+        class="inline-block bg-burnt-orange text-white font-roboto px-8 py-3 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300">
+        Continue Shopping
+      </a>
+      <a href="/account.html"
+        class="inline-block bg-stone text-white font-roboto px-8 py-3 rounded-md shadow-lg hover:bg-charcoal transition-all duration-300"
+        id="view-orders-link">
+        View My Orders
+      </a>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+  import { auth, onAuthStateChanged } from "/src/firebase-loader.js";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // Get order ID from URL query parameter
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get("orderId");
+    const viewOrdersLink = document.getElementById("view-orders-link");
+
+    if (orderId) {
+      document.getElementById("order-id").textContent = `${orderId.substring(
+        0,
+        8
+      )}...`;
+    } else {
+      document.getElementById("order-id").textContent = "N/A";
+    }
+
+    // Hide "View My Orders" link if user is not logged in
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        viewOrdersLink.style.display = "none";
+      }
+    });
+  });
+</script>

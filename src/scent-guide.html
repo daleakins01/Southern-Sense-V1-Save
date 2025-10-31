@@ -1,0 +1,230 @@
+---
+layout: layout.html
+title: "Scent Guide"
+---
+
+<main class="container mx-auto px-4 py-16">
+  <div class="max-w-3xl mx-auto">
+    <h1
+      class="font-playfair text-4xl md:text-5xl font-semibold text-charcoal text-center mb-8">
+      Find Your Signature Scent
+    </h1>
+    <p class="text-lg text-stone text-center leading-relaxed mb-12">
+      Not sure where to start? Answer these simple questions, and we'll
+      recommend the perfect scent family for you.
+    </p>
+
+    <!-- Scent Quiz Form -->
+    <form id="scent-quiz-form" class="bg-white p-8 rounded-lg shadow-xl">
+      <!-- Question 1: Vibe -->
+      <div class="mb-8">
+        <label class="block text-xl font-playfair font-semibold text-charcoal mb-4">
+          1. What's your ideal vibe?
+        </label>
+        <div class="space-y-3">
+          <label class="flex items-center text-lg text-stone">
+            <input type="radio" name="vibe" value="fresh-clean"
+              class="form-radio h-5 w-5 text-burnt-orange focus:ring-burnt-orange" />
+            <span class="ml-3">Light, airy, and clean (like fresh
+              linens)</span>
+          </label>
+          <label class="flex items-center text-lg text-stone">
+            <input type="radio" name="vibe" value="fruity-sweet"
+              class="form-radio h-5 w-5 text-burnt-orange focus:ring-burnt-orange" />
+            <span class="ml-3">Playful, sweet, and uplifting (like a tropical
+              drink)</span>
+          </label>
+          <label class="flex items-center text-lg text-stone">
+            <input type="radio" name="vibe" value="earthy-woody"
+              class="form-radio h-5 w-5 text-burnt-orange focus:ring-burnt-orange" />
+            <span class="ml-3">Cozy, warm, and sophisticated (like a library
+              or a hike)</span>
+          </label>
+          <label class="flex items-center text-lg text-stone">
+            <input type="radio" name="vibe" value="floral-romantic"
+              class="form-radio h-5 w-5 text-burnt-orange focus:ring-burnt-orange" />
+            <span class="ml-3">Elegant, soft, and timeless (like a
+              bouquet)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Question 2: Occasion -->
+      <div class="mb-8">
+        <label class="block text-xl font-playfair font-semibold text-charcoal mb-4">
+          2. You're lighting this for...
+        </label>
+        <div class="space-y-3">
+          <label class="flex items-center text-lg text-stone">
+            <input type="radio" name="occasion" value="relaxing"
+              class="form-radio h-5 w-5 text-burnt-orange focus:ring-burnt-orange" />
+            <span class="ml-3">A relaxing evening with a book</span>
+          </label>
+          <label class="flex items-center text-lg text-stone">
+            <input type="radio" name="occasion" value="hosting"
+              class="form-radio h-5 w-5 text-burnt-orange focus:ring-burnt-orange" />
+            <span class="ml-3">Welcoming guests for a dinner party</span>
+          </label>
+          <label class="flex items-center text-lg text-stone">
+            <input type="radio" name="occasion" value="energizing"
+              class="form-radio h-5 w-5 text-burnt-orange focus:ring-burnt-orange" />
+            <span class="ml-3">An energetic morning or creative
+              afternoon</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="text-center mt-12">
+        <button type="submit"
+          class="bg-burnt-orange text-white font-roboto px-10 py-3 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105 text-lg">
+          Get My Recommendation
+        </button>
+      </div>
+    </form>
+
+    <!-- Quiz Result Section -->
+    <section id="quiz-result" class="hidden mt-16 text-center">
+      <h2 class="font-playfair text-3xl font-semibold text-charcoal">
+        We Recommend...
+      </h2>
+      <p id="result-family-name"
+        class="text-4xl font-playfair font-bold text-burnt-orange mt-2"></p>
+      <p id="result-family-desc" class="text-lg text-stone mt-4 max-w-xl mx-auto"></p>
+
+      <div class="mt-12">
+        <h3 class="font-playfair text-2xl font-semibold text-charcoal mb-6">
+          Shop This Scent Family
+        </h3>
+        <div id="result-products-grid"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Recommended products will be injected here -->
+        </div>
+        <p id="result-no-products" class="text-stone italic hidden">
+          Could not find products for this recommendation.
+        </p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script type="module">
+  import {
+    db,
+    collection,
+    getDocs,
+    query,
+    where,
+    limit,
+  } from "/src/firebase-loader.js";
+
+  const quizForm = document.getElementById("scent-quiz-form");
+  const quizResultSection = document.getElementById("quiz-result");
+  const resultFamilyName = document.getElementById("result-family-name");
+  const resultFamilyDesc = document.getElementById("result-family-desc");
+  const resultProductsGrid = document.getElementById("result-products-grid");
+  const resultNoProducts = document.getElementById("result-no-products");
+
+  // Scent family descriptions
+  const scentFamilies = {
+    "fruity-sweet": {
+      name: "Fruity & Sweet",
+      desc: "Bright, playful, and uplifting. These scents are built around the delicious aromas of ripe fruits and sweet notes like vanilla or caramel.",
+    },
+    "earthy-woody": {
+      name: "Earthy & Woody",
+      desc: "Warm, grounding, and sophisticated. These fragrances feature rich notes like sandalwood, cedar, and spices.",
+    },
+    "fresh-clean": {
+      name: "Fresh & Clean",
+      desc: "Crisp, airy, and invigorating. Think of fresh linens, ocean breezes, and citrus zests.",
+    },
+    "floral-romantic": {
+      name: "Floral & Romantic",
+      desc: "Elegant, soft, and classic. These scents capture the timeless beauty of a blooming garden.",
+    },
+  };
+
+  // Handle Quiz Submission
+  quizForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(quizForm);
+    const vibe = formData.get("vibe");
+    // const occasion = formData.get("occasion"); // (Pillar 2 Fix): Occasion isn't used yet
+
+    if (!vibe) {
+      // (Future Feature): Show an error message
+      console.warn("No vibe selected");
+      return;
+    }
+
+    // Determine the recommended family
+    const recommendedFamilyKey = vibe;
+    const recommendedFamily = scentFamilies[recommendedFamilyKey];
+
+    // Display the family info
+    resultFamilyName.textContent = recommendedFamily.name;
+    resultFamilyDesc.textContent = recommendedFamily.desc;
+
+    // Load and display products
+    await loadRecommendedProducts(recommendedFamilyKey);
+
+    // Show the results
+    quizResultSection.classList.remove("hidden");
+    quizResultSection.scrollIntoView({ behavior: "smooth" });
+  });
+
+  // Load products from the recommended family
+  async function loadRecommendedProducts(familyKey) {
+    try {
+      const q = query(
+        collection(db, "products"),
+        where("scentFamily", "==", familyKey),
+        limit(3)
+      );
+      const querySnapshot = await getDocs(q);
+
+      resultProductsGrid.innerHTML = ""; // Clear old results
+      resultNoProducts.classList.add("hidden");
+
+      if (querySnapshot.empty) {
+        resultNoProducts.classList.remove("hidden");
+        return;
+      }
+
+      querySnapshot.forEach((doc) => {
+        const product = { id: doc.id, ...doc.data() };
+        const card = createProductCard(product);
+        resultProductsGrid.appendChild(card);
+      });
+    } catch (error) {
+      console.error("Error loading recommended products:", error);
+      resultProductsGrid.innerHTML =
+        '<p class="text-red-600 col-span-full">Error loading products. Please try again.</p>';
+    }
+  }
+
+  // Create a product card
+  function createProductCard(product) {
+    const card = document.createElement("a");
+    card.href = `/product.html?id=${product.id}`;
+    card.className =
+      "bg-parchment rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1";
+
+    card.innerHTML = `
+      <div class="h-64 overflow-hidden">
+        <img src="/src/${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover">
+      </div>
+      <div class="p-6">
+        <h3 class="font-playfair text-2xl font-semibold text-charcoal">${product.name}</h3>
+        <p class="text-stone mt-2 text-sm">${product.shortDescription}</p>
+        <div class="flex justify-between items-center mt-4">
+          <span class="text-xl font-light text-burnt-orange">$${product.price}</span>
+          <span class="text-sm uppercase text-stone">${product.category}</span>
+        </div>
+      </div>
+    `;
+    return card;
+  }
+</script>

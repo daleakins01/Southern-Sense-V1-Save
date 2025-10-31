@@ -1,0 +1,228 @@
+<!-- 
+  This is an "include" file for Eleventy. 
+  It is injected into layout.html.
+  It has NO front matter.
+-->
+<header
+  class="bg-parchment sticky top-0 z-30 shadow-md animate-fade-in-down"
+>
+  <!-- Top Bar (Socials, Admin) -->
+  <div class="bg-charcoal text-white py-2">
+    <div
+      class="container mx-auto px-4 flex justify-between items-center text-sm"
+    >
+      <!-- Social Icons -->
+      <div class="flex space-x-4">
+        <a
+          href="https://www.facebook.com/southernsenseco"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Facebook"
+          class="hover:opacity-80 transition-opacity"
+        >
+          <img
+            src="/src/facebook-icon.webp"
+            alt="Facebook"
+            class="w-5 h-5"
+          />
+        </a>
+        <a
+          href="https://www.tiktok.com/@southernsenseco"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="TikTok"
+          class="hover:opacity-80 transition-opacity"
+        >
+          <img
+            src="/src/tiktok-icon.webp"
+            alt="TikTok"
+            class="w-5 h-5"
+          />
+        </a>
+      </div>
+
+      <!-- Admin/Auth Link -->
+      <!-- This link is controlled by /src/auth.js -->
+      <a
+        id="auth-link"
+        href="/login.html"
+        class="font-roboto text-stone hover:text-white transition-colors"
+      >
+        <span id="auth-link-text">Login</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Navigation -->
+  <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <!-- Logo -->
+    <a href="/" class="flex-shrink-0">
+      <img
+        src="/src/logo.webp"
+        alt="Southern Sense Logo"
+        class="h-20 w-auto"
+      />
+    </a>
+
+    <!-- Mobile Menu Button -->
+    <button
+      id="mobile-menu-btn"
+      class="md:hidden text-charcoal"
+      aria-label="Open navigation menu"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-8 w-8"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 6h16M4 12h16m-7 6h7"
+        />
+      </svg>
+    </button>
+
+    <!-- Desktop Menu -->
+    <ul class="hidden md:flex items-center space-x-6 lg:space-x-10">
+      <li>
+        <a href="/" class="nav-link">Home</a>
+      </li>
+      <li>
+        <a href="/shop.html" class="nav-link">Shop</a>
+      </li>
+      <li>
+        <a href="/about.html" class="nav-link">Our Story</a>
+      </li>
+      <!-- Scent Guide Dropdown -->
+      <li class="relative group">
+        <button
+          class="nav-link flex items-center"
+          aria-haspopup="true"
+        >
+          Scent Guide
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 ml-1 transform transition-transform group-hover:rotate-180"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+        <ul
+          class="absolute left-0 mt-0 bg-parchment shadow-lg rounded-md py-2 w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
+        >
+          <li>
+            <a
+              href="/scent-guide.html"
+              class="block px-4 py-2 text-stone hover:bg-stone/10"
+              >Quiz: Find Your Scent</a
+            >
+          </li>
+          <li>
+            <a
+              href="/scent-glossary.html"
+              class="block px-4 py-2 text-stone hover:bg-stone/10"
+              >Scent Glossary</a
+            >
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="/candle-care.html" class="nav-link">Candle Care</a>
+      </li>
+      <li>
+        <a href="/contact.html" class="nav-link">Contact</a>
+      </li>
+    </ul>
+
+    <!-- Cart Icon -->
+    <a
+      href="/cart.html"
+      class="hidden md:block relative text-charcoal hover:text-burnt-orange transition-colors"
+      aria-label="Shopping Cart"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-7 w-7"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+        />
+      </svg>
+      <!-- Cart count bubble -->
+      <span
+        id="cart-count-bubble"
+        class="absolute -top-2 -right-3 bg-burnt-orange text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden"
+      >
+        0
+      </span>
+    </a>
+  </nav>
+
+  <!-- Mobile Menu (Hidden by default) -->
+  <div
+    id="mobile-menu"
+    class="hidden md:hidden absolute top-full left-0 w-full bg-parchment shadow-lg"
+  >
+    <ul class="flex flex-col px-4 pt-2 pb-4 space-y-2">
+      <li>
+        <a href="/" class="mobile-nav-link">Home</a>
+      </li>
+      <li>
+        <a href="/shop.html" class="mobile-nav-link">Shop</a>
+      </li>
+      <li>
+        <a href="/about.html" class="mobile-nav-link">Our Story</a>
+      </li>
+      <li>
+        <a href="/scent-guide.html" class="mobile-nav-link"
+          >Scent Quiz</a
+        >
+      </li>
+      <li>
+        <a href="/scent-glossary.html" class="mobile-nav-link"
+          >Scent Glossary</a
+        >
+      </li>
+      <li>
+        <a href="/candle-care.html" class="mobile-nav-link"
+          >Candle Care</a
+        >
+      </li>
+      <li>
+        <a href="/contact.html" class="mobile-nav-link">Contact</a>
+      </li>
+      <li class="pt-2 border-t border-stone/20">
+        <a
+          href="/cart.html"
+          class="mobile-nav-link flex justify-between items-center"
+        >
+          <span>Cart</span>
+          <span
+            id="mobile-cart-count"
+            class="bg-burnt-orange text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
+          >
+            0
+          </span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</header>

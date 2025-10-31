@@ -1,0 +1,422 @@
+---
+layout: layout.html
+title: "Product" 
+---
+
+<main class="container mx-auto px-4 py-12">
+  <!-- Loading Spinner -->
+  <div id="loading-spinner"
+    class="flex justify-center items-center h-screen text-stone">
+    <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-burnt-orange"
+      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+        stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+      </path>
+    </svg>
+    <span class="text-2xl font-playfair">Loading Product...</span>
+  </div>
+
+  <!-- Product Content (Hidden by default) -->
+  <div id="product-content" class="hidden">
+    <!-- Main Product Section -->
+    <section class="flex flex-col md:flex-row gap-8 md:gap-12">
+      <!-- Product Image -->
+      <div class="w-full md:w-1/2">
+        <img id="product-image" src="" alt="Product image"
+          class="w-full h-auto object-cover rounded-lg shadow-lg" />
+      </div>
+
+      <!-- Product Details -->
+      <div class="w-full md:w-1/2">
+        <h1 id="product-name"
+          class="font-playfair text-4xl font-bold text-charcoal"></h1>
+        <p id="product-price"
+          class="text-3xl font-light text-burnt-orange mt-2"></p>
+        <p id="product-short-desc" class="text-lg text-stone mt-4"></p>
+
+        <!-- Scent Details -->
+        <div class="mt-6 border-t border-b border-stone/20 py-4">
+          <p class="text-charcoal">
+            <strong class="text-stone font-medium">Scent Family:</strong>
+            <span id="product-scent-family"
+              class="ml-2 capitalize"></span>
+          </p>
+          <p class="text-charcoal mt-2">
+            <strong class="text-stone font-medium">Scent Notes:</strong>
+            <span id="product-scent-notes" class="ml-2"></span>
+          </p>
+        </div>
+
+        <!-- Add to Cart -->
+        <div class="mt-6">
+          <button id="add-to-cart-btn"
+            class="w-full bg-burnt-orange text-white font-roboto px-8 py-4 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg font-medium">
+            Add to Cart
+          </button>
+          <p id="stock-message"
+            class="text-red-600 text-center mt-4 text-sm hidden">
+            Out of Stock
+          </p>
+        </div>
+
+        <!-- Long Description (Accordion) -->
+        <div class="mt-8 border-t border-stone/20">
+          <div class="border-b border-stone/20 py-4">
+            <h3 class="font-playfair text-xl font-semibold">Description</h3>
+            <div id="product-long-desc" class="text-stone mt-2"></div>
+          </div>
+          <div class="border-b border-stone/20 py-4">
+            <h3 class="font-playfair text-xl font-semibold">Pairs Well With</h3>
+            <p id="product-pairing" class="text-stone mt-2"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recommendations Section -->
+    <section id="recommendations-section" class="mt-24">
+      <h2
+        class="font-playfair text-3xl font-semibold text-charcoal text-center mb-8">
+        You Might Also Like
+      </h2>
+      <div id="recommendations-grid"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <!-- Recommendation cards will be injected here -->
+      </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section id="reviews-section" class="mt-24">
+      <h2
+        class="font-playfair text-3xl font-semibold text-charcoal text-center mb-8">
+        Customer Reviews
+      </h2>
+
+      <!-- (Pillar 2 Fix): This logic is currently insecure and incomplete.
+           - We need to fetch ONLY `approved: true` reviews.
+           - We need to submit new reviews to Firestore with `approved: false`.
+           - The form should only be visible if the user is logged in.
+      -->
+
+      <!-- Add Review Form (Hidden by default, shown if logged in) -->
+      <div id="add-review-form-container" class="hidden max-w-2xl mx-auto mb-12">
+        <h3 class="font-playfair text-2xl font-semibold text-charcoal mb-4">
+          Leave a Review
+        </h3>
+        <form id="add-review-form" class="bg-white p-6 rounded-lg shadow-md">
+          <p id="review-login-prompt" class="text-stone mb-4">
+            You must be logged in to leave a review.
+          </p>
+          <div class="mb-4">
+            <label for="review-rating"
+              class="block text-sm font-medium text-charcoal mb-1">Rating</label>
+            <select id="review-rating"
+              class="w-full px-3 py-2 border border-stone/30 rounded-lg"
+              disabled>
+              <option value="5">5 Stars</option>
+              <option value="4">4 Stars</option>
+              <option value="3">3 Stars</option>
+              <option value="2">2 Stars</option>
+              <option value="1">1 Star</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label for="review-text"
+              class="block text-sm font-medium text-charcoal mb-1">Review</label>
+            <textarea id="review-text" rows="4"
+              class="w-full px-3 py-2 border border-stone/30 rounded-lg"
+              disabled></textarea>
+          </div>
+          <button type="submit" id="submit-review-btn"
+            class="bg-burnt-orange text-white font-roboto px-6 py-2 rounded-md shadow-lg"
+            disabled>
+            Submit Review
+          </button>
+          <p id="review-form-message" class="text-green-600 mt-4 hidden"></p>
+        </form>
+      </div>
+
+      <!-- Existing Reviews -->
+      <div id="reviews-list" class="max-w-2xl mx-auto space-y-6">
+        <p id="no-reviews-message" class="text-stone text-lg italic text-center">
+          No reviews yet. Be the first!
+        </p>
+        <!-- Review cards will be injected here -->
+      </div>
+    </section>
+  </div>
+</main>
+
+<script type="module">
+  import {
+    db,
+    doc,
+    getDoc,
+    collection,
+    getDocs,
+    query,
+    where,
+    limit,
+    auth,
+    onAuthStateChanged,
+  } from "/src/firebase-loader.js";
+  import { getCart, addToCart } from "/src/cart.js";
+
+  // Get elements
+  const loadingSpinner = document.getElementById("loading-spinner");
+  const productContent = document.getElementById("product-content");
+  const productNameEl = document.getElementById("product-name");
+  const productPriceEl = document.getElementById("product-price");
+  const productShortDescEl = document.getElementById("product-short-desc");
+  const productScentFamilyEl = document.getElementById(
+    "product-scent-family"
+  );
+  const productScentNotesEl = document.getElementById("product-scent-notes");
+  const productLongDescEl = document.getElementById("product-long-desc");
+  const productPairingEl = document.getElementById("product-pairing");
+  const productImageEl = document.getElementById("product-image");
+  const addToCartBtn = document.getElementById("add-to-cart-btn");
+  const stockMessageEl = document.getElementById("stock-message");
+
+  const recommendationsGrid = document.getElementById("recommendations-grid");
+  const reviewsFormContainer = document.getElementById(
+    "add-review-form-container"
+  );
+  const reviewForm = document.getElementById("add-review-form");
+  const reviewLoginPrompt = document.getElementById("review-login-prompt");
+  const reviewRatingEl = document.getElementById("review-rating");
+  const reviewTextEl = document.getElementById("review-text");
+  const submitReviewBtn = document.getElementById("submit-review-btn");
+
+  let currentProduct = null;
+  let currentUserId = null;
+
+  // Get product ID from URL
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get("id");
+
+  if (!productId) {
+    productContent.innerHTML =
+      '<h1 class="text-center text-3xl font-playfair text-red-600">Product not found.</h1><p class="text-center text-stone mt-4">Please check the URL or go back to the shop.</p>';
+    loadingSpinner.style.display = "none";
+    productContent.style.display = "block";
+    productContent.classList.remove("hidden");
+  }
+
+  // --- DATA LOADING FUNCTIONS ---
+
+  // 1. Load Main Product
+  async function loadProduct(id) {
+    try {
+      const docRef = doc(db, "products", id);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        currentProduct = { id: docSnap.id, ...docSnap.data() };
+        displayProduct(currentProduct);
+        // Once product is loaded, load recommendations and reviews
+        await loadRecommendations(
+          currentProduct.scentFamily,
+          currentProduct.id
+        );
+        // (Pillar 2 Fix): Call loadReviews
+        // await loadReviews(currentProduct.id);
+      } else {
+        console.error("No such product!");
+        loadingSpinner.style.display = "none";
+        productContent.innerHTML =
+          '<h1 class="text-center text-3xl font-playfair text-red-600">Product not found.</h1>';
+        productContent.style.display = "block";
+        productContent.classList.remove("hidden");
+      }
+    } catch (error) {
+      console.error("Error getting product:", error);
+      loadingSpinner.style.display = "none";
+      productContent.innerHTML =
+        '<h1 class="text-center text-3xl font-playfair text-red-600">Error loading product.</h1>';
+      productContent.style.display = "block";
+      productContent.classList.remove("hidden");
+    }
+  }
+
+  // 2. Display Product
+  function displayProduct(product) {
+    // Set text content
+    productNameEl.textContent = product.name;
+    productPriceEl.textContent = `$${product.price}`;
+    productShortDescEl.textContent = product.shortDescription;
+    productScentFamilyEl.textContent = product.scentFamily;
+    productScentNotesEl.textContent = product.scentNotes;
+    productLongDescEl.innerHTML = product.longDescription; // Use .innerHTML for p tags
+    productPairingEl.textContent = product.pairing;
+
+    // Set image
+    productImageEl.src = `/src/${product.imageUrl}`;
+    productImageEl.alt = product.name;
+
+    // Set page title
+    document.title = `${product.name} - Southern Sense`;
+
+    // Handle stock
+    if (product.stock > 0) {
+      stockMessageEl.classList.add("hidden");
+      addToCartBtn.disabled = false;
+      addToCartBtn.textContent = "Add to Cart";
+    } else {
+      stockMessageEl.classList.remove("hidden");
+      addToCartBtn.disabled = true;
+      addToCartBtn.textContent = "Out of Stock";
+      addToCartBtn.classList.add("bg-stone", "cursor-not-allowed");
+      addToCartBtn.classList.remove("bg-burnt-orange", "hover:bg-opacity-90");
+    }
+
+    // Show content
+    loadingSpinner.style.display = "none";
+    productContent.style.display = "block";
+    productContent.classList.remove("hidden");
+  }
+
+  // 3. Load Recommendations
+  async function loadRecommendations(scentFamily, currentProductId) {
+    try {
+      const q = query(
+        collection(db, "products"),
+        where("scentFamily", "==", scentFamily),
+        limit(5) // Get up to 5, including the current one
+      );
+      const querySnapshot = await getDocs(q);
+
+      recommendationsGrid.innerHTML = ""; // Clear grid
+      let count = 0;
+
+      querySnapshot.forEach((doc) => {
+        if (doc.id !== currentProductId && count < 4) {
+          // Exclude self, limit to 4
+          const product = { id: doc.id, ...doc.data() };
+          const card = createProductCard(product);
+          recommendationsGrid.appendChild(card);
+          count++;
+        }
+      });
+
+      if (count === 0) {
+        recommendationsGrid.innerHTML =
+          '<p class="text-stone italic col-span-full text-center">No other products found in this scent family.</p>';
+      }
+    } catch (error) {
+      console.error("Error loading recommendations:", error);
+      recommendationsGrid.innerHTML =
+        '<p class="text-red-600 col-span-full text-center">Could not load recommendations.</p>';
+    }
+  }
+
+  // 4. (Pillar 2 Fix): Load Reviews
+  // This function is stubbed out for the next phase.
+  async function loadReviews(productId) {
+    console.log("Loading reviews for", productId);
+    // 1. Query 'reviews' collection
+    // 2. Where 'productId' == productId AND 'approved' == true
+    // 3. Populate #reviews-list
+    // 4. If empty, show #no-reviews-message
+  }
+
+  // --- HELPER FUNCTIONS ---
+
+  // Create Product Card (for recommendations)
+  function createProductCard(product) {
+    const card = document.createElement("a");
+    card.href = `/product.html?id=${product.id}`;
+    card.className =
+      "bg-white rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1";
+
+    card.innerHTML = `
+      <div class="h-64 overflow-hidden">
+        <img src="/src/${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover">
+      </div>
+      <div class="p-6">
+        <h3 class="font-playfair text-2xl font-semibold text-charcoal">${product.name}</h3>
+        <p class="text-stone mt-2 text-sm">${product.shortDescription}</p>
+        <div class="flex justify-between items-center mt-4">
+          <span class="text-xl font-light text-burnt-orange">$${product.price}</span>
+          <span class="text-sm uppercase text-stone">${product.category}</span>
+        </div>
+      </div>
+    `;
+    return card;
+  }
+
+  // --- EVENT LISTENERS ---
+
+  // Add to Cart Button
+  addToCartBtn.addEventListener("click", async () => {
+    if (currentProduct) {
+      addToCartBtn.disabled = true;
+      addToCartBtn.textContent = "Adding...";
+      
+      await addToCart(currentProduct.id, currentProduct.name, currentProduct.price, currentProduct.imageUrl, 1, currentProduct.stock);
+      
+      addToCartBtn.textContent = "Added to Cart!";
+      setTimeout(() => {
+        addToCartBtn.disabled = false;
+        addToCartBtn.textContent = "Add to Cart";
+      }, 2000);
+    }
+  });
+
+  // Auth State Listener (for Reviews)
+  onAuthStateChanged(auth, (user) => {
+    reviewsFormContainer.style.display = "block"; // Show the form container
+    if (user) {
+      // User is logged in
+      currentUserId = user.uid;
+      reviewLoginPrompt.style.display = "none";
+      reviewRatingEl.disabled = false;
+      reviewTextEl.disabled = false;
+      submitReviewBtn.disabled = false;
+    } else {
+      // User is logged out
+      currentUserId = null;
+      reviewLoginPrompt.style.display = "block";
+      reviewRatingEl.disabled = true;
+      reviewTextEl.disabled = true;
+      submitReviewBtn.disabled = true;
+    }
+  });
+
+  // (Pillar 2 Fix): Review Form Submission
+  reviewForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!currentUserId || !productId) return;
+
+    submitReviewBtn.disabled = true;
+    submitReviewBtn.textContent = "Submitting...";
+
+    // This is where we will add the review to Firestore in the next phase.
+    console.log("Submitting review:");
+    console.log("User:", currentUserId);
+    console.log("Product:", productId);
+    console.log("Rating:", reviewRatingEl.value);
+    console.log("Text:", reviewTextEl.value);
+
+    // 1. Get user's display name from 'users' collection
+    // 2. Create review object: { productId, userId, userName, rating, text, createdAt, approved: false }
+    // 3. addDoc to 'reviews' collection
+    
+    // Simulate submission for now
+    setTimeout(() => {
+      const formMessage = document.getElementById("review-form-message");
+      formMessage.textContent = "Thank you! Your review is pending approval.";
+      formMessage.classList.remove("hidden");
+      reviewForm.reset();
+      submitReviewBtn.textContent = "Submit Review";
+      // Keep form disabled to prevent re-submission
+    }, 1000);
+  });
+
+  // --- INITIALIZE ---
+  if (productId) {
+    loadProduct(productId);
+  }
+</script>

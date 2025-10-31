@@ -1,0 +1,203 @@
+---
+layout: layout.html
+title: "My Account"
+---
+
+<main class="container mx-auto px-4 py-16 min-h-[70vh]">
+  <h1 class="font-playfair text-4xl font-semibold text-charcoal mb-8">
+    My Account
+  </h1>
+
+  <!-- Loading Spinner -->
+  <div id="loading-spinner"
+    class="flex justify-center items-center h-64 text-stone">
+    <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-burnt-orange"
+      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+        stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+      </path>
+    </svg>
+    <span class="text-xl">Loading Account Details...</span>
+  </div>
+
+  <!-- Account Content (Hidden by default) -->
+  <div id="account-content" class="hidden">
+    <!-- Profile Section -->
+    <section id="profile-section" class="mb-12">
+      <h2 class="font-playfair text-2xl font-semibold text-charcoal mb-4">
+        My Profile
+      </h2>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <p class="text-lg">
+          <strong class="text-stone">Name:</strong>
+          <span id="user-name" class="ml-2 text-charcoal"></span>
+        </p>
+        <p class="text-lg mt-2">
+          <strong class="text-stone">Email:</strong>
+          <span id="user-email" class="ml-2 text-charcoal"></span>
+        </p>
+        <button id="logout-button"
+          class="mt-6 bg-stone text-white font-roboto px-6 py-2 rounded-md shadow-lg hover:bg-charcoal transition-all duration-300">
+          Sign Out
+        </button>
+      </div>
+    </section>
+
+    <!-- Order History Section -->
+    <section id="order-history-section">
+      <h2 class="font-playfair text-2xl font-semibold text-charcoal mb-4">
+        Order History
+      </h2>
+      <div id="order-list"
+        class="bg-white p-6 rounded-lg shadow-md divide-y divide-gray-200">
+        <!-- Orders will be dynamically inserted here -->
+        <p id="no-orders-message" class="text-stone text-lg italic">
+          You have not placed any orders yet.
+        </p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script type="module">
+  import {
+    auth,
+    db,
+    doc,
+    getDoc,
+    collection,
+    getDocs,
+    query,
+    where,
+    onAuthStateChanged,
+    signOut,
+  } from "/src/firebase-loader.js";
+
+  // Get elements
+  const loadingSpinner = document.getElementById("loading-spinner");
+  const accountContent = document.getElementById("account-content");
+  const userNameEl = document.getElementById("user-name");
+  const userEmailEl = document.getElementById("user-email");
+  const logoutButton = document.getElementById("logout-button");
+  const orderList = document.getElementById("order-list");
+  const noOrdersMessage = document.getElementById("no-orders-message");
+
+  // Function to load user orders
+  async function loadUserOrders(userId) {
+    try {
+      const ordersRef = collection(db, "orders");
+      const q = query(ordersRef, where("userId", "==", userId)); // (Pillar 1 Fix): Add sorting by date
+      // const q = query(ordersRef, where("userId", "==", userId), orderBy("createdAt", "desc"));
+
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        noOrdersMessage.style.display = "block";
+        return;
+      }
+
+      noOrdersMessage.style.display = "none";
+      orderList.innerHTML = ""; // Clear the list
+
+      querySnapshot.forEach((doc) => {
+        const order = doc.data();
+        const orderId = doc.id;
+
+        const orderElement = document.createElement("div");
+        orderElement.className = "py-4";
+        orderElement.innerHTML = `
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-lg font-semibold text-charcoal">Order #${
+                orderId.substring(0, 8) // Shortened Order ID
+              }...</p>
+              <p class="text-sm text-stone">Placed on: ${
+                new Date(
+                  order.createdAt.seconds * 1000
+                ).toLocaleDateString()}</p>
+              <p class="text-sm text-stone">Status: <span class="capitalize font-medium ${
+                order.status === "shipped"
+                  ? "text-green-600"
+                  : "text-burnt-orange"
+              }">${order.status}</span></p>
+            </div>
+            <div class="text-right">
+              <p class="text-lg font-semibold text-charcoal">$${
+                order.totalAmount
+              }</p>
+              <p class="text-sm text-stone">${
+                order.items.length
+              } item(s)</p>
+            </div>
+          </div>
+          <!-- (Future Feature): Add a "View Details" button here -->
+        `;
+        orderList.appendChild(orderElement);
+      });
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      noOrdersMessage.innerText =
+        "Could not load order history. Please try again later.";
+      noOrdersMessage.style.display = "block";
+    }
+  }
+
+  // Function to load user profile
+  async function loadUserProfile(userId) {
+    try {
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+        userNameEl.textContent =
+          userData.displayName || "No name set";
+        userEmailEl.textContent = userData.email;
+      } else {
+        console.warn("User profile document not found.");
+        userNameEl.textContent = "Profile not found";
+        userEmailEl.textContent = auth.currentUser.email; // Fallback
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      userNameEl.textContent = "Error loading profile";
+      userEmailEl.textContent = "Error loading profile";
+    }
+  }
+
+  // Auth state listener
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User is signed in
+      // Load profile and orders
+      Promise.all([
+        loadUserProfile(user.uid),
+        loadUserOrders(user.uid),
+      ]).then(() => {
+        // Show content and hide spinner
+        loadingSpinner.style.display = "none";
+        accountContent.style.display = "block";
+      });
+    } else {
+      // User is signed out
+      // Redirect to login page
+      console.log("User is not authenticated. Redirecting to login.");
+      window.location.href = "/login.html";
+    }
+  });
+
+  // Logout button event
+  logoutButton.addEventListener("click", () => {
+    signOut(auth)
+      .then(() => {
+        console.log("User signed out successfully.");
+        window.location.href = "/"; // Redirect to homepage
+      })
+      .catch((error) => {
+        console.error("Sign out error:", error);
+        // (Future Feature): Show a user-friendly error message
+      });
+  });
+</script>

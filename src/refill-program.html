@@ -1,0 +1,100 @@
+---
+layout: layout.html
+title: "Refill Program"
+---
+
+<main class="bg-white py-16 md:py-24">
+  <div class="container mx-auto px-4">
+    <div class="max-w-3xl mx-auto text-charcoal">
+      <h1
+        class="font-playfair text-4xl md:text-5xl font-semibold text-center mb-12">
+        Our Refill Program
+      </h1>
+      <p class="text-lg text-stone leading-relaxed mb-8" id="refill-intro-text">
+        Loading program details...
+      </p>
+
+      <div class="space-y-8">
+        <!-- Step 1 -->
+        <div>
+          <h2 class="font-playfair text-3xl font-semibold mb-3">
+            How It Works
+          </h2>
+          <p class="text-lg text-stone leading-relaxed">
+            We believe in sustainability and rewarding our loyal customers.
+            Our refill program is simple: bring back your empty Southern
+            Sense candle jars and get a discount on your next purchase.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div>
+          <h2 class="font-playfair text-3xl font-semibold mb-3">
+            The Details
+          </h2>
+          <ul class="list-disc list-inside text-lg text-stone space-y-2">
+            <li>
+              Available for <strong class="text-charcoal">in-person
+                returns only</strong> at our participating markets and
+              events.
+            </li>
+            <li>
+              Jars must be clean and in good condition (no cracks or major
+              chips).
+            </li>
+            <li>
+              Receive a discount (typically $1 off per jar) to be applied
+              immediately to your new purchase.
+            </li>
+          </ul>
+        </div>
+
+        <!-- Step 3 -->
+        <div>
+          <h2 class="font-playfair text-3xl font-semibold mb-3">
+            Why We Do It
+          </h2>
+          <p class="text-lg text-stone leading-relaxed">
+            Every jar reused is one less item in a landfill. It's our small
+            way of saying thank you to you and to our planet. Together, we
+            can make a difference, one candle at a time.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+  import {
+    db,
+    doc,
+    getDoc,
+  } from "/src/firebase-loader.js";
+
+  // Load dynamic content from Firestore
+  async function loadSiteContent() {
+    try {
+      const docRef = doc(db, "siteContent", "refillProgram");
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        document.getElementById("refill-intro-text").innerHTML =
+          data.introText || "Our refill program is a simple way to save!";
+      } else {
+        console.warn("Refill program content document not found.");
+        document.getElementById("refill-intro-text").innerHTML =
+          "Our refill program is a simple way to save!";
+      }
+    } catch (error) {
+      console.error("Error loading site content:", error);
+      document.getElementById("refill-intro-text").innerHTML =
+        "Error loading program details. Please try again later.";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadSiteContent();
+  });
+</script>

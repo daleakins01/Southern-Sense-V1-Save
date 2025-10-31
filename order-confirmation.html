@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You For Your Order - Southern Sense</title>
+
+    <!-- === PERFORMANCE OPTIMIZATION (START) === -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet"></noscript>
+    <link href="output.css" rel="stylesheet">
+    <!-- === PERFORMANCE OPTIMIZATION (END) === -->
+
+    <!-- Firebase -->
+    <script src="firebase-loader.js" type="module"></script> 
+    <!-- Shared Header/Footer -->
+    <script src="main.js" defer></script>
+    <!-- Add Cart Logic -->
+    <script src="cart.js" type="module"></script> 
+
+    <style>
+        body { background-color: #FBF9F6; background-image: url('background-parchment.webp'); background-size: cover; background-position: center center; background-attachment: fixed; }
+        .content-wrapper { background: rgba(251, 249, 246, 0.85); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="font-roboto text-charcoal bg-parchment">
+
+    <!-- Header: Injected by main.js -->
+    <div id="header-placeholder"></div>
+
+    <main class="flex items-center justify-center min-h-[70vh] py-12">
+        <div class="container mx-auto px-4 text-center">
+            <div class="content-wrapper max-w-3xl mx-auto p-8 sm:p-12 rounded-lg shadow-2xl">
+                <svg class="w-20 h-20 mx-auto text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h1 class="font-playfair text-4xl md:text-5xl font-bold text-charcoal mt-6">Thank You!</h1>
+                <p class="mt-4 text-lg text-stone leading-relaxed">Your order has been successfully placed. A confirmation from PayPal has been sent to your email address. We appreciate your support and hope you enjoy the warmth and comfort of your new handcrafted scent.</p>
+                <p class="mt-4 text-stone">Order ID: <span id="order-id" class="font-bold">Loading...</span></p>
+                <div class="mt-8">
+                    <a href="shop.html" class="bg-burnt-orange text-white font-bold text-lg py-3 px-8 rounded-lg shadow-md hover:bg-amber-700 transition-all transform hover:scale-105">
+                        Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer: Injected by main.js -->
+    <div id="footer-placeholder"></div>
+
+    <script>
+        // Display the order ID from the URL query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('orderID');
+        const orderIdElement = document.getElementById('order-id');
+        
+        if (orderId && orderIdElement) {
+            orderIdElement.textContent = orderId;
+        } else if (orderIdElement) {
+            orderIdElement.textContent = 'Not Available';
+        }
+    </script>
+</body>
+</html>

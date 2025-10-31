@@ -1,0 +1,11 @@
+Node
+
+node_modules/
+
+Eleventy
+
+_site/
+
+OS
+
+.DS_Store

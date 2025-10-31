@@ -1,0 +1,78 @@
+---
+layout: layout.html
+title: Home
+---
+
+<!-- 
+  This is the content that will be injected into the 
+  {{ content | safe }} slot in src/_includes/layout.html 
+-->
+
+<!-- Hero Section -->
+<section class="relative h-[60vh] min-h-[400px] bg-cover bg-center" style="background-image: url('/candles-header.webp');">
+    <div class="absolute inset-0 bg-black bg-opacity-30"></div>
+    <div class="relative z-10 flex flex-col items-center justify-center h-full text-center text-white p-4">
+        <h1 class="text-6xl md:text-8xl font-accent text-shadow-lg mb-4">Southern Sense</h1>
+        <p class="text-xl md:text-2xl font-body max-w-2xl text-shadow-md">Handcrafted luxury soy-blend candles & melts, poured with care in every batch.</p>
+        <a href="/shop.html" class="mt-8 px-8 py-3 bg-burnt-orange text-white font-semibold rounded-lg shadow-lg hover:bg-opacity-90 transition duration-300">
+            Shop Now
+        </a>
+    </div>
+</section>
+
+<!-- Featured Products Section -->
+<section class="py-16 bg-parchment">
+    <div class="container mx-auto px-4">
+        <h2 class="text-4xl font-display text-charcoal text-center mb-12">Featured Products</h2>
+        <!-- 
+          The products will be dynamically loaded here by main.js.
+          This grid must exist for the script to find it.
+        -->
+        <div id="featured-products-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Products will be injected here by JavaScript -->
+        </div>
+        <div class="text-center mt-12">
+            <a href="/shop.html" class="px-8 py-3 bg-stone text-white font-semibold rounded-lg shadow-lg hover:bg-opacity-90 transition duration-300">
+                View All Products
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Our Difference Section -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <h2 class="text-4xl font-display text-charcoal text-center mb-12">Our Difference</h2>
+        <div class="flex flex-wrap -mx-4">
+            
+            <!-- Finest Wax -->
+            <div class="w-full md:w-1/2 lg:w-1/3 px-4 mb-8">
+                <div class="text-center">
+                    <img src="/finest-wax.webp" alt="Close-up of creamy soy wax" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-4 border-stone">
+                    <h3 class="text-2xl font-display text-charcoal mb-2">Finest Wax</h3>
+                    <p class="text-stone">We use a premium, creamy soy-blend wax that provides a clean, long-lasting burn and excellent scent throw.</p>
+                </div>
+            </div>
+            
+            <!-- Clean Oils (TYPO FIXED) -->
+            <div class="w-full md:w-1/2 lg:w-1/3 px-4 mb-8">
+                <div class="text-center">
+                    <img src="/clean-oils.webp" alt="Amber bottle of fragrance oil next to lavender" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-4 border-stone">
+                    <h3 class="text-2xl font-display text-charcoal mb-2">Clean Fragrance Oils</h3>
+                    <p class="text-stone">Our scents are derived from phthalate-free, non-toxic fragrance oils, ensuring a safe and beautiful aroma for your home.</p>
+                </div>
+            </div>
+            
+            <!-- Hand-Poured -->
+            <div class="w-full md:w-1/2 lg:w-1/3 px-4 mb-8">
+                <div class="text-center">
+                    <img src="/paula-bryan-portrait.webp" alt="Founder, Paula Bryan, smiling" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-4 border-stone">
+                    <h3 class="text-2xl font-display text-charcoal mb-2">Hand-Poured With Care</h3>
+                    <p class="text-stone">Each candle is hand-poured in small batches in North Carolina, ensuring the highest quality and attention to detail.</p>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</section>
+

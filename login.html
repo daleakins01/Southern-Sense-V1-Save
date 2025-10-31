@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Login to your Southern Sense account to view order history and manage your details.">
+    <title>Login - Southern Sense</title>
+
+    <!-- === PERFORMANCE OPTIMIZATION (START) === -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet"></noscript>
+    <link href="output.css" rel="stylesheet">
+    <!-- === PERFORMANCE OPTIMIZATION (END) === -->
+
+    <!-- Firebase -->
+    <script src="firebase-loader.js" type="module"></script>
+    <!-- Add Cart Logic -->
+    <script src="cart.js" type="module"></script>
+
+    <!-- === START FIX: ADD AUTH SCRIPT === -->
+    <!-- Added auth.js here to ensure reliable loading -->
+    <script src="auth.js" type="module"></script>
+    <!-- === END FIX === -->
+
+    <!-- Shared Header/Footer -->
+    <!-- MODIFICATION: Changed 'defer' to 'type="module"' because main.js now uses imports -->
+    <script src="main.js" type="module"></script>
+
+    <style>
+        /* Spinner for loading state */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #D97706; /* burnt-orange */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="font-roboto text-charcoal bg-parchment" style="background-image: url('background-parchment.webp'); background-attachment: fixed; background-size: cover;">
+
+    <!-- Header: Injected by main.js -->
+    <div id="header-placeholder"></div>
+
+    <!-- Main Content -->
+    <main class="py-12 sm:py-24">
+        <div class="container mx-auto px-4">
+
+            <!-- Loading Spinner (hidden by default) -->
+            <div id="page-loading" class="flex justify-center items-center py-24">
+                <div class="spinner"></div>
+            </div>
+            
+            <!-- Login Form (hidden by default) -->
+            <form id="login-form" class="content-wrapper max-w-lg mx-auto p-8 sm:p-12 rounded-lg shadow-2xl hidden">
+                <div class="text-center mb-8">
+                    <h1 class="font-playfair text-4xl font-bold text-charcoal">Welcome Back</h1>
+                    <p class="font-southern text-3xl text-burnt-orange -mt-2">Login to your account</p>
+                </div>
+
+                <!-- Error Message Placeholder -->
+                <div id="login-error" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6" role="alert">
+                    <!-- Error message goes here -->
+                </div>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label for="email" class="block text-stone font-bold mb-2">Email Address</label>
+                        <input type="email" id="email" name="email" required autocomplete="email" class="w-full px-4 py-2 border border-stone/30 rounded-lg bg-white/50 focus:ring-burnt-orange focus:border-burnt-orange transition-colors">
+                    </div>
+                    <div>
+                        <label for="password" class="block text-stone font-bold mb-2">Password</label>
+                        <input type="password" id="password" name="password" required autocomplete="current-password" class="w-full px-4 py-2 border border-stone/30 rounded-lg bg-white/50 focus:ring-burnt-orange focus:border-burnt-orange transition-colors">
+                    </div>
+                </div>
+
+                <div class="text-right mt-4">
+                    <button type="button" id="forgot-password" class="text-sm text-stone hover:text-burnt-orange underline">Forgot Password?</button>
+                </div>
+
+                <div class="text-center mt-8">
+                    <button type="submit" id="login-button" class="bg-burnt-orange text-white font-bold text-lg py-3 px-12 rounded-lg shadow-md hover:bg-amber-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Sign In
+                    </button>
+                </div>
+
+                <div class="text-center mt-6">
+                    <p class="text-stone">
+                        New to Southern Sense? 
+                        <a href="register.html" class="font-bold text-burnt-orange hover:underline">Create an Account</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </main>
+    
+    <!-- Footer: Injected by main.js -->
+    <div id="footer-placeholder"></div>
+
+    <!-- Inline Script for Login Logic -->
+    <script type="module">
+        import { auth } from './firebase-loader.js';
+        import { 
+            signInWithEmailAndPassword, 
+            sendPasswordResetEmail,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
+        const loginForm = document.getElementById('login-form');
+        const loginButton = document.getElementById('login-button');
+        const loginError = document.getElementById('login-error');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const forgotPasswordBtn = document.getElementById('forgot-password');
+        const pageLoading = document.getElementById('page-loading');
+
+        // Page Protection: Check auth state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is already logged in, redirect to account page
+                window.location.replace('account.html');
+            } else {
+                // User is logged out, show the login form
+                pageLoading.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+            }
+        });
+
+        // Handle Login Form Submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loginButton.disabled = true;
+            loginButton.textContent = 'Signing In...';
+            loginError.classList.add('hidden');
+
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // Success! The onAuthStateChanged listener above will handle the redirect.
+                // We don't need to do it here.
+            } catch (error) {
+                console.error("Login Error:", error.code);
+                // Show user-friendly error
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                    loginError.textContent = 'Incorrect email or password. Please try again.';
+                } else if (error.code === 'auth/invalid-email') {
+                    loginError.textContent = 'Please enter a valid email address.';
+                } else {
+                    loginError.textContent = 'An unexpected error occurred. Please try again.';
+                }
+                loginError.classList.remove('hidden');
+                loginButton.disabled = false;
+                loginButton.textContent = 'Sign In';
+            }
+        });
+
+        // Handle Forgot Password
+        forgotPasswordBtn.addEventListener('click', async () => {
+            const email = emailInput.value;
+            if (!email) {
+                loginError.textContent = 'Please enter your email address above, then click "Forgot Password".';
+                loginError.classList.remove('hidden');
+                return;
+            }
+
+            loginError.classList.add('hidden');
+            forgotPasswordBtn.disabled = true;
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                loginError.textContent = 'Success! A password reset link has been sent to your email.';
+                loginError.classList.remove('hidden', 'bg-red-100', 'border-red-400', 'text-red-700');
+                loginError.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
+            } catch (error) {
+                console.error("Password Reset Error:", error.code);
+                if (error.code === 'auth/invalid-email') {
+                    loginError.textContent = 'Please enter a valid email address.';
+                } else {
+                     loginError.textContent = 'Could not send password reset. Please check the email and try again.';
+                }
+                loginError.classList.remove('hidden');
+            } finally {
+                forgotPasswordBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
+

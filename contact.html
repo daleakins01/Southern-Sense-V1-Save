@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Get in touch with Southern Sense. Reach out for questions, custom orders, or just to say hello. We'd love to hear from you.">
+    <title>Contact - Southern Sense</title>
+
+    <!-- === PERFORMANCE OPTIMIZATION (START) === -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet"></noscript>
+    <link href="output.css" rel="stylesheet">
+    <!-- === PERFORMANCE OPTIMIZATION (END) === -->
+
+    <!-- Firebase -->
+    <script src="firebase-loader.js" type="module"></script>
+    <!-- Add Cart Logic -->
+    <script src="cart.js" type="module"></script>
+
+    <!-- === START FIX: ADD AUTH SCRIPT === -->
+    <!-- Added auth.js here to ensure reliable loading -->
+    <script src="auth.js" type="module"></script>
+    <!-- === END FIX === -->
+
+    <!-- Shared Header/Footer -->
+    <!-- MODIFICATION: Changed 'defer' to 'type="module"' because main.js now uses imports -->
+    <script src="main.js" type="module"></script>
+</head>
+<body class="font-roboto text-charcoal bg-parchment" style="background-image: url('background-parchment.webp'); background-attachment: fixed; background-size: cover;">
+
+    <!-- Header: Injected by main.js -->
+    <div id="header-placeholder"></div>
+
+    <!-- Main Content -->
+    <main class="py-12 sm:py-24">
+        <div class="container mx-auto px-4">
+            
+            <!-- Page Title -->
+            <div class="text-center mb-16">
+                <h1 class="font-playfair text-4xl sm:text-5xl font-bold text-charcoal">Get In Touch</h1>
+                <p class="font-southern text-4xl text-burnt-orange -mt-2">We'd Love to Hear From You</p>
+            </div>
+
+            <!-- === CONTACT FORM SECTION === -->
+            <!-- Using Formspree for handling form submissions -->
+            <form id="contact-form" action="https://formspree.io/f/YOUR_UNIQUE_ID" method="POST" class="content-wrapper max-w-3xl mx-auto p-8 sm:p-12 rounded-lg shadow-2xl">
+                
+                <p class="text-stone text-lg leading-relaxed text-center mb-8">
+                    Have a question about an order, a scent, or a special request? Fill out the form below and we'll get back to you as soon as possible.
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="name" class="block text-stone font-bold mb-2">Full Name</label>
+                        <input type="text" id="name" name="name" required class="w-full px-4 py-2 border border-stone/30 rounded-lg bg-white/50 focus:ring-burnt-orange focus:border-burnt-orange transition-colors">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-stone font-bold mb-2">Email Address</label>
+                        <input type="email" id="email" name="email" required class="w-full px-4 py-2 border border-stone/30 rounded-lg bg-white/50 focus:ring-burnt-orange focus:border-burnt-orange transition-colors">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="subject" class="block text-stone font-bold mb-2">Subject</label>
+                        <input type="text" id="subject" name="subject" required class="w-full px-4 py-2 border border-stone/30 rounded-lg bg-white/50 focus:ring-burnt-orange focus:border-burnt-orange transition-colors">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="message" class="block text-stone font-bold mb-2">Message</label>
+                        <textarea id="message" name="message" rows="6" required class="w-full px-4 py-2 border border-stone/30 rounded-lg bg-white/50 focus:ring-burnt-orange focus:border-burnt-orange transition-colors"></textarea>
+                    </div>
+                </div>
+
+                <div class="text-center mt-8">
+                    <button type="submit" class="bg-burnt-orange text-white font-bold text-lg py-3 px-12 rounded-lg shadow-md hover:bg-amber-700 transition-all transform hover:scale-105">
+                        Send Message
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </main>
+    
+    <!-- Footer: Injected by main.js -->
+    <div id="footer-placeholder"></div>
+
+    <!-- === NEW: FORM RESET SCRIPT === -->
+    <script>
+        // This script ensures the form is cleared when a user navigates back to this page.
+        // It uses the 'pageshow' event, which reliably fires even when the page is loaded from the browser's back/forward cache.
+        window.addEventListener('pageshow', function(event) {
+            const form = document.getElementById('contact-form');
+            if (form) {
+                form.reset();
+            }
+        });
+    </script>
+</body>
+</html>
+

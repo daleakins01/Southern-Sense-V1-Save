@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Southern Sense</title>
+
+    <!-- === PERFORMANCE OPTIMIZATION (START) === -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet"></noscript>
+    <link href="output.css" rel="stylesheet">
+    <!-- === PERFORMANCE OPTIMIZATION (END) === -->
+
+    <!-- Firebase -->
+    <script src="firebase-loader.js" type="module"></script>
+
+    <!-- Shared Header/Footer Logic (Defer to avoid blocking) -->
+    <script src="main.js" defer></script> 
+    
+    <style>
+        body { background-color: #FBF9F6; background-image: url('background-parchment.webp'); background-size: cover; background-position: center center; background-attachment: fixed; }
+        .content-wrapper { background: rgba(251, 249, 246, 0.9); backdrop-filter: blur(10px); }
+        /* Style for the login form */
+        .login-form input {
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body class="font-roboto text-charcoal bg-parchment">
+
+    <!-- Header: Injected by main.js -->
+    <div id="header-placeholder"></div>
+
+    <main class="flex items-center justify-center min-h-[70vh] py-12 px-4">
+        <div class="content-wrapper w-full max-w-md p-8 sm:p-10 rounded-lg shadow-2xl">
+            <h1 class="font-playfair text-3xl sm:text-4xl font-bold text-charcoal text-center mb-8">Admin Login</h1>
+            
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="email" class="block text-stone font-bold mb-2">Email Address</label>
+                    <input type="email" id="email" name="email" required 
+                           class="login-form w-full px-4 py-3 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange transition-colors" 
+                           placeholder="admin@example.com">
+                </div>
+                <div>
+                    <label for="password" class="block text-stone font-bold mb-2">Password</label>
+                    <input type="password" id="password" name="password" required 
+                           class="login-form w-full px-4 py-3 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange transition-colors" 
+                           placeholder="••••••••">
+                </div>
+                
+                <p id="login-error" class="text-red-600 text-sm text-center hidden"></p> 
+
+                <div>
+                    <button type="submit" id="login-button" 
+                            class="w-full bg-burnt-orange text-white font-bold text-lg py-3 px-8 rounded-lg shadow-md hover:bg-amber-700 transition-all transform hover:scale-105 disabled:opacity-50">
+                        Login
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer: Injected by main.js -->
+    <div id="footer-placeholder"></div>
+
+    <script type="module">
+        import { auth } from './firebase-loader.js'; // Import auth from central loader
+        import { signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
+        const loginForm = document.getElementById('login-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginButton = document.getElementById('login-button');
+        const loginError = document.getElementById('login-error');
+
+        // Redirect if already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("User already logged in, redirecting to admin dashboard...");
+                window.location.replace('admin.html'); // Use replace to prevent back button
+            } else {
+                 console.log("No user logged in, showing login form.");
+                 // Make sure body is visible if hidden initially for auth check
+                 document.body.style.visibility = 'visible'; 
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent default form submission
+            loginButton.disabled = true; // Disable button during login attempt
+            loginButton.textContent = 'Logging in...';
+            loginError.classList.add('hidden'); // Hide previous errors
+            loginError.textContent = '';
+
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                // Login successful - onAuthStateChanged above will handle the redirect to admin.html
+                console.log('Login successful:', userCredential.user); 
+                // No need to redirect here, the listener does it.
+                
+            } catch (error) {
+                console.error('Login failed:', error);
+                loginError.textContent = getFriendlyAuthErrorMessage(error.code); // Show user-friendly error
+                loginError.classList.remove('hidden');
+                loginButton.disabled = false; // Re-enable button
+                loginButton.textContent = 'Login';
+            }
+        });
+
+        // Helper function for user-friendly error messages
+        function getFriendlyAuthErrorMessage(errorCode) {
+            switch (errorCode) {
+                case 'auth/invalid-email':
+                    return 'Please enter a valid email address.';
+                case 'auth/user-not-found':
+                case 'auth/wrong-password': // Combine these for security (don't reveal which is wrong)
+                case 'auth/invalid-credential': // New error code covering both invalid email/pass
+                    return 'Incorrect email or password. Please try again.';
+                case 'auth/too-many-requests':
+                    return 'Too many login attempts. Please try again later.';
+                default:
+                    return 'An unexpected error occurred. Please try again.';
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Join the Southern Sense Refill Program. A sustainable, cost-effective way to enjoy your favorite candle scents again and again.">
+    <title>Refill Program - Southern Sense</title>
+
+    <!-- === PERFORMANCE OPTIMIZATION (START) === -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet"></noscript>
+    <link href="output.css" rel="stylesheet">
+    <!-- === PERFORMANCE OPTIMIZATION (END) === -->
+
+    <!-- Firebase -->
+    <script src="firebase-loader.js" type="module"></script> 
+
+    <!-- === START FIX: ADD CART & AUTH SCRIPT === -->
+    <!-- Added cart.js (was missing) -->
+    <script src="cart.js" type="module"></script>
+    <!-- Added auth.js here to ensure reliable loading -->
+    <script src="auth.js" type="module"></script>
+    <!-- === END FIX === -->
+
+    <!-- Shared Header/Footer -->
+    <!-- MODIFICATION: Changed 'defer' to 'type="module"' because main.js now uses imports -->
+    <script src="main.js" type="module"></script> 
+</head>
+<body class="font-roboto text-charcoal bg-parchment" style="background-image: url('background-parchment.webp'); background-attachment: fixed; background-size: cover;">
+
+    <!-- Header: Injected by main.js -->
+    <div id="header-placeholder"></div>
+
+    <!-- Main Content -->
+    <main class="py-12 sm:py-24">
+        <div class="container mx-auto px-4">
+            
+            <!-- Page Title -->
+            <div class="text-center mb-16">
+                <h1 class="font-playfair text-4xl sm:text-5xl font-bold text-charcoal" id="refillTitle">Our Refill Program</h1>
+                <p class="font-southern text-4xl text-burnt-orange -mt-2" id="refillSubtitle">Sustainable & Simple</p>
+            </div>
+
+            <!-- === REFILL PROGRAM SECTION === -->
+            <section class="content-wrapper max-w-4xl mx-auto p-8 sm:p-12 rounded-lg shadow-2xl">
+                <h2 class="font-playfair text-3xl font-bold text-charcoal mb-8 text-center" id="howItWorksTitle">How It Works</h2>
+                
+                <ol class="space-y-8 relative border-l border-dashed border-stone/50 ml-6 pl-10">
+                    <!-- Step 1 -->
+                    <li class="flex items-start">
+                        <span class="absolute -left-6 flex h-12 w-12 items-center justify-center rounded-full bg-burnt-orange text-white font-bold text-xl ring-8 ring-parchment">1</span>
+                        <div class="ml-4">
+                            <h3 class="font-playfair text-xl font-bold text-charcoal" id="refillStep1"><strong class="font-bold text-charcoal">Gather Your Empties:</strong></h3>
+                            <p class="mt-1 text-stone leading-relaxed" id="refillStep1Text">Collect your empty Southern Sense candle vessels. This program is exclusively for our original containers.</p>
+                        </div>
+                    </li>
+                    <!-- Step 2 -->
+                    <li class="flex items-start">
+                        <span class="absolute -left-6 flex h-12 w-12 items-center justify-center rounded-full bg-burnt-orange text-white font-bold text-xl ring-8 ring-parchment">2</span>
+                        <div class="ml-4">
+                            <h3 class="font-playfair text-xl font-bold text-charcoal" id="refillStep2"><strong class="font-bold text-charcoal">Meet Us Locally:</strong></h3>
+                            <p class="mt-1 text-stone leading-relaxed" id="refillStep2Text">Since we don't offer shipping for refills yet, you can bring your empty vessels to one of our local market pop-up events. Follow our social media to see where we'll be next!</p>
+                        </div>
+                    </li>
+                    <!-- Step 3 -->
+                    <li class="flex items-start">
+                        <span class="absolute -left-6 flex h-12 w-12 items-center justify-center rounded-full bg-burnt-orange text-white font-bold text-xl ring-8 ring-parchment">3</span>
+                        <div class="ml-4">
+                            <h3 class="font-playfair text-xl font-bold text-charcoal" id="refillStep3"><strong class="font-bold text-charcoal">Choose Your Scent:</strong></h3>
+                            <p class="mt-1 text-stone leading-relaxed" id="refillStep3Text">Pick any of our currently available fragrances to refill your vessel. It's the perfect chance to try something new or stick with an old favorite.</p>
+                        </div>
+                    </li>
+                     <!-- Step 4 -->
+                     <li class="flex items-start">
+                        <span class="absolute -left-6 flex h-12 w-12 items-center justify-center rounded-full bg-burnt-orange text-white font-bold text-xl ring-8 ring-parchment">4</span>
+                        <div class="ml-4">
+                            <h3 class="font-playfair text-xl font-bold text-charcoal" id="refillStep4"><strong class="font-bold text-charcoal">Get a Discount:</strong></h3>
+                            <p class="mt-1 text-stone leading-relaxed" id="refillStep4Text">As a thank you for being sustainable, you'll receive a special discount on your refill. We'll pour your new candle right there or have it ready for you at our next event.</p>
+                        </div>
+                    </li>
+                </ol>
+
+                <hr class="my-10 border-stone/20">
+
+                <!-- Policy / Details -->
+                <h2 class="font-playfair text-3xl font-bold text-charcoal mb-8 text-center" id="policyTitle">The Fine Print</h2>
+                <div class="space-y-4 text-stone leading-relaxed" id="policyDetails">
+                    <p id="refillPolicy1"><strong class="font-bold text-charcoal">Vessel Condition:</strong> Please ensure your vessels are clean and free of any major cracks or chips. We can only refill vessels that are in safe, usable condition.</p>
+                    <p id="refillPolicy2"><strong class="font-bold text-charcoal">Program Availability:</strong> This program is currently available for local drop-off and pickup only. We are not able to accept mailed-in vessels at this time.</p>
+                </div>
+
+            </section>
+        </div>
+    </main>
+    
+    <!-- Footer: Injected by main.js -->
+    <div id="footer-placeholder"></div>
+
+    <!-- This script will load the content from Firestore -->
+    <script type="module">
+        import { db } from './firebase-loader.js';
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+        // Function to cache element selectors
+        function cacheElements() {
+            const ids = [
+                'refillTitle', 'refillSubtitle', 'howItWorksTitle',
+                'refillStep1', 'refillStep1Text',
+                'refillStep2', 'refillStep2Text',
+                'refillStep3', 'refillStep3Text',
+                'refillStep4', 'refillStep4Text',
+                'policyTitle', 'refillPolicy1', 'refillPolicy2'
+            ];
+            const elements = {};
+            ids.forEach(id => {
+                elements[id] = document.getElementById(id);
+            });
+            return elements;
+        }
+
+        // Function to load and populate content
+        async function loadRefillContent() {
+            const elements = cacheElements();
+            
+            try {
+                const docRef = doc(db, "siteContent", "refillProgram");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    // Loop through the data and update elements if they exist
+                    Object.keys(data).forEach(key => {
+                        if (elements[key] && data[key]) {
+                            // For step and policy text, we need to rebuild the HTML to preserve the bold title
+                            if(key.includes('Step') || key.includes('Policy')) {
+                                const titleEl = elements[key].querySelector('strong');
+                                const title = titleEl ? titleEl.innerText : '';
+                                if (title) {
+                                    elements[key].innerHTML = `<strong class="font-bold text-charcoal">${title}</strong> ${data[key]}`;
+                                } else {
+                                    // Fallback for simple text fields
+                                    elements[key].textContent = data[key];
+                                }
+                            } else {
+                                elements[key].textContent = data[key];
+                            }
+                        }
+                    });
+                } else {
+                    console.log("No 'refillProgram' content found. Displaying default text.");
+                }
+            } catch (error) {
+                console.error("Error fetching 'refillProgram' content:", error);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadRefillContent);
+        } else {
+            loadRefillContent();
+        }
+    </script>
+</body>
+</html>
+

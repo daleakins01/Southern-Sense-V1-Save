@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - Southern Sense</title>
+    
+    <!-- === PERFORMANCE OPTIMIZATION (START) === -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet"></noscript>
+    <link href="output.css" rel="stylesheet">
+    <!-- === PERFORMANCE OPTIMIZATION (END) === -->
+
+    <!-- Firebase -->
+    <script src="firebase-loader.js" type="module"></script> 
+    <!-- Shared Header/Footer -->
+    <script src="main.js" defer></script>
+    <!-- Add Cart Logic -->
+    <script src="cart.js" type="module"></script> 
+
+    <style>
+        body { background-color: #FBF9F6; background-image: url('background-parchment.webp'); background-size: cover; background-position: center center; background-attachment: fixed; }
+        .content-wrapper { background: rgba(251, 249, 246, 0.85); backdrop-filter: blur(10px); }
+        .hero-bg { background-image: url('candles-header.webp'); } /* Reusing a common header bg */
+    </style>
+</head>
+<body class="font-roboto text-charcoal bg-parchment">
+
+    <!-- Header: Injected by main.js -->
+    <div id="header-placeholder"></div>
+
+    <main class="py-16 sm:py-20">
+        <!-- === UPGRADED 404 SECTION === -->
+        <section class="relative hero-bg bg-cover bg-center py-24 sm:py-32 flex items-center justify-center text-white text-center">
+            <div class="absolute inset-0 bg-charcoal/60"></div>
+            <div class="relative z-10 container mx-auto px-4">
+                <h1 class="font-playfair text-8xl md:text-9xl font-bold text-amber-300">404</h1>
+                <h2 class="font-playfair text-4xl md:text-5xl font-bold mt-4">Looks Like You've Wandered Off</h2>
+                <p class="mt-6 text-lg max-w-2xl mx-auto text-parchment/90">The page you're looking for doesn't seem to exist. But don't worry, we can help you find your way back to the warmth.</p>
+                <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="index.html" class="bg-burnt-orange text-white font-bold text-lg py-3 px-8 rounded-lg shadow-lg hover:bg-amber-700 transition-all transform hover:scale-105">
+                        Go to Homepage
+                    </a>
+                    <a href="scent-guide.html" class="bg-white/20 text-white font-bold text-lg py-3 px-8 rounded-lg shadow-lg hover:bg-white/30 transition-all transform hover:scale-105">
+                        Find Your Scent
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer: Injected by main.js -->
+    <div id="footer-placeholder"></div>
+
+</body>
+</html>

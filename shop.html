@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore the full collection of Southern Sense hand-poured candles and aroma melts. Shop by category and discover your next favorite scent.">
+    <title>Shop - Southern Sense</title>
+    
+    <!-- === PERFORMANCE OPTIMIZATION (START) === -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet"></noscript>
+    <link href="output.css" rel="stylesheet">
+    <!-- === PERFORMANCE OPTIMIZATION (END) === -->
+
+    <!-- Firebase Logic -->
+    <script src="firebase-loader.js" type="module"></script>
+    
+    <!-- === CART LOGIC === -->
+    <!-- Import the addToCart function -->
+    <script src="cart.js" type="module"></script>
+    <!-- Add Auth Logic -->
+    <script src="auth.js" type="module"></script>
+
+    <!-- Shared Header/Footer -->
+    <!-- MODIFICATION: Changed 'defer' to 'type="module"' because main.js now uses imports -->
+    <script src="main.js" type="module"></script> 
+
+    <!-- === NEW: Robust Hero Image Styles === -->
+    <style>
+        /* These classes will be toggled by JS */
+        .shop-hero-candles {
+            background-image: url('candles-header.webp');
+        }
+        .shop-hero-melts {
+            background-image: url('melts-header.webp');
+        }
+    </style>
+
+</head>
+<body class="font-roboto text-charcoal bg-parchment"> <!-- Removed parchment image style -->
+
+    <!-- Header: Injected by main.js -->
+    <div id="header-placeholder"></div>
+
+    <!-- Main Content -->
+    <main>
+        
+        <!-- === Hero Section === -->
+        <!-- FIX: Added bg-parchment as a fallback color in case images fail to load -->
+        <section id="shop-hero" class="relative bg-parchment bg-cover bg-center py-24 sm:py-32 flex items-center justify-center text-white text-center transition-all duration-500">
+            <div class="absolute inset-0 bg-charcoal/60"></div>
+            <div id="hero-content" class="relative z-10 container mx-auto px-4">
+                <!-- Content is injected by JS -->
+            </div>
+        </section>
+
+        <!-- === Product Grid Section === -->
+        <section class="py-16 sm:py-24">
+            <div class="container mx-auto px-4 max-w-7xl">
+                
+                <!-- Filters -->
+                <div class="flex justify-center space-x-2 sm:space-x-4 mb-12">
+                    <button id="filter-all" class="filter-btn active-filter-btn">All Products</button>
+                    <button id="filter-candle" class="filter-btn inactive-filter-btn">Candles</button>
+                    <button id="filter-wax-melt" class="filter-btn inactive-filter-btn">Wax Melts</button>
+                </div>
+
+                <!-- Product Grid -->
+                <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-8">
+                    <!-- Loading Spinner -->
+                    <div id="loading-spinner" class="col-span-2 md:col-span-3 lg:col-span-4 flex justify-center items-center py-20">
+                        <div class="spinner"></div>
+                    </div>
+                    <!-- Products will be injected here by JS -->
+                </div>
+
+                <!-- Error Message -->
+                <div id="error-message" class="hidden col-span-full text-center py-20">
+                    <p class="text-red-600 font-bold text-xl">Could not load products at this time. Please try again later.</p>
+                </div>
+
+                <!-- No Products Message -->
+                <div id="no-products-message" class="hidden col-span-full text-center py-20">
+                    <p class="text-stone font-bold text-xl">No products found for this category.</p>
+                </div>
+
+            </div>
+        </section>
+        
+    </main>
+    
+    <!-- Footer: Injected by main.js -->
+    <div id="footer-placeholder"></div>
+
+    <!-- Inline Script for Shop Page Logic -->
+    <script type="module">
+        import { db } from './firebase-loader.js';
+        import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+        // Import the function from cart.js
+        import { addToCart } from './cart.js';
+
+        // --- 1. DOM Elements ---
+        const productGrid = document.getElementById('product-grid');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const errorMessage = document.getElementById('error-message');
+        const noProductsMessage = document.getElementById('no-products-message');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const shopHero = document.getElementById('shop-hero');
+        const heroContent = document.getElementById('hero-content');
+
+        let allProducts = []; // Cache to store all products
+
+        // --- 2. Hero Content Definitions ---
+        const heroData = {
+            all: {
+                title: "The Full Collection",
+                subtitle: "Find Your Perfect Scent",
+                cssClass: "shop-hero-candles" // Default to candles
+            },
+            candle: {
+                title: "Hand-Poured Candles",
+                subtitle: "Coco Apricot Wax",
+                cssClass: "shop-hero-candles"
+            },
+            'wax-melt': {
+                title: "Aroma Wax Melts",
+                subtitle: "Rich, Lasting Fragrance",
+                cssClass: "shop-hero-melts"
+            }
+        };
+
+        // --- 3. Functions ---
+
+        /**
+         * Loads all products from Firestore and stores them in the cache
+         */
+        async function loadProducts() {
+            console.log("DEBUG: Shop - Starting loadProducts...");
+            try {
+                // Query all products, order by name ascending
+                const q = query(collection(db, "products"));
+                const querySnapshot = await getDocs(q);
+                
+                allProducts = []; // Clear cache
+                querySnapshot.forEach((doc) => {
+                    allProducts.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Sort by name alphabetically
+                allProducts.sort((a, b) => a.name.localeCompare(b.name));
+
+                console.log(`DEBUG: Shop - Successfully fetched ${allProducts.length} products.`);
+                
+                // Initial render (show all products)
+                renderProducts('all');
+
+            } catch (error) {
+                console.error("Error fetching products: ", error);
+                loadingSpinner.classList.add('hidden');
+                errorMessage.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * Renders products to the grid based on the current filter
+         * @param {string} filter - 'all', 'candle', or 'wax-melt'
+         */
+        function renderProducts(filter) {
+            console.log(`DEBUG: Shop - Rendering products for filter: ${filter}`);
+            
+            // 1. Update Hero Content
+            updateHero(filter);
+
+            // 2. Clear Grid
+            productGrid.innerHTML = ''; // Clear existing products
+            
+            // 3. Filter Products
+            const filteredProducts = (filter === 'all')
+                ? allProducts
+                : allProducts.filter(product => product.category === filter);
+
+            // 4. Hide Spinner
+            loadingSpinner.classList.add('hidden');
+
+            // 5. Handle No Products
+            if (filteredProducts.length === 0) {
+                noProductsMessage.classList.remove('hidden');
+                errorMessage.classList.add('hidden');
+            } else {
+                noProductsMessage.classList.add('hidden');
+            }
+            
+            // 6. Render Products
+            filteredProducts.forEach(product => {
+                const card = createProductCard(product);
+                productGrid.appendChild(card);
+            });
+        }
+
+        /**
+         * Creates an HTML element for a single product card
+         * @param {object} product - The product data object
+         * @returns {HTMLElement} The product card element
+         */
+        function createProductCard(product) {
+            const { id, name, price, imageUrl, stock } = product;
+            
+            // Create card element
+            const card = document.createElement('div');
+            card.className = "bg-white/60 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden flex flex-col group transition-shadow duration-300 hover:shadow-2xl";
+            
+            // Determine stock status
+            const isOutOfStock = (typeof stock === 'number' && stock <= 0);
+            
+            // Use placeholder if imageUrl is missing
+            const validImageUrl = imageUrl ? imageUrl : 'https://placehold.co/400x400/FBF9F6/3D352E?text=Image+Not+Found';
+
+            card.innerHTML = `
+                <div class="relative block overflow-hidden">
+                    <a href="product.html?id=${id}">
+                        <img src="${validImageUrl}" alt="${name}" class="w-full h-48 sm:h-64 object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onerror="this.src='https://placehold.co/400x400/FBF9F6/3D352E?text=Image+Error'; this.onerror=null;">
+                    </a>
+                    ${isOutOfStock ? `
+                        <div class="absolute top-2 left-2 bg-charcoal/80 text-white text-xs font-bold px-2 py-1 rounded">OUT OF STOCK</div>
+                    ` : ''}
+                </div>
+                <div class="p-4 flex-grow flex flex-col">
+                    <h3 class="font-playfair text-xl font-bold text-charcoal flex-grow">
+                        <a href="product.html?id=${id}" class="hover:text-burnt-orange transition-colors">${name}</a>
+                    </h3>
+                    <p class="font-bold text-lg text-burnt-orange mt-2">$${price}</p>
+                    <button 
+                        class="add-to-cart-btn mt-4 w-full bg-burnt-orange text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-amber-700 transition-all ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : 'transform hover:scale-105'}"
+                        data-id="${id}"
+                        data-name="${name}"
+                        data-price="${price}"
+                        data-imageUrl="${validImageUrl}"
+                        data-stock="${stock}"
+                        ${isOutOfStock ? 'disabled' : ''}
+                    >
+                        ${isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+                    </button>
+                </div>
+            `;
+            return card;
+        }
+
+        /**
+         * Updates the hero section based on the selected filter
+         * @param {string} filter - 'all', 'candle', or 'wax-melt'
+         */
+        function updateHero(filter) {
+            const data = heroData[filter] || heroData.all;
+            
+            // Update text content
+            heroContent.innerHTML = `
+                <h1 class="font-playfair text-4xl sm:text-6xl font-bold">${data.title}</h1>
+                <p class="font-southern text-5xl sm:text-7xl text-amber-300 -mt-2">${data.subtitle}</p>
+            `;
+            
+            // Update background image by swapping classes
+            shopHero.classList.remove(heroData.all.cssClass, heroData.candle.cssClass, heroData['wax-melt'].cssClass);
+            shopHero.classList.add(data.cssClass);
+        }
+
+        // --- 4. Event Listeners ---
+
+        // Event Delegation for "Add to Cart" buttons
+        productGrid.addEventListener('click', (e) => {
+            const button = e.target.closest('.add-to-cart-btn');
+            if (button && !button.disabled) { // Check if button is not disabled
+                e.preventDefault();
+                // Create the product object from the button's data attributes
+                const product = {
+                    id: button.dataset.id,
+                    name: button.dataset.name,
+                    price: button.dataset.price,
+                    imageUrl: button.dataset.imageUrl,
+                    stock: parseInt(button.dataset.stock, 10)
+                };
+                // Call the addToCart function imported from cart.js
+                addToCart(product, 1);
+            }
+        });
+
+        // Event Listeners for filters
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active styles
+                filterButtons.forEach(btn => btn.classList.replace('active-filter-btn', 'inactive-filter-btn'));
+                button.classList.replace('inactive-filter-btn', 'active-filter-btn');
+                
+                // Get filter value and render
+                const filter = button.id.replace('filter-', '');
+                renderProducts(filter);
+            });
+        });
+
+        // --- 5. Initial Load ---
+        loadProducts();
+    </script>
+</body>
+</html>
+

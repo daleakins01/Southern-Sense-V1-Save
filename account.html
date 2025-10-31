@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manage your Southern Sense account. View your order history and update your profile details.">
+    <title>My Account - Southern Sense</title>
+
+    <!-- === PERFORMANCE OPTIMIZATION (START) === -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet"></noscript>
+    <link href="output.css" rel="stylesheet">
+    <!-- === PERFORMANCE OPTIMIZATION (END) === -->
+
+    <!-- Firebase -->
+    <script src="firebase-loader.js" type="module"></script>
+    <!-- Add Cart Logic -->
+    <script src="cart.js" type="module"></script>
+    
+    <!-- === START FIX: ADD AUTH SCRIPT === -->
+    <!-- Added auth.js here to ensure reliable loading -->
+    <script src="auth.js" type="module"></script>
+    <!-- === END FIX === -->
+
+    <!-- Shared Header/Footer -->
+    <!-- MODIFICATION: Changed 'defer' to 'type="module"' because main.js now uses imports -->
+    <script src="main.js" type="module"></script>
+
+    <style>
+        /* Spinner for loading state */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #D97706; /* burnt-orange */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* Order History Card */
+        .order-card {
+            @apply bg-white/60 p-6 rounded-lg shadow-md border border-stone/20;
+        }
+    </style>
+</head>
+<body class="font-roboto text-charcoal bg-parchment" style="background-image: url('background-parchment.webp'); background-attachment: fixed; background-size: cover;">
+
+    <!-- Header: Injected by main.js -->
+    <div id="header-placeholder"></div>
+
+    <!-- Main Content -->
+    <main class="py-12 sm:py-24">
+        <div class="container mx-auto px-4">
+
+            <!-- Loading Spinner (shown by default) -->
+            <div id="page-loading" class="flex justify-center items-center py-24">
+                <div class="spinner"></div>
+            </div>
+            
+            <!-- Account Dashboard (hidden by default) -->
+            <div id="account-dashboard" class="hidden">
+                <!-- Page Title -->
+                <div class="text-center mb-16">
+                    <h1 class="font-playfair text-4xl sm:text-5xl font-bold text-charcoal">My Account</h1>
+                    <p class="font-southern text-4xl text-burnt-orange -mt-2" id="account-greeting">Welcome!</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
+                    
+                    <!-- Left Column: Profile -->
+                    <div class="md:col-span-1">
+                        <div class="content-wrapper p-8 rounded-lg shadow-2xl">
+                            <h2 class="font-playfair text-3xl font-bold text-charcoal mb-6">My Profile</h2>
+                            
+                            <!-- Profile Form -->
+                            <form id="profile-form" class="space-y-4">
+                                <div>
+                                    <label for="profileName" class="block text-stone font-bold mb-2">First Name</label>
+                                    <input type="text" id="profileName" name="profileName" required class="w-full px-4 py-2 border border-stone/30 rounded-lg bg-white/50 focus:ring-burnt-orange focus:border-burnt-orange transition-colors">
+                                </div>
+                                <div>
+                                    <label for="profileEmail" class="block text-stone font-bold mb-2">Email</label>
+                                    <input type="email" id="profileEmail" name="profileEmail" disabled class="w-full px-4 py-2 border border-stone/30 rounded-lg bg-stone-100/50 cursor-not-allowed">
+                                </div>
+                                <button type="submit" id="update-profile-btn" class="w-full bg-burnt-orange text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-amber-700 transition-all disabled:opacity-50">
+                                    Update Profile
+                                </button>
+                                <!-- Profile Update Message -->
+                                <p id="profile-success" class="hidden text-center text-green-700">Profile updated successfully!</p>
+                            </form>
+                            
+                            <!-- Logout Button -->
+                            <button id="account-logout-btn" class="w-full text-center text-stone font-bold hover:text-burnt-orange transition-colors mt-6 underline">
+                                Sign Out
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Order History -->
+                    <div class="md:col-span-2">
+                        <div class="content-wrapper p-8 rounded-lg shadow-2xl min-h-[300px]">
+                            <h2 class="font-playfair text-3xl font-bold text-charcoal mb-6">My Order History</h2>
+                            
+                            <!-- Order History Container -->
+                            <div id="order-history-container">
+                                <!-- Loading Spinner for orders -->
+                                <div id="orders-loading" class="flex justify-center items-center py-10">
+                                    <div class="spinner"></div>
+                                </div>
+                                <!-- Error Message for orders -->
+                                <div id="orders-error" class="hidden text-center text-red-600">
+                                    <p>Could not load your order history. Please try refreshing the page.</p>
+                                </div>
+                                <!-- No Orders Message -->
+                                <div id="orders-empty" class="hidden text-center text-stone">
+                                    <p>You haven't placed any orders yet. <a href="shop.html" class="font-bold text-burnt-orange hover:underline">Start shopping!</a></p>
+                                </div>
+                                <!-- Orders List -->
+                                <div id="orders-list" class="space-y-6">
+                                    <!-- Order cards will be injected here by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+    </main>
+    
+    <!-- Footer: Injected by main.js -->
+    <div id="footer-placeholder"></div>
+
+    <!-- Inline Script for Account Logic -->
+    <script type="module">
+        import { auth, db } from './firebase-loader.js';
+        import { 
+            onAuthStateChanged,
+            signOut,
+            updateProfile
+        } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+        import { 
+            collection, 
+            query, 
+            where, 
+            getDocs,
+            Timestamp
+        } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+        const pageLoading = document.getElementById('page-loading');
+        const accountDashboard = document.getElementById('account-dashboard');
+        const accountGreeting = document.getElementById('account-greeting');
+        const profileForm = document.getElementById('profile-form');
+        const profileNameInput = document.getElementById('profileName');
+        const profileEmailInput = document.getElementById('profileEmail');
+        const updateProfileBtn = document.getElementById('update-profile-btn');
+        const profileSuccessMsg = document.getElementById('profile-success');
+        const accountLogoutBtn = document.getElementById('account-logout-btn');
+        
+        const ordersLoading = document.getElementById('orders-loading');
+        const ordersError = document.getElementById('orders-error');
+        const ordersEmpty = document.getElementById('orders-empty');
+        const ordersList = document.getElementById('orders-list');
+
+        let currentUser = null;
+
+        // Page Protection: Check auth state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is logged in
+                currentUser = user;
+                pageLoading.classList.add('hidden');
+                accountDashboard.classList.remove('hidden');
+                
+                // Populate Profile
+                populateProfile(user);
+                
+                // Load Order History
+                loadOrderHistory(user.uid);
+
+            } else {
+                // User is logged out, redirect to login
+                currentUser = null;
+                window.location.replace('login.html');
+            }
+        });
+
+        // === PROFILE LOGIC ===
+        function populateProfile(user) {
+            if (user.displayName) {
+                accountGreeting.textContent = `Welcome, ${user.displayName}!`;
+                profileNameInput.value = user.displayName;
+            } else {
+                accountGreeting.textContent = `Welcome!`;
+            }
+            profileEmailInput.value = user.email;
+        }
+
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            updateProfileBtn.disabled = true;
+            updateProfileBtn.textContent = 'Updating...';
+            profileSuccessMsg.classList.add('hidden');
+
+            const newName = profileNameInput.value;
+
+            try {
+                await updateProfile(currentUser, {
+                    displayName: newName
+                });
+                // Success!
+                accountGreeting.textContent = `Welcome, ${newName}!`; // Update greeting
+                profileSuccessMsg.classList.remove('hidden');
+                setTimeout(() => profileSuccessMsg.classList.add('hidden'), 3000); // Hide after 3s
+            } catch (error) {
+                console.error("Error updating profile:", error);
+                alert("Could not update profile. Please try again.");
+            } finally {
+                updateProfileBtn.disabled = false;
+                updateProfileBtn.textContent = 'Update Profile';
+            }
+        });
+
+        // Handle Logout
+        accountLogoutBtn.addEventListener('click', () => {
+            signOut(auth).catch((error) => {
+                console.error("Logout Error:", error);
+                alert("Error signing out. Please try again.");
+            });
+            // The onAuthStateChanged listener will handle the redirect
+        });
+
+
+        // === ORDER HISTORY LOGIC ===
+        async function loadOrderHistory(userId) {
+            ordersLoading.classList.remove('hidden');
+            ordersError.classList.add('hidden');
+            ordersEmpty.classList.add('hidden');
+            ordersList.innerHTML = '';
+
+            try {
+                // Query the 'orders' collection for docs where userId matches
+                const q = query(
+                    collection(db, "orders"), 
+                    where("userId", "==", userId)
+                );
+                
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    // No orders found
+                    ordersEmpty.classList.remove('hidden');
+                } else {
+                    // Orders found, process them
+                    const orders = [];
+                    querySnapshot.forEach((doc) => {
+                        orders.push(doc.data());
+                    });
+
+                    // Sort by date, newest first (descending)
+                    orders.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
+
+                    // Render the orders
+                    renderOrders(orders);
+                }
+
+            } catch (error) {
+                console.error("Error loading order history:", error);
+                ordersError.classList.remove('hidden');
+            } finally {
+                ordersLoading.classList.add('hidden');
+            }
+        }
+
+        function renderOrders(orders) {
+            ordersList.innerHTML = ''; // Clear list
+            orders.forEach(order => {
+                const orderCard = document.createElement('div');
+                orderCard.className = 'order-card';
+
+                // Format Date
+                const orderDate = order.createdAt.toDate();
+                const formattedDate = orderDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                // Get Item Summary
+                const itemSummary = order.items.map(item => `${item.name} (x${item.quantity})`).join(', ');
+
+                orderCard.innerHTML = `
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-3">
+                        <h3 class="font-playfair text-xl font-bold text-charcoal">Order: #${order.orderID}</h3>
+                        <span class="text-sm font-bold text-charcoal/80">${order.status}</span>
+                    </div>
+                    <p class="text-stone"><strong class="text-charcoal">Date:</strong> ${formattedDate}</p>
+                    <p class="text-stone"><strong class="text-charcoal">Total:</strong> $${parseFloat(order.totalAmount).toFixed(2)}</p>
+                    <div class="mt-4 border-t border-stone/20 pt-4">
+                        <p class="text-stone"><strong class="text-charcoal">Items:</strong> ${itemSummary}</p>
+                    </div>
+                `;
+                ordersList.appendChild(orderCard);
+            });
+        }
+
+    </script>
+</body>
+</html>
+

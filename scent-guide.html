@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Take our interactive quiz to find the perfect Southern Sense fragrance for your mood and occasion. Get a personalized candle or wax melt recommendation in seconds.">
+    <title>Find Your Perfect Scent - Southern Sense</title>
+
+    <!-- === PERFORMANCE OPTIMIZATION (START) === -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet"></noscript>
+    <link href="output.css" rel="stylesheet">
+    <!-- === PERFORMANCE OPTIMIZATION (END) === -->
+
+    <!-- Firebase -->
+    <script src="firebase-loader.js" type="module"></script>
+    <!-- Add Cart Logic -->
+    <script src="cart.js" type="module"></script>
+
+    <!-- === START FIX: ADD AUTH SCRIPT === -->
+    <!-- Added auth.js here to ensure reliable loading -->
+    <script src="auth.js" type="module"></script>
+    <!-- === END FIX === -->
+
+    <!-- Shared Header/Footer -->
+    <!-- MODIFICATION: Changed 'defer' to 'type="module"' because main.js now uses imports -->
+    <script src="main.js" type="module"></script>
+
+    <style>
+        /* Custom styles for the quiz */
+        .quiz-option.selected {
+            @apply ring-4 ring-burnt-orange ring-offset-2 ring-offset-parchment;
+        }
+        .quiz-option {
+            @apply bg-white/60 p-6 rounded-lg text-center shadow-lg cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105;
+        }
+    </style>
+</head>
+<body class="font-roboto text-charcoal bg-parchment" style="background-image: url('background-parchment.webp'); background-attachment: fixed; background-size: cover;">
+
+    <!-- Header: Injected by main.js -->
+    <div id="header-placeholder"></div>
+
+    <!-- Main Content -->
+    <main class="py-12 sm:py-24">
+        <div class="container mx-auto px-4">
+            
+            <!-- Page Title -->
+            <div class="text-center mb-16">
+                <h1 class="font-playfair text-4xl sm:text-5xl font-bold text-charcoal">Find Your Perfect Scent</h1>
+                <p class="font-southern text-4xl text-burnt-orange -mt-2">Our Scent Quiz</p>
+            </div>
+
+            <!-- Quiz Wrapper -->
+            <div class="content-wrapper max-w-4xl mx-auto p-8 sm:p-12 rounded-lg shadow-2xl">
+                
+                <!-- === QUIZ SECTION === -->
+                <section id="quiz-section">
+                    <form id="quiz-form" class="space-y-12">
+                        <!-- Question 1: Scent Family -->
+                        <div>
+                            <h3 class="font-playfair text-2xl font-bold text-charcoal text-center mb-6">Which scent family calls to you?</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-question="family">
+                                <div class="quiz-option" data-value="fruity-sweet">
+                                    <span class="text-5xl">🍓</span>
+                                    <p class="font-playfair text-xl font-bold text-charcoal mt-2">Fruity & Sweet</p>
+                                    <p class="text-stone mt-1">Bright, playful, and sweet.</p>
+                                </div>
+                                <div class="quiz-option" data-value="floral-fresh">
+                                    <span class="text-5xl">🌸</span>
+                                    <p class="font-playfair text-xl font-bold text-charcoal mt-2">Floral & Fresh</p>
+                                    <p class="text-stone mt-1">Clean, elegant, and romantic.</p>
+                                </div>
+                                <div class="quiz-option" data-value="earthy-woody">
+                                    <span class="text-5xl">🌲</span>
+                                    <p class="font-playfair text-xl font-bold text-charcoal mt-2">Earthy & Woody</p>
+                                    <p class="text-stone mt-1">Warm, cozy, and sophisticated.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Question 2: Occasion -->
+                        <div>
+                            <h3 class="font-playfair text-2xl font-bold text-charcoal text-center mb-6">What's the occasion?</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-question="occasion">
+                                <div class="quiz-option" data-value="relaxing">
+                                    <span class="text-5xl">🛁</span>
+                                    <p class="font-playfair text-xl font-bold text-charcoal mt-2">Relaxing</p>
+                                    <p class="text-stone mt-1">A quiet evening with a book.</p>
+                                </div>
+                                <div class="quiz-option" data-value="hosting">
+                                    <span class="text-5xl">🥂</span>
+                                    <p class="font-playfair text-xl font-bold text-charcoal mt-2">Hosting</p>
+                                    <p class="text-stone mt-1">Welcoming friends and family.</p>
+                                </div>
+                                <div class="quiz-option" data-value="energizing">
+                                    <span class="text-5xl">☀️</span>
+                                    <p class="font-playfair text-xl font-bold text-charcoal mt-2">Energizing</p>
+                                    <p class="text-stone mt-1">A fresh start to the day.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="text-center pt-6">
+                            <button type="submit" id="quiz-submit-btn" class="bg-burnt-orange text-white font-bold text-lg py-3 px-12 rounded-lg shadow-md hover:bg-amber-700 transition-all transform hover:scale-105">
+                                Find My Match
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- === RESULT SECTION (Hidden by default) === -->
+                <section id="result-section" class="hidden">
+                    <div class="text-center">
+                        <p class="font-southern text-4xl text-burnt-orange">We Recommend</p>
+                        <div id="quiz-result" class="mt-4">
+                            <!-- Loading spinner -->
+                            <div id="quiz-loading" class="flex justify-center items-center py-10">
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+            </div> <!-- End content-wrapper -->
+
+            <!-- Link to Scent Glossary -->
+            <div class="text-center mt-12">
+                <a href="scent-glossary.html" class="text-lg text-stone font-bold hover:text-burnt-orange transition-colors">
+                    Want to learn more? 
+                    <span class="underline font-playfair text-charcoal">Explore our Scent Glossary</span>
+                </a>
+            </div>
+            
+        </div>
+    </main>
+    
+    <!-- Footer: Injected by main.js -->
+    <div id="footer-placeholder"></div>
+
+
+    <!-- Scent Guide Quiz Logic -->
+    <script type="module">
+        import { db } from './firebase-loader.js';
+        import { collection, getDocs, query, where, limit } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+        const quizForm = document.getElementById('quiz-form');
+        const quizOptions = document.querySelectorAll('.quiz-option');
+        const quizSection = document.getElementById('quiz-section');
+        const resultSection = document.getElementById('result-section');
+        const quizResult = document.getElementById('quiz-result');
+        const quizLoading = document.getElementById('quiz-loading');
+
+        let selections = {};
+
+        // Handle option selection
+        quizOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const question = option.parentElement.dataset.question;
+                const value = option.dataset.value;
+                
+                // Store selection
+                selections[question] = value;
+                
+                // Update visual state
+                option.parentElement.querySelectorAll('.quiz-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+
+        // Handle form submission
+        quizForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Check if both questions are answered
+            if (!selections.family || !selections.occasion) {
+                alert("Please select an answer for both questions.");
+                return;
+            }
+
+            // Show loading spinner
+            quizSection.classList.add('hidden');
+            resultSection.classList.remove('hidden');
+            quizLoading.classList.remove('hidden');
+            quizResult.innerHTML = ''; // Clear previous results
+            quizResult.appendChild(quizLoading);
+
+
+            try {
+                // Query Firestore for a matching product
+                // This is a simple quiz, so we'll just query by the Scent Family
+                const q = query(
+                    collection(db, "products"), 
+                    where("scentFamily", "==", selections.family),
+                    where("stock", ">", 0), // Only recommend in-stock items
+                    limit(1) // Get the first match
+                );
+                
+                const querySnapshot = await getDocs(q);
+                
+                let recommendation = null;
+                if (!querySnapshot.empty) {
+                    recommendation = querySnapshot.docs[0].data();
+                    recommendation.id = querySnapshot.docs[0].id; // Add the ID
+                } else {
+                    // Fallback: If no in-stock match, just get any product from that family
+                    const fallbackQ = query(
+                        collection(db, "products"), 
+                        where("scentFamily", "==", selections.family),
+                        limit(1)
+                    );
+                    const fallbackSnapshot = await getDocs(fallbackQ);
+                    if (!fallbackSnapshot.empty) {
+                        recommendation = fallbackSnapshot.docs[0].data();
+                        recommendation.id = fallbackSnapshot.docs[0].id;
+                    }
+                }
+
+                // Hide loading spinner
+                quizLoading.classList.add('hidden');
+
+                if (recommendation) {
+                    // Display the recommendation
+                    quizResult.innerHTML = `
+                        <h2 class="font-playfair text-4xl font-bold text-charcoal">${recommendation.name}</h2>
+                        <img src="${recommendation.imageUrl}" alt="${recommendation.name}" class="w-64 h-64 object-cover mx-auto rounded-lg shadow-lg my-6" onerror="this.src='https://placehold.co/256x256/FBF9F6/3D352E?text=Image+Error'; this.onerror=null;">
+                        <p class="text-lg text-stone max-w-lg mx-auto">${recommendation.shortDescription}</p>
+                        <a href="product.html?id=${recommendation.id}" class="mt-6 inline-block bg-burnt-orange text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-amber-700 transition-all">
+                            View This Scent
+                        </a>
+                        <br>
+                        <button id="retake-quiz-btn" class="mt-6 text-stone hover:text-burnt-orange underline">Retake Quiz</button>
+                    `;
+                     document.getElementById('retake-quiz-btn').addEventListener('click', () => {
+                         resultSection.classList.add('hidden');
+                         quizSection.classList.remove('hidden');
+                         quizForm.reset();
+                          quizOptions.forEach(opt => opt.classList.remove('selected'));
+                          selections = {}; // Clear selections
+                     });
+                } else {
+                    // No product found for that family at all
+                    quizResult.innerHTML = `
+                        <h2 class="font-playfair text-3xl font-bold text-charcoal">We're stumped!</h2>
+                        <p class="text-lg text-stone max-w-lg mx-auto mt-4">We couldn't find a match for that combination right now, but we think you'd love our full collection.</p>
+                        <a href="shop.html" class="mt-6 inline-block bg-burnt-orange text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-amber-700 transition-all">
+                            Shop All Scents
+                        </a>
+                        <br>
+                        <button id="retake-quiz-btn" class="mt-6 text-stone hover:text-burnt-orange underline">Retake Quiz</button>
+                    `;
+                     document.getElementById('retake-quiz-btn').addEventListener('click', () => {
+                         resultSection.classList.add('hidden');
+                         quizSection.classList.remove('hidden');
+                         quizForm.reset();
+                          quizOptions.forEach(opt => opt.classList.remove('selected'));
+                          selections = {}; // Clear selections
+                     });
+                }
+
+            } catch (error) {
+                console.error("Error getting recommendation: ", error);
+                quizLoading.classList.add('hidden');
+                quizResult.innerHTML = `<p class=\"text-red-600\">Sorry, an error occurred while finding your match. Please try again.</p><button id=\"retake-quiz-btn\" class=\"mt-4 text-stone hover:text-burnt-orange underline\">Try Again</button>`;
+                 document.getElementById('retake-quiz-btn').addEventListener('click', () => {
+                     resultSection.classList.add('hidden');
+                     quizSection.classList.remove('hidden');
+                     quizForm.reset();
+                     quizOptions.forEach(opt => opt.classList.remove('selected'));
+                     selections = {}; // Clear selections
+                 });
+            }
+        });
+    </script>
+
+</body>
+</html>
+

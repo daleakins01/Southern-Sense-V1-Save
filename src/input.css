@@ -1,0 +1,10 @@
+/*
+ * This is the main CSS input file for the Tailwind CSS build process.
+ * It imports the three core layers of Tailwind. The build process will
+ * scan our HTML/JS files and generate a final, optimized output.css file
+ * containing only the styles we actually use.
+*/
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

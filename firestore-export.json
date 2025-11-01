@@ -1,0 +1,190 @@
+{
+  "admins": {
+    "X9r0b2YHkbZAweF0q7osfke1oik1": {},
+    "zUiP1lYPOLVPDxgqHM8agYhpGTu2": {}
+  },
+  "products": {
+    "aloha-luxe-candle": {
+      "id": "aloha-luxe-candle",
+      "name": "Aloha Luxe",
+      "shortDescription": "An exotic escape with notes of fresh coconut and tropical blooms.",
+      "longDescription": "<p>Let the essence of a tropical paradise fill your home. Aloha Luxe is a sophisticated blend of creamy coconut, delicate jasmine, and a hint of sweet vanilla. It's a fragrance that evokes sun-drenched beaches and gentle ocean breezes, creating a serene and luxurious atmosphere.</p>",
+      "price": "20.00",
+      "imageUrl": "aloha-luxe-candle.webp",
+      "category": "candle",
+      "scentFamily": "fruity-sweet",
+      "scentNotes": "Coconut, Jasmine, Vanilla",
+      "strength": 4,
+      "pairing": "Relaxing with a cool drink on a warm day.",
+      "featured": true,
+      "stock": 0
+    },
+    "autumn-velvet-melt": {
+      "id": "autumn-velvet-melt",
+      "name": "Autumn Velvet",
+      "shortDescription": "A cozy embrace of warm spices, pumpkin, and soft woods.",
+      "longDescription": "<p>Wrap yourself in the comforting scent of fall with Autumn Velvet. This rich fragrance blends spicy notes of cinnamon and clove with the sweetness of pumpkin puree and a soft, velvety base of sandalwood. It's the perfect aroma for crisp evenings and cozy moments by the fire.</p>",
+      "price": "9.00",
+      "imageUrl": "autumn-velvet-melt.webp",
+      "category": "wax-melt",
+      "scentFamily": "earthy-woody",
+      "scentNotes": "Cinnamon, Clove, Pumpkin, Sandalwood",
+      "strength": 5,
+      "pairing": "Watching the leaves change color from a cozy window.",
+      "featured": false,
+      "stock": 0
+    },
+    "bleu-creme-luxe-candle": {
+      "id": "bleu-creme-luxe-candle",
+      "name": "Bleu Crème Luxe",
+      "shortDescription": "A sophisticated blend of oceanic notes and creamy vanilla.",
+      "longDescription": "<p>Experience the ultimate in luxury with Bleu Crème Luxe. This complex fragrance opens with fresh, ozonic notes of sea salt and gentle marine accords, then settles into a warm, comforting base of creamy vanilla and sandalwood. It's the scent of a high-end coastal resort, both fresh and inviting.</p>",
+      "price": "20.00",
+      "imageUrl": "bleu-creme-luxe-candle.webp",
+      "category": "candle",
+      "scentFamily": "floral-fresh",
+      "scentNotes": "Sea Salt, Marine Accord, Vanilla, Sandalwood",
+      "strength": 4,
+      "pairing": "A quiet evening with a glass of white wine.",
+      "featured": false,
+      "stock": 0
+    },
+    "coastal-oasis-melt": {
+      "id": "coastal-oasis-melt",
+      "name": "Coastal Oasis",
+      "shortDescription": "A fresh and clean scent of sea salt, ocean air, and driftwood.",
+      "longDescription": "<p>Bring the invigorating freshness of the coast into your home. Coastal Oasis captures the essence of a walk along the shore, with crisp notes of sea salt, the clean scent of ocean air, and a grounding base of weathered driftwood. It's a revitalizing fragrance that cleanses the space and clears the mind.</p>",
+      "price": "9.00",
+      "stock": 0,
+      "imageUrl": "coastal-oasis-melt.webp",
+      "category": "wax-melt",
+      "scentFamily": "floral-fresh",
+      "scentNotes": "Sea Salt, Ozone, Driftwood",
+      "strength": 3,
+      "pairing": "Morning meditation or a clean, fresh home.",
+      "featured": false
+    },
+    "enchanted-kiss-candle": {
+      "id": "enchanted-kiss-candle",
+      "name": "Enchanted Kiss",
+      "shortDescription": "A romantic floral bouquet of peony, peach, and soft musk.",
+      "longDescription": "<p>Fall under the spell of Enchanted Kiss. This captivating fragrance is a lush bouquet of fresh peony and delicate rose, brightened with a touch of juicy peach and grounded in a soft, romantic musk. It's a scent that tells a story of fairy tales and true love.</p>",
+      "price": "20.00",
+      "stock": 0,
+      "imageUrl": "Enchanted-kiss-candle-image.webp",
+      "category": "candle",
+      "scentFamily": "floral-fresh",
+      "scentNotes": "Peony, Rose, Peach, Musk",
+      "strength": 3,
+      "pairing": "A special date night or a relaxing bubble bath.",
+      "featured": false
+    },
+    "southern-charm-candle": {
+      "id": "southern-charm-candle",
+      "name": "Southern Charm",
+      "shortDescription": "A classic southern blend of magnolia, sweet tea, and a hint of citrus.",
+      "longDescription": "<p>Experience the essence of southern hospitality. Southern Charm is a timeless fragrance that combines the elegant scent of magnolia blossoms with the comforting aroma of freshly brewed sweet tea and a bright, welcoming hint of citrus. It's grace and warmth, poured into a candle.</p>",
+      "price": "20.00",
+      "stock": 0,
+      "imageUrl": "southern-charm-candle-image.webp",
+      "category": "candle",
+      "scentFamily": "floral-fresh",
+      "scentNotes": "Magnolia, Sweet Tea, Lemon, Sugar",
+      "strength": 4,
+      "pairing": "Sitting on the front porch on a sunny afternoon.",
+      "featured": false
+    },
+    "strawberry-rose-candle": {
+      "id": "strawberry-rose-candle",
+      "name": "Strawberry Rosé",
+      "shortDescription": "A delightful blend of sweet strawberries and crisp rosé wine.",
+      "longDescription": "<p>Celebrate any occasion with the cheerful aroma of Strawberry Rosé. This playful fragrance combines the sweetness of ripe strawberries with the crisp, bubbly notes of a fine rosé wine. It's a scent that is both uplifting and romantic, perfect for creating a joyful ambiance.</p>",
+      "price": "20.00",
+      "stock": 0,
+      "imageUrl": "strawberry-rose-candle.webp",
+      "category": "candle",
+      "scentFamily": "fruity-sweet",
+      "scentNotes": "Strawberry, Rosé Wine, Hint of Musk",
+      "strength": 5,
+      "pairing": "Brunch with friends or a romantic evening.",
+      "featured": false
+    },
+    "strawberry-rose-melt": {
+      "id": "strawberry-rose-melt",
+      "name": "Strawberry Rosé",
+      "shortDescription": "A delightful blend of sweet strawberries and crisp rosé wine.",
+      "longDescription": "<p>Celebrate any occasion with the cheerful aroma of Strawberry Rosé. This playful fragrance combines the sweetness of ripe strawberries with the crisp, bubbly notes of a fine rosé wine. It's a scent that is both uplifting and romantic, perfect for creating a joyful ambiance.</p>",
+      "price": "9.00",
+      "stock": 0,
+      "imageUrl": "strawberry-rose-melt.webp",
+      "category": "wax-melt",
+      "scentFamily": "fruity-sweet",
+      "scentNotes": "Strawberry, Rosé Wine, Hint of Musk",
+      "strength": 5,
+      "pairing": "Brunch with friends or a romantic evening.",
+      "featured": false
+    }
+  },
+  "reviews": {
+    "M5iRfoelCbj1g2j8SW0L": {
+      "productId": "aloha-luxe-candle",
+      "name": "Dale Akins",
+      "rating": 5,
+      "text": "I am very impressed with this candle. You I can definitely tell this is a premium candle. I use to use only top name brand candles. This is better by far. Definitely will keep burning Southern Sense candles.",
+      "submittedAt": {
+        "_seconds": 1760916933,
+        "_nanoseconds": 969000000
+      },
+      "approved": true
+    },
+    "e3cDJchKOmBmTBDHQthm": {
+      "productId": "aloha-luxe-candle",
+      "name": "J.Skipper",
+      "text": "I tried the Aloha Luxe candle and this product looks great and I absolutely loved the smell this candle produced. It has  such a calming aroma and has a long lasting burn that will change the mood of your entire room. Southern Sense candle is absolutely perfect!",
+      "submittedAt": {
+        "_seconds": 1761013968,
+        "_nanoseconds": 772000000
+      },
+      "approved": true,
+      "rating": 5
+    }
+  },
+  "siteContent": {
+    "about": {
+      "aboutParagraph2": "Today, every Southern Sense candle and wax melt is still hand-poured with that same dedication. We use only the finest all-natural Coco Apricot Wax and clean, phthalate-free fragrance oils. Our mission is to bring a touch of southern warmth and charm into your life, one beautiful scent at a time.",
+      "aboutParagraph1": "Southern Sense began with a simple desire: to fill homes with the comforting scents that define the South, crafted with the quality and care they deserve. Founder Paula Bryan, inspired by the rich traditions and natural beauty surrounding her, started experimenting with candle-making in her own kitchen. What began as a hobby soon blossomed into a passion for creating truly exceptional fragrances.",
+      "aboutTitle": "Our Story"
+    },
+    "homepage": {
+      "heroTitle": "",
+      "heroSubtitle": "",
+      "featuredProductId": "aloha-luxe-candle"
+    },
+    "refillProgram": {
+      "refillSubtitle": "",
+      "refillPrice3Text": "",
+      "refillIntro": "",
+      "refillPolicy1Text": "",
+      "refillPoliciesTitle": "",
+      "refillTitle": "",
+      "refillPrice2Text": "",
+      "refillStep2Text": "",
+      "refillPriceTitle": "",
+      "refillStep4Text": "",
+      "refillPolicy2Text": "",
+      "refillPrice1Text": "",
+      "refillStep1Text": "",
+      "refillStep5Text": "",
+      "refillHowItWorksTitle": "",
+      "refillStep3Text": "",
+      "refillPolicyTitle": ""
+    }
+  },
+  "users": {
+    "zUiP1lYPOLVPDxgqHM8agYhpGTu2": {
+      "email": "daleakins01@gmail.com",
+      "firstName": "William",
+      "lastName": "Akins"
+    }
+  }
+}

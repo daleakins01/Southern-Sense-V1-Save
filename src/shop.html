@@ -1,133 +1,162 @@
 ---
 layout: layout.html
 title: "Shop All - Southern Sense"
-description: "Browse our complete collection of hand-poured soy wax candles, wax melts, and more."
+description: "Browse our full collection of hand-poured soy wax candles and melts."
 ---
 
 <!-- 
-  This page dynamically loads and displays all products from the 
-  'products' collection in Firestore.
+  This page dynamically fetches all products from the 'products'
+  collection in Firestore and displays them in a grid.
 -->
 
-<div class="bg-parchment py-12">
-    <div class="container mx-auto px-4">
+<div class="bg-parchment">
+    <div class="container mx-auto px-4 py-12 md:py-20">
         
         <!-- Page Header -->
         <div class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-playfair text-charcoal mb-4">Shop All Products</h1>
+            <h1 class="text-5xl md:text-6xl font-playfair text-charcoal mb-4">
+                Our Collection
+            </h1>
             <p class="text-lg text-stone max-w-2xl mx-auto">
-                Explore our full collection of hand-poured soy wax candles and melts. Each scent is crafted to bring warmth, comfort, and a touch of southern elegance to your home.
+                Discover our full range of hand-poured soy wax candles and wax melts,
+                crafted with clean-burning wicks and phthalate-free fragrances.
             </p>
         </div>
 
-        <!-- Product Grid -->
-        <!-- This grid will be populated by JavaScript -->
-        <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+        <!-- 
+          Product Grid
+          The 'product-grid' element will be populated by JavaScript.
+        -->
+        <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
             
-            <!-- Loading Skeleton -->
-            <!-- Skeletons for a better loading experience -->
-            <div class="product-skeleton bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
-                <div class="w-full h-48 bg-stone/20"></div>
-                <div class="p-4">
-                    <div class="h-6 bg-stone/20 rounded w-3/4 mb-2"></div>
-                    <div class="h-4 bg-stone/20 rounded w-1/2 mb-4"></div>
-                    <div class="h-8 bg-stone/20 rounded w-1/4"></div>
-                </div>
-            </div>
-            <div class="product-skeleton bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
-                <div class="w-full h-48 bg-stone/20"></div>
-                <div class="p-4">
-                    <div class="h-6 bg-stone/20 rounded w-3/4 mb-2"></div>
-                    <div class="h-4 bg-stone/20 rounded w-1/2 mb-4"></div>
-                    <div class="h-8 bg-stone/20 rounded w-1/4"></div>
-                </div>
-            </div>
-            <div class="product-skeleton bg-white rounded-lg shadow-md overflow-hidden animate-pulse hidden md:block">
-                <div class="w-full h-48 bg-stone/20"></div>
-                <div class="p-4">
-                    <div class="h-6 bg-stone/20 rounded w-3/4 mb-2"></div>
-                    <div class="h-4 bg-stone/20 rounded w-1/2 mb-4"></div>
-                    <div class="h-8 bg-stone/20 rounded w-1/4"></div>
-                </div>
-            </div>
-            <div class="product-skeleton bg-white rounded-lg shadow-md overflow-hidden animate-pulse hidden lg:block">
-                <div class="w-full h-48 bg-stone/20"></div>
-                <div class="p-4">
-                    <div class="h-6 bg-stone/20 rounded w-3/4 mb-2"></div>
-                    <div class="h-4 bg-stone/20 rounded w-1/2 mb-4"></div>
-                    <div class="h-8 bg-stone/20 rounded w-1/4"></div>
-                </div>
+            <!-- 
+              Loading State
+              This placeholder content will be shown while products are loading.
+            -->
+            <div id="product-loader" class="text-center col-span-full py-20">
+                <p class="text-2xl font-playfair text-stone animate-pulse">
+                    Loading Products...
+                </p>
             </div>
 
-        </div>
+            <!-- 
+              JavaScript will inject product cards here.
+              Example of a product card structure:
 
-        <!-- Error Message Container -->
-        <div id="error-message" class="text-center text-red-600 font-semibold text-lg hidden">
-            <p>We're sorry, but there was an error loading our products. Please try refreshing the page. If the problem persists, please contact us.</p>
-        </div>
+              <div classclassName="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
+                  <a href="/product/?id=PRODUCT_ID" class="block group">
+                      <div class="relative w-full h-72">
+                          <img src="/product-image.webp" 
+                               alt="Product Name" 
+                               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                          
+                          <span class="absolute top-4 left-4 bg-burnt-orange text-white text-xs font-semibold px-3 py-1 rounded-full">
+                              Out of Stock
+                          </span>
+                      </div>
+                  </a>
+                  <div class="p-6 flex-grow flex flex-col">
+                      <h3 class="text-2xl font-playfair text-charcoal mb-2">
+                          <a href="/product/?id=PRODUCT_ID" class="hover:text-burnt-orange transition-colors">
+                              Product Name
+                          </a>
+                      </h3>
+                      <p class="text-stone text-sm mb-4 flex-grow">
+                          Short description goes here.
+                      </p>
+                      <div class="flex justify-between items-center mt-auto">
+                          <p class="text-2xl font-roboto text-charcoal font-medium">
+                              $20.00
+                          </p>
+                          <a href="/product/?id=PRODUCT_ID" 
+                             class="bg-charcoal text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-burnt-orange transition-all duration-300">
+                              View Details
+                          </a>
+                      </div>
+                  </div>
+              </div>
+            -->
 
+        </div> <!-- /#product-grid -->
     </div>
 </div>
 
+
 <!-- 
   JavaScript for this page.
-  It imports Firebase functions and then fetches and renders products.
+  It fetches all products from the 'products' collection in Firestore
+  and dynamically creates the product cards.
 -->
 <script type="module">
-    // Import necessary functions from Firebase
+    // Import the initialized 'db' object from our loader
+    // This import is now safe because we wait for the 'firebase-ready' event
     import { db } from '/firebase-loader.js';
+    
+    // Import necessary functions from the Firebase SDK
     import { collection, getDocs, query } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
+    // Get the grid and loader elements
+    const grid = document.getElementById('product-grid');
+    const loader = document.getElementById('product-loader');
+
     /**
-     * Creates an HTML card for a single product.
+     * Creates an HTML string for a single product card.
      * @param {object} product - The product data from Firestore.
      * @returns {string} - The HTML string for the product card.
      */
     function createProductCard(product) {
-        const { id, name, shortDescription, price, imageUrl, stock } = product;
+        const { id, name, price, shortDescription, imageUrl, stock } = product;
         
-        // Use a placeholder if imageUrl is missing
-        const placeholderImg = `https://placehold.co/400x400/FBF9F6/3D352E?text=${name.replace(' ', '+')}`;
+        // Use a placeholder image if one isn't provided in the database
+        const placeholderImg = `https://placehold.co/600x600/FBF9F6/3D352E?text=${name.replace(' ', '+')}`;
         const imgSrc = imageUrl ? `/${imageUrl}` : placeholderImg;
 
-        // Create the URL for the product page
-        // We use the product ID as the slug
-        const productUrl = `/product/?id=${id}`;
-
-        // Check stock status
+        // Check if the product is out of stock
         const isOutOfStock = !stock || stock === 0;
 
-        return `
-            <div class="product-card bg-white rounded-lg shadow-md overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl">
-                <a href="${productUrl}" class="relative">
-                    <!-- Product Image -->
-                    <img 
-                        src="${imgSrc}" 
-                        alt="Photo of ${name}" 
-                        class="w-full h-48 object-cover"
-                        onerror="this.src='${placeholderImg}'; this.onerror=null;"
-                    >
-                    
-                    <!-- Out of Stock Badge -->
-                    ${isOutOfStock ? `
-                        <div class="absolute top-2 left-2 bg-charcoal/80 text-white text-xs font-semibold px-2 py-1 rounded">
-                            Out of Stock
-                        </div>
-                    ` : ''}
-                </a>
+        // Conditionally create the "Out of Stock" badge
+        const stockBadge = isOutOfStock 
+            ? `<span class="absolute top-4 left-4 bg-burnt-orange text-white text-xs font-semibold px-3 py-1 rounded-full">Out of Stock</span>`
+            : '';
+        
+        // Conditionally set the "Add to Cart" / "View Details" button
+        const buttonText = "View Details"; // Always "View Details" on shop page
+        const productLink = `/product/?id=${id}`;
 
+        return `
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl">
+                <!-- Product Image Link -->
+                <a href="${productLink}" class="block group">
+                    <div class="relative w-full h-80">
+                        <img src="${imgSrc}" 
+                             alt="${name}" 
+                             onerror="this.src='${placeholderImg}'; this.onerror=null;"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        
+                        <!-- Out of Stock Badge -->
+                        ${stockBadge}
+                    </div>
+                </a>
+                
                 <!-- Product Info -->
-                <div class="p-4 flex flex-col flex-grow">
-                    <h3 class="text-lg font-playfair text-charcoal font-semibold mb-1">
-                        <a href="${productUrl}" class="hover:text-burnt-orange transition-colors">${name}</a>
+                <div class="p-6 flex-grow flex flex-col">
+                    <h3 class="text-2xl font-playfair text-charcoal mb-2">
+                        <a href="${productLink}" class="hover:text-burnt-orange transition-colors">
+                            ${name}
+                        </a>
                     </h3>
-                    <p class="text-stone text-sm mb-4 flex-grow">${shortDescription}</p>
+                    <p class="text-stone text-sm mb-4 flex-grow">
+                        ${shortDescription}
+                    </p>
                     
-                    <!-- Price -->
-                    <div class="flex justify-between items-center">
-                        <span class="text-xl font-roboto text-charcoal font-medium">$${price}</span>
-                        <a href="${productUrl}" class="text-sm font-semibold text-burnt-orange hover:text-charcoal transition-colors">
-                            View Details
+                    <!-- Price & Button -->
+                    <div class="flex justify-between items-center mt-auto pt-4 border-t border-stone/20">
+                        <p class="text-2xl font-roboto text-charcoal font-medium">
+                            $${price}
+                        </p>
+                        <a href="${productLink}" 
+                           class="bg-charcoal text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-burnt-orange transition-all duration-300">
+                            ${buttonText}
                         </a>
                     </div>
                 </div>
@@ -136,43 +165,60 @@ description: "Browse our complete collection of hand-poured soy wax candles, wax
     }
 
     /**
-     * Fetches all products from Firestore and renders them to the page.
+     * Fetches all products from Firestore and populates the.
      */
     async function loadProducts() {
-        const grid = document.getElementById('product-grid');
-        const errorEl = document.getElementById('error-message');
-        
+        // This function will only run *after* 'firebase-ready' is fired,
+        // so the 'db' object is guaranteed to be available.
         try {
-            // Get all documents from the 'products' collection
-            const productsRef = collection(db, 'products');
-            const q = query(productsRef);
+            const productList = [];
+            
+            // 1. Create a query to get all documents from the 'products' collection
+            const q = query(collection(db, 'products'));
+
+            // 2. Execute the query
             const querySnapshot = await getDocs(q);
+            
+            // 3. Loop through each document and add its data to our list
+            querySnapshot.forEach((doc) => {
+                productList.push({ id: doc.id, ...doc.data() });
+            });
 
-            // Clear skeleton loaders
-            grid.innerHTML = '';
+            // 4. Clear the loader and populate the grid
+            loader.remove(); // Remove the "Loading..." message
 
-            if (querySnapshot.empty) {
-                grid.innerHTML = '<p class="text-stone text-center col-span-full">No products found at this time. Please check back later!</p>';
+            if (productList.length === 0) {
+                // Show a message if no products are found
+                grid.innerHTML = `
+                    <p class="col-span-full text-center text-xl text-stone py-16">
+                        No products are available at this time. Please check back soon!
+                    </p>
+                `;
                 return;
             }
 
-            // Loop through each product and create a card
-            querySnapshot.forEach((doc) => {
-                const product = { id: doc.id, ...doc.data() };
+            // 5. Create HTML for each product card and add it to the grid
+            for (const product of productList) {
                 const cardHtml = createProductCard(product);
-                grid.innerHTML += cardHtml;
-            });
+                grid.insertAdjacentHTML('beforeend', cardHtml);
+            }
 
         } catch (error) {
             console.error("Error loading products:", error);
-            // Hide the grid and show an error message
-            grid.style.display = 'none';
-            errorEl.classList.remove('hidden');
+            // Show a user-friendly error message
+            loader.innerHTML = `
+                <p class="text-red-600 col-span-full text-center text-xl py-16">
+                    We're sorry, but there was an error loading our products.
+                    Please refresh the page to try again.
+                </This>
+            `;
         }
     }
 
-    // Load products as soon as the DOM is ready
-    document.addEventListener('DOMContentLoaded', loadProducts);
+    // --- THIS IS THE FIX ---
+    // Instead of 'DOMContentLoaded', we wait for our custom 'firebase-ready' event.
+    // This event is dispatched by firebase-loader.js *after* db is initialized.
+    document.addEventListener('firebase-ready', loadProducts);
 
 </script>
 

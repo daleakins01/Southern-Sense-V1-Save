@@ -1,240 +1,168 @@
 ---
 layout: layout.html
-title: "Order Confirmation"
+title: Order Confirmed
 ---
 
-<main class="container mx-auto px-4 py-16">
-  <div class="max-w-3xl mx-auto text-center">
-    <!-- (Pillar 1/Checkout): This is the final step of the checkout epic.
-         - We will pull the Order ID from the URL (e.g., ?orderId=XYZ).
-         - We will fetch that specific order from Firestore.
-         - We will display the order details and a "Thank You" message.
-         - This page MUST be secure and only show the order if the user is 
-           the owner OR an admin (matching our Firestore rules).
-    -->
-
-    <!-- Loading Spinner -->
-    <div id="loading-spinner" class="flex flex-col justify-center items-center h-64 text-stone">
-      <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-burnt-orange" xmlns="http://www.w3.org/2000/svg" fill="none"
-        viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-        </path>
-      </svg>
-      <span class="text-2xl font-playfair mt-4">Loading Order Details...</span>
+<div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 bg-parchment-100 min-h-screen">
+    <div id="loading" class="text-center py-16">
+        <p class="text-xl font-serif text-charcoal">Loading Order Details...</p>
     </div>
 
-    <!-- Error Message -->
-    <div id="error-message" class="hidden">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24"
-        stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <h1 class="mt-6 font-playfair text-5xl font-bold text-charcoal">
-        Order Not Found
-      </h1>
-      <p class="mt-4 text-xl text-stone">
-        We couldn't find the order you're looking for. Please check the link or
-        log in to your account to see your order history.
-      </p>
-      <div class="mt-10">
-        <a href="/shop.html"
-          class="bg-burnt-orange text-white font-roboto px-8 py-4 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg font-medium">
-          Continue Shopping
-        </a>
-      </div>
+    <div id="order-content" class="hidden">
+        <h1 class="text-4xl font-display text-charcoal mb-4 border-b pb-2">Order Confirmation</h1>
+
+        <div id="order-details-summary" class="bg-white p-6 rounded-lg shadow-xl mb-8">
+            <h2 class="text-2xl font-display text-stone mb-4">Thank You for Your Purchase!</h2>
+            <p class="text-charcoal mb-4">Your order has been placed successfully and is being processed.</p>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <p class="font-bold text-charcoal">Order ID:</p>
+                <p id="order-id" class="text-charcoal-600 font-mono break-all"></p>
+                
+                <p class="font-bold text-charcoal">Order Date:</p>
+                <p id="order-date" class="text-charcoal-600"></p>
+                
+                <p class="font-bold text-charcoal">Shipping To:</p>
+                <div class="text-charcoal-600" id="shipping-address"></div>
+            </div>
+        </div>
+
+        <div id="order-items-list" class="mb-8">
+            <h2 class="text-2xl font-display text-charcoal mb-4">Items Ordered</h2>
+            <!-- Items will be injected here -->
+        </div>
+
+        <div id="order-financial-summary" class="flex justify-end">
+            <div class="w-full max-w-sm bg-stone-100 p-6 rounded-lg shadow-inner">
+                <div class="flex justify-between text-charcoal mb-2">
+                    <span>Subtotal:</span>
+                    <span id="subtotal" class="font-semibold"></span>
+                </div>
+                <div class="flex justify-between text-charcoal mb-2 border-b border-stone-300 pb-2">
+                    <span>Shipping (Standard):</span>
+                    <span id="shipping-cost" class="font-semibold"></span>
+                </div>
+                <div class="flex justify-between text-2xl font-bold text-charcoal pt-2">
+                    <span>Total Paid:</span>
+                    <span id="total"></span>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Confirmation Content -->
-    <div id="confirmation-content" class="hidden">
-      <!-- Success Icon -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-green-500 mx-auto" fill="none" viewBox="0 0 24 24"
-        stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <h1 class="mt-6 font-playfair text-5xl font-bold text-charcoal">
-        Thank You for Your Order!
-      </h1>
-      <p class="mt-4 text-xl text-stone">
-        Your order has been placed successfully. A confirmation email has been
-        sent to <strong id="customer-email" class="text-charcoal">...</strong>.
-      </p>
-      <p class="mt-2 text-lg text-stone">
-        Your Order ID is:
-        <strong id="order-id" class="text-charcoal">...</strong>
-      </p>
-
-      <!-- Order Summary -->
-      <div class="mt-12 text-left bg-parchment/50 p-8 rounded-lg shadow-sm border border-stone/20">
-        <h2 class="font-playfair text-3xl font-semibold text-charcoal mb-6">
-          Order Summary
-        </h2>
-
-        <!-- Items List -->
-        <div id="items-list" class="space-y-4 border-b border-stone/30 pb-4">
-          <!-- Items will be injected here -->
-        </div>
-
-        <!-- Totals -->
-        <div class="mt-6 space-y-3">
-          <div class="flex justify-between text-lg text-stone">
-            <span>Subtotal</span>
-            <span id="order-subtotal" class="font-medium text-charcoal">...</span>
-          </div>
-          <div class="flex justify-between text-lg text-stone">
-            <span>Shipping</span>
-            <span id="order-shipping" class="font-medium text-charcoal">...</span>
-          </div>
-          <div class="flex justify-between text-lg text-stone">
-            <span>Tax</span>
-            <span id="order-tax" class="font-medium text-charcoal">...</span>
-          </div>
-          <div class="flex justify-between text-2xl font-semibold text-charcoal border-t border-stone/30 pt-4 mt-4">
-            <span>Total</span>
-            <span id="order-total" class="text-burnt-orange">...</span>
-          </div>
-        </div>
-
-        <!-- Shipping Address -->
-        <div class="mt-8">
-          <h3 class="font-playfair text-2xl font-semibold text-charcoal">
-            Shipping Address
-          </h3>
-          <div id="shipping-address" class="mt-3 text-stone text-lg leading-relaxed">
-            <!-- Address will be injected here -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Continue Shopping -->
-      <div class="mt-12">
-        <a href="/shop.html"
-          class="bg-burnt-orange text-white font-roboto px-8 py-4 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg font-medium">
-          Continue Shopping
-        </a>
-      </div>
+    <div id="order-error" class="hidden text-center py-16">
+        <p class="text-xl font-serif text-red-700">Sorry, we couldn't find that order.</p>
+        <p class="text-charcoal">Please check your URL or contact support with your Order ID.</p>
     </div>
-  </div>
-</main>
+</div>
 
 <script type="module">
-  import {
-    db,
-    doc,
-    getDoc,
-    auth,
-    onAuthStateChanged,
-  } from "/src/firebase-loader.js";
+    // Import necessary Firebase functions
+    import { db } from '/firebase-loader.js';
+    import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-  // Get elements
-  const loadingSpinner = document.getElementById("loading-spinner");
-  const errorMessage = document.getElementById("error-message");
-  const confirmationContent = document.getElementById("confirmation-content");
+    // --- DOM Elements ---
+    const loadingEl = document.getElementById('loading');
+    const orderContentEl = document.getElementById('order-content');
+    const orderErrorEl = document.getElementById('order-error');
+    const itemsListEl = document.getElementById('order-items-list');
 
-  const customerEmailEl = document.getElementById("customer-email");
-  const orderIdEl = document.getElementById("order-id");
-  const itemsListEl = document.getElementById("items-list");
-  const subtotalEl = document.getElementById("order-subtotal");
-  const shippingEl = document.getElementById("order-shipping");
-  const taxEl = document.getElementById("order-tax");
-  const totalEl = document.getElementById("order-total");
-  const addressEl = document.getElementById("shipping-address");
-
-  // Get Order ID from URL
-  const params = new URLSearchParams(window.location.search);
-  const orderId = params.get("orderId");
-
-  if (!orderId) {
-    showError();
-  } else {
-    // Wait for auth state to be ready before fetching
-    onAuthStateChanged(auth, (user) => {
-      // This will run for both logged-in users and anonymous/null users
-      // Our Firestore rules will handle the security
-      loadOrder(orderId, user ? user.uid : null);
-    });
-  }
-
-  async function loadOrder(id, userId) {
-    try {
-      const docRef = doc(db, "orders", id);
-      const docSnap = await getDoc(docRef);
-
-      if (!docSnap.exists()) {
-        showError();
-        return;
-      }
-
-      const orderData = docSnap.data();
-
-      // --- Security Check ---
-      // Check if user is authorized to view this.
-      // 1. Is it a guest order (no userId)? Allow (security by obscurity, but ok for now)
-      // 2. Is the user logged in AND their ID matches the order? Allow.
-      // 3. (Admin check is handled by Firestore rules, but we can't check admin status here easily)
-      //
-      // If the order has a userId and the current user is not that user, deny access.
-      if (orderData.userId && orderData.userId !== userId) {
-        console.warn("Security check failed. User does not own this order.");
-        showError();
-        return;
-      }
-
-      // --- Populate Page ---
-      customerEmailEl.textContent = orderData.customer.email;
-      orderIdEl.textContent = docSnap.id;
-      subtotalEl.textContent = `$${orderData.totals.subtotal}`;
-      shippingEl.textContent = `$${orderData.totals.shipping}`;
-      taxEl.textContent = `$${orderData.totals.tax}`;
-      totalEl.textContent = `$${orderData.totals.total}`;
-
-      // Populate shipping address
-      const addr = orderData.customer.shippingAddress;
-      addressEl.innerHTML = `
-        ${orderData.customer.name}<br>
-        ${addr.line1}
-        ${addr.line2 ? `<br>${addr.line2}` : ""}<br>
-        ${addr.city}, ${addr.state} ${addr.postal_code}<br>
-        ${addr.country}
-      `;
-
-      // Populate items
-      itemsListEl.innerHTML = ""; // Clear
-      orderData.items.forEach((item) => {
-        const itemEl = document.createElement("div");
-        itemEl.className =
-          "flex justify-between items-center text-lg";
-        itemEl.innerHTML = `
-          <div>
-            <span class="font-medium text-charcoal">${item.name}</span>
-            <span class="text-stone ml-2">x ${item.quantity}</span>
-          </div>
-          <span class="font-medium text-charcoal">$${(
-            item.price * item.quantity
-          ).toFixed(2)}</span>
-        `;
-        itemsListEl.appendChild(itemEl);
-      });
-
-      showConfirmation();
-    } catch (error) {
-      console.error("Error loading order:", error);
-      showError();
+    /**
+     * Extracts a query parameter from the URL.
+     * @param {string} name The name of the parameter.
+     * @returns {string | null} The value of the parameter.
+     */
+    function getQueryParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
     }
-  }
 
-  function showError() {
-    loadingSpinner.style.display = "none";
-    confirmationContent.style.display = "none";
-    errorMessage.style.display = "block";
-  }
+    /**
+     * Renders the financial summary and item list for a given order.
+     * @param {Object} orderData The order document data from Firestore.
+     */
+    function renderOrder(orderData) {
+        document.getElementById('order-id').textContent = orderData.id;
+        document.getElementById('order-date').textContent = new Date(orderData.timestamp).toLocaleDateString();
+        
+        // Render Shipping Address
+        const shippingAddressEl = document.getElementById('shipping-address');
+        shippingAddressEl.innerHTML = `
+            ${orderData.shippingAddress.name}<br>
+            ${orderData.shippingAddress.addressLine1}<br>
+            ${orderData.shippingAddress.city}, ${orderData.shippingAddress.state} ${orderData.shippingAddress.zip}<br>
+            ${orderData.shippingAddress.country}
+        `;
 
-  function showConfirmation() {
-    loadingSpinner.style.display = "none";
-    errorMessage.style.display = "none";
-    confirmationContent.style.display = "block";
-  }
+        // Render Item List
+        itemsListEl.innerHTML = `
+            <div class="grid grid-cols-5 gap-4 py-3 font-bold text-charcoal border-b border-stone-400">
+                <span class="col-span-2">Item</span>
+                <span class="text-center">Price</span>
+                <span class="text-center">Qty</span>
+                <span class="text-right">Total</span>
+            </div>
+        `;
+
+        orderData.items.forEach(item => {
+            const itemTotal = (parseFloat(item.price) * item.quantity).toFixed(2);
+            itemsListEl.innerHTML += `
+                <div class="grid grid-cols-5 gap-4 py-3 border-b border-stone-200 text-charcoal">
+                    <div class="col-span-2">
+                        <p class="font-semibold">${item.name}</p>
+                        <p class="text-sm text-stone-600">${item.id}</p>
+                    </div>
+                    <span class="text-center">$${parseFloat(item.price).toFixed(2)}</span>
+                    <span class="text-center">${item.quantity}</span>
+                    <span class="text-right font-semibold">$${itemTotal}</span>
+                </div>
+            `;
+        });
+
+        // Render Financials
+        document.getElementById('subtotal').textContent = `$${parseFloat(orderData.subtotal).toFixed(2)}`;
+        document.getElementById('shipping-cost').textContent = `$${parseFloat(orderData.shippingCost).toFixed(2)}`;
+        document.getElementById('total').textContent = `$${parseFloat(orderData.total).toFixed(2)}`;
+
+        loadingEl.classList.add('hidden');
+        orderContentEl.classList.remove('hidden');
+    }
+
+    /**
+     * Main function to fetch the order from Firestore.
+     */
+    async function loadOrder() {
+        const orderId = getQueryParam('id');
+        
+        if (!orderId) {
+            loadingEl.classList.add('hidden');
+            orderErrorEl.classList.remove('hidden');
+            return;
+        }
+
+        try {
+            // Document path: /orders/{orderId}
+            const orderRef = doc(db, 'orders', orderId);
+            const orderSnap = await getDoc(orderRef);
+
+            if (orderSnap.exists()) {
+                const orderData = { id: orderSnap.id, ...orderSnap.data() };
+                renderOrder(orderData);
+            } else {
+                console.error("No order found with ID:", orderId);
+                loadingEl.classList.add('hidden');
+                orderErrorEl.classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error("Error fetching order:", error);
+            // Display generic error message to user
+            loadingEl.classList.add('hidden');
+            orderErrorEl.classList.remove('hidden');
+        }
+    }
+
+    // --- CRITICAL RACE CONDITION FIX ---
+    // Wait for the custom 'firebase-ready' event before running
+    // This ensures 'db' is initialized and available.
+    document.addEventListener('firebase-ready', loadOrder);
 </script>

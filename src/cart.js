@@ -1,476 +1,464 @@
-// src/cart.js
-// Manages shopping cart functionality using Firestore.
+/*
+ * Cart Logic (cart.js)
+ *
+ * This module handles all shopping cart functionality:
+ * - Adding/removing items
+ * - Updating quantities
+ * - Storing/Retrieving from localStorage
+ * - Rendering the cart on /cart.html
+ * - Calculating totals
+ * - Initializing PayPal and handling checkout
+ */
 
-// We get db and auth from the firebase-loader, which is imported in the <head>
-// and guaranteed to run before this module.
-import { db, auth } from './firebase-loader.js';
+// Import all necessary Firebase functions from our central loader
 import { 
-  collection, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  onSnapshot, 
-  updateDoc, 
-  increment,
-  deleteField,
-  writeBatch
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    db, 
+    auth, 
+    addDoc, 
+    collection, 
+    Timestamp 
+} from '/firebase-loader.js';
 
-// Firestore collection name
-const CART_COLLECTION = "carts";
-let cart = {}; // Local cache of the user's cart
-let userId = null;
-let cartRef = null;
+// --- Constants ---
+const CART_KEY = 'southernSenseCart';
+const SHIPPING_COST = 10.00; // Flat rate shipping
+const PAYPAL_CLIENT_ID = 'sb'; // Use 'sb' for sandbox testing
+
+// --- Private Helper Functions ---
 
 /**
- * Initializes the cart, sets up the Firestore listener, and updates the UI.
- * This is called by firebase-loader.js once auth is ready.
- * @param {string} uid The authenticated user's ID.
+ * Retrieves the cart from localStorage.
+ * @returns {Array} The array of cart items.
  */
-export function initializeCart(uid) {
-  if (!uid) {
-    console.error("Cart Error: User ID is null. Cart cannot be initialized.");
-    // Handle guest cart logic if needed, e.g., using localStorage
-    loadCartFromLocalStorage();
-    updateCartUI();
-    return;
-  }
-  
-  userId = uid;
-  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-  // Path to the user's private cart document
-  const cartDocPath = `artifacts/${appId}/users/${userId}/${CART_COLLECTION}/user_cart`;
-  cartRef = doc(db, cartDocPath);
-
-  console.log(`Initializing cart listener for user ${userId} at path ${cartDocPath}`);
-
-  // Set up a real-time listener for cart changes
-  onSnapshot(cartRef, (docSnap) => {
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      cart = data.items || {}; // The cart items are stored in an 'items' map
-      console.log("Cart updated from Firestore:", cart);
-    } else {
-      // No cart document exists, so we have an empty cart.
-      console.log("No cart document found. Local cart is empty.");
-      cart = {};
-    }
-    // After syncing with Firestore, merge any localStorage cart items
-    mergeLocalStorageCart();
-    updateCartUI();
-  }, (error) => {
-    console.error("Error listening to cart:", error);
-    // If Firestore fails, fall back to localStorage
-    loadCartFromLocalStorage();
-    updateCartUI();
-  });
-}
-
-/**
- * Updates the cart icon count and any other cart-related UI elements.
- */
-function updateCartUI() {
-  const cartItemCountElement = document.getElementById('cart-item-count');
-  if (!cartItemCountElement) {
-    // This can happen if cart.js runs before header.html is loaded.
-    // main.js will call this again once auth is ready.
-    return;
-  }
-
-  let totalItems = 0;
-  for (const productId in cart) {
-    totalItems += cart[productId].quantity;
-  }
-
-  console.log(`Updating cart UI: ${totalItems} items`);
-
-  if (totalItems > 0) {
-    cartItemCountElement.textContent = totalItems;
-    cartItemCountElement.classList.remove('hidden');
-  } else {
-    cartItemCountElement.classList.add('hidden');
-  }
-
-  // If we are on the cart page, update the cart items display
-  if (document.getElementById('cart-items-container')) {
-    displayCartItems();
-  }
-}
-
-/**
- * Adds an item to the cart in Firestore.
- * @param {string} productId The unique ID of the product.
- * @param {string} name The product name.
- * @param {number} price The product price.
- * @param {string} imageUrl The product image URL.
- */
-export async function addToCart(productId, name, price, imageUrl) {
-  if (!productId || !name || price == null || !imageUrl) {
-    console.error("addToCart failed: Missing product details.", { productId, name, price, imageUrl });
-    showCartNotification("Error adding item. Please try again.", "error");
-    return;
-  }
-
-  // Optimistically update local cart
-  const existingItem = cart[productId];
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart[productId] = {
-      name: name,
-      price: price,
-      imageUrl: imageUrl,
-      quantity: 1
-    };
-  }
-  updateCartUI(); // Show immediate feedback
-  saveCartToLocalStorage(); // Save to local storage for guest/backup
-
-  // Update Firestore
-  if (cartRef) {
+function getCart() {
     try {
-      // Use dot notation to update a specific field in the 'items' map
-      const itemUpdate = {};
-      itemUpdate[`items.${productId}.name`] = name;
-      itemUpdate[`items.${productId}.price`] = price;
-      itemUpdate[`items.${productId}.imageUrl`] = imageUrl;
-      // Atomically increment the quantity
-      itemUpdate[`items.${productId}.quantity`] = increment(1);
-
-      // setDoc with merge: true will create the doc if it doesn't exist
-      // or update it if it does.
-      await setDoc(cartRef, itemUpdate, { merge: true });
-      
-      console.log(`Item ${productId} added/incremented in Firestore.`);
-      showCartNotification(`Added ${name} to cart!`, "success");
-    } catch (error) {
-      console.error("Error adding item to Firestore:", error);
-      showCartNotification("Error syncing cart. Item saved locally.", "error");
-      // Revert optimistic update if Firestore fails?
-      // For now, we'll leave it, as it's saved locally.
+        const cart = localStorage.getItem(CART_KEY);
+        return cart ? JSON.parse(cart) : [];
+    } catch (e) {
+        console.error("Error parsing cart from localStorage", e);
+        return [];
     }
-  } else {
-    console.warn("User not authenticated. Item saved to local storage only.");
-    showCartNotification(`Added ${name} to cart! (Saved locally)`);
-  }
+}
+
+/**
+ * Saves the cart to localStorage.
+ * @param {Array} cart - The array of cart items to save.
+ */
+function saveCart(cart) {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    updateCartBubble(); // Update the bubble in the header
+}
+
+/**
+ * Calculates cart totals.
+ * @returns {Object} An object containing { subtotal, total, itemCount }
+ */
+function calculateTotals() {
+    const cart = getCart();
+    let subtotal = 0;
+    let itemCount = 0;
+
+    cart.forEach(item => {
+        subtotal += item.price * item.quantity;
+        itemCount += item.quantity;
+    });
+
+    // Shipping is flat rate unless cart is empty
+    const shipping = subtotal > 0 ? SHIPPING_COST : 0;
+    const total = subtotal + shipping;
+
+    return { subtotal, total, shipping, itemCount };
+}
+
+/**
+ * Updates the cart bubble in the header.
+ */
+function updateCartBubble() {
+    const { itemCount } = calculateTotals();
+    const bubble = document.getElementById('cart-bubble');
+    if (bubble) {
+        bubble.textContent = itemCount;
+        if (itemCount > 0) {
+            bubble.classList.remove('hidden');
+        } else {
+            bubble.classList.add('hidden');
+        }
+    }
+}
+
+/**
+ * Validates the shipping form.
+ * @returns {Object|null} An object with customer data, or null if invalid.
+ */
+function validateCheckoutForm(formErrorElement) {
+    const form = document.getElementById('checkout-form');
+    formErrorElement.classList.add('hidden'); // Hide error by default
+
+    if (!form.checkValidity()) {
+        // Find the first invalid field for a better error message
+        const firstInvalid = form.querySelector(':invalid');
+        let errorMsg = "Please fill out all required shipping fields.";
+        if (firstInvalid) {
+            const label = document.querySelector(`label[for="${firstInvalid.id}"]`);
+            errorMsg = `Please provide a valid ${label ? label.textContent.toLowerCase() : firstInvalid.name}.`;
+        }
+        formErrorElement.textContent = errorMsg;
+        formErrorElement.classList.remove('hidden');
+        firstInvalid.focus();
+        return null;
+    }
+
+    // All fields are valid, collect the data
+    const formData = new FormData(form);
+    const customerData = {
+        firstName: formData.get('firstName').trim(),
+        lastName: formData.get('lastName').trim(),
+        email: formData.get('email').trim(),
+        address: formData.get('address').trim(),
+        city: formData.get('city').trim(),
+        state: formData.get('state').trim(),
+        zip: formData.get('zip').trim(),
+    };
+    return customerData;
+}
+
+// --- Public (Exported) Functions ---
+
+/**
+ * Adds an item to the cart.
+ * @param {string} id - Product ID
+ * @param {string} name - Product Name
+ * @param {number} price - Product Price
+ * @param {string} imageUrl - Product Image URL
+ */
+export function addToCart(id, name, price, imageUrl) {
+    const cart = getCart();
+    const existingItem = cart.find(item => item.id === id);
+
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({ id, name, price, imageUrl, quantity: 1 });
+    }
+
+    saveCart(cart);
+    console.log("Item added to cart:", { id, name });
+    
+    // Show a temporary success message/toast
+    // (This could be expanded into a proper modal)
+    alert(`${name} has been added to your cart!`);
+}
+
+/**
+ * Renders the cart items and totals on the cart page.
+ */
+export function renderCart() {
+    const cart = getCart();
+    const container = document.getElementById('cart-items-container');
+    const loader = document.getElementById('cart-loader');
+    const content = document.getElementById('cart-content');
+    const empty = document.getElementById('cart-empty');
+    
+    // Get total elements
+    const subtotalEl = document.getElementById('cart-subtotal');
+    const shippingEl = document.getElementById('cart-shipping');
+    const totalEl = document.getElementById('cart-total');
+
+    if (!container || !loader || !content || !empty) {
+        // We're not on the cart page, so just update the bubble
+        updateCartBubble();
+        return; 
+    }
+
+    // We are on the cart page
+    loader.classList.add('hidden');
+
+    if (cart.length === 0) {
+        content.classList.add('hidden');
+        empty.classList.remove('hidden');
+    } else {
+        empty.classList.add('hidden');
+        content.classList.remove('hidden');
+        
+        container.innerHTML = ''; // Clear existing items
+        
+        cart.forEach(item => {
+            const itemTotal = (item.price * item.quantity).toFixed(2);
+            const itemHtml = `
+                <div class="flex flex-col md:flex-row items-center bg-white p-4 rounded-lg shadow-md gap-4">
+                    <img src="${item.imageUrl || '/logo.webp'}" alt="${item.name}" class="w-24 h-24 object-cover rounded-lg">
+                    <div class="flex-grow text-center md:text-left">
+                        <h3 class="text-xl font-playfair text-charcoal">${item.name}</h3>
+                        <p class="text-stone text-sm">Price: $${item.price}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button class="quantity-decrease text-xl font-bold w-8 h-8 rounded-full bg-parchment hover:bg-stone/20" data-id="${item.id}">-</button>
+                        <input type="number" value="${item.quantity}" min="1" class="w-16 text-center border rounded-lg py-2 quantity-input" data-id="${item.id}">
+                        <button class="quantity-increase text-xl font-bold w-8 h-8 rounded-full bg-parchment hover:bg-stone/20" data-id="${item.id}">+</button>
+                    </div>
+                    <p class="text-lg font-medium text-charcoal w-24 text-right">$${itemTotal}</p>
+                    <button class="remove-item text-red-600 hover:text-red-800 text-3xl font-bold" data-id="${item.id}" title="Remove item">&times;</button>
+                </div>
+            `;
+            container.innerHTML += itemHtml;
+        });
+
+        // Add event listeners for new buttons
+        attachItemListeners();
+    }
+
+    // Update totals
+    const { subtotal, total, shipping } = calculateTotals();
+    subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+    shippingEl.textContent = `$${shipping.toFixed(2)}`;
+    totalEl.textContent = `$${total.toFixed(2)}`;
+    
+    // Also update the header bubble
+    updateCartBubble();
+}
+
+/**
+ * Attaches event listeners to cart item buttons (remove, +, -).
+ */
+function attachItemListeners() {
+    document.querySelectorAll('.remove-item').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const id = e.target.dataset.id;
+            const cart = getCart().filter(item => item.id !== id);
+            saveCart(cart);
+            renderCart(); // Re-render the cart
+        });
+    });
+
+    document.querySelectorAll('.quantity-increase').forEach(button => {
+        button.addEventListener('click', (e) => {
+            updateQuantity(e.target.dataset.id, 1);
+        });
+    });
+    
+    document.querySelectorAll('.quantity-decrease').forEach(button => {
+        button.addEventListener('click', (e) => {
+            updateQuantity(e.target.dataset.id, -1);
+        });
+    });
+
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('change', (e) => {
+            const newQuantity = parseInt(e.target.value, 10);
+            if (isNaN(newQuantity) || newQuantity < 1) {
+                e.target.value = 1; // Reset to 1 if invalid
+            }
+            const cart = getCart();
+            const item = cart.find(i => i.id === e.target.dataset.id);
+            if (item) {
+                item.quantity = Math.max(1, newQuantity); // Ensure at least 1
+                saveCart(cart);
+                renderCart();
+            }
+        });
+    });
 }
 
 /**
  * Updates the quantity of an item in the cart.
- * @param {string} productId The product ID.
- * @param {number} newQuantity The new quantity.
+ * @param {string} id - The ID of the product to update.
+ * @param {number} change - The amount to change (e.g., 1 or -1).
  */
-export async function updateCartItemQuantity(productId, newQuantity) {
-  newQuantity = parseInt(newQuantity, 10);
+function updateQuantity(id, change) {
+    const cart = getCart();
+    const item = cart.find(i => i.id === id);
 
-  if (isNaN(newQuantity) || newQuantity < 0) {
-    console.error("Invalid quantity:", newQuantity);
-    return;
-  }
-
-  if (newQuantity === 0) {
-    // Remove the item if quantity is zero
-    await removeCartItem(productId);
-    return;
-  }
-
-  // Optimistic local update
-  if (cart[productId]) {
-    cart[productId].quantity = newQuantity;
-  }
-  updateCartUI();
-  saveCartToLocalStorage();
-
-  // Firestore update
-  if (cartRef) {
-    try {
-      const itemUpdate = {};
-      itemUpdate[`items.${productId}.quantity`] = newQuantity;
-      await updateDoc(cartRef, itemUpdate);
-      console.log(`Updated quantity for ${productId} in Firestore.`);
-    } catch (error) {
-      console.error("Error updating item quantity in Firestore:", error);
+    if (item) {
+        item.quantity += change;
+        if (item.quantity < 1) {
+            item.quantity = 1; // Don't allow 0 or less
+        }
+        saveCart(cart);
+        renderCart(); // Re-render
     }
-  }
 }
 
 /**
- * Removes an item from the cart completely.
- * @param {string} productId The product ID to remove.
+ * Clears all items from the cart.
  */
-export async function removeCartItem(productId) {
-  // Optimistic local update
-  if (cart[productId]) {
-    delete cart[productId];
-  }
-  updateCartUI();
-  saveCartToLocalStorage();
-
-  // Firestore update
-  if (cartRef) {
-    try {
-      // Use deleteField() to remove a specific key from the 'items' map
-      const itemRemovalUpdate = {};
-      itemRemovalUpdate[`items.${productId}`] = deleteField();
-      await updateDoc(cartRef, itemRemovalUpdate);
-      console.log(`Removed item ${productId} from Firestore.`);
-    } catch (error) {
-      console.error("Error removing item from Firestore:", error);
-    }
-  }
+function clearCart() {
+    saveCart([]);
+    renderCart();
+    console.log("Cart cleared.");
 }
 
 /**
- * Renders the cart items on the cart page.
+ * Attaches real-time validation listeners to the checkout form.
  */
-function displayCartItems() {
-  const container = document.getElementById('cart-items-container');
-  const subtotalElement = document.getElementById('cart-subtotal');
-  const emptyCartMessage = document.getElementById('empty-cart-message');
-  const cartCheckoutSection = document.getElementById('cart-checkout-section');
-  
-  if (!container || !subtotalElement || !emptyCartMessage || !cartCheckoutSection) {
-    console.warn("Cart page elements not found. Skipping render.");
-    return;
-  }
-
-  container.innerHTML = ''; // Clear existing items
-  let subtotal = 0;
-  const productIds = Object.keys(cart);
-
-  if (productIds.length === 0) {
-    emptyCartMessage.classList.remove('hidden');
-    cartCheckoutSection.classList.add('hidden');
-    return;
-  }
-
-  emptyCartMessage.classList.add('hidden');
-  cartCheckoutSection.classList.remove('hidden');
-
-  productIds.forEach(productId => {
-    const item = cart[productId];
-    if (!item || !item.quantity || !item.price) {
-      console.warn(`Skipping malformed cart item: ${productId}`, item);
-      return;
+export function attachFormListeners() {
+    const form = document.getElementById('checkout-form');
+    if (form) {
+        form.addEventListener('input', () => {
+            // As the user types, try to validate.
+            // This is a simple way to clear the error message
+            // if the user starts fixing the problem.
+            const formError = document.getElementById('form-error');
+            if (!formError.classList.contains('hidden')) {
+                if (form.checkValidity()) {
+                    formError.classList.add('hidden');
+                }
+            }
+        });
     }
+}
 
-    const itemTotal = item.price * item.quantity;
-    subtotal += itemTotal;
+/**
+ * Initializes the PayPal SDK and renders the buttons.
+ */
+export function initPayPal(formErrorElement) {
+    const paypalContainer = document.getElementById('paypal-button-container');
+    const paypalLoader = document.getElementById('paypal-loader');
 
-    const itemElement = document.createElement('li');
-    itemElement.className = "flex py-6";
-    itemElement.innerHTML = `
-      <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-stone/20">
-        <img src="${item.imageUrl}" alt="${item.name}" class="h-full w-full object-cover object-center">
-      </div>
-      <div class="ml-4 flex flex-1 flex-col">
-        <div>
-          <div class="flex justify-between text-base font-medium text-charcoal">
-            <h3>
-              <a href="product.html?id=${productId}">${item.name}</a>
-            </h3>
-            <p class="ml-4">$${itemTotal.toFixed(2)}</p>
-          </div>
-        </div>
-        <div class="flex flex-1 items-end justify-between text-sm">
-          <div class="flex items-center">
-            <label for="quantity-${productId}" class="mr-2 text-stone">Qty</label>
-            <input id="quantity-${productId}" name="quantity-${productId}" type="number" min="0" value="${item.quantity}" 
-                   class="w-16 rounded-md border border-stone/30 text-center text-charcoal shadow-sm focus:border-stone focus:ring-stone sm:text-sm"
-                   data-product-id="${productId}">
-          </div>
-          <div class="flex">
-            <button type="button" class="font-medium text-burnt-orange hover:text-red-700" data-product-id="${productId}">
-              Remove
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-    container.appendChild(itemElement);
-  });
+    if (!paypalContainer) return;
 
-  // Add event listeners for new quantity/remove buttons
-  container.querySelectorAll('input[type="number"]').forEach(input => {
-    input.addEventListener('change', (e) => {
-      const id = e.target.dataset.productId;
-      const newQuantity = parseInt(e.target.value, 10);
-      updateCartItemQuantity(id, newQuantity);
+    paypalLoader.classList.remove('hidden');
+
+    paypal.Buttons({
+        // --- createOrder ---
+        // This is called when the user clicks the PayPal button.
+        createOrder: async (data, actions) => {
+            console.log("PayPal createOrder started...");
+            // 1. Validate the form
+            const customerData = validateCheckoutForm(formErrorElement);
+            if (!customerData) {
+                console.log("Form validation failed.");
+                return actions.reject(); // Stop the transaction
+            }
+            
+            // 2. Calculate totals
+            const { total, subtotal, shipping } = calculateTotals();
+            const cart = getCart();
+
+            // 3. Create the order payload for PayPal
+            const purchase_units = [{
+                amount: {
+                    value: total.toFixed(2),
+                    currency_code: 'USD',
+                    breakdown: {
+                        item_total: { currency_code: 'USD', value: subtotal.toFixed(2) },
+                        shipping: { currency_code: 'USD', value: shipping.toFixed(2) }
+                    }
+                },
+                items: cart.map(item => ({
+                    name: item.name,
+                    unit_amount: { currency_code: 'USD', value: item.price },
+                    quantity: item.quantity,
+                    sku: item.id
+                })),
+                shipping: {
+                    name: {
+                        full_name: `${customerData.firstName} ${customerData.lastName}`
+                    },
+                    address: {
+                        address_line_1: customerData.address,
+                        admin_area_2: customerData.city,
+                        admin_area_1: customerData.state,
+                        postal_code: customerData.zip,
+                        country_code: 'US'
+                    }
+                }
+            }];
+
+            // 4. Create the full order object for our Firestore database
+            const orderData = {
+                customer: customerData,
+                items: cart,
+                totals: { subtotal, shipping, total },
+                status: 'Pending', // Will be 'Paid' after approval
+                createdAt: Timestamp.now(),
+                paypalOrderId: null // Will be set on approval
+            };
+
+            // 5. Save the 'Pending' order to Firestore
+            try {
+                const orderRef = await addDoc(collection(db, "orders"), orderData);
+                console.log("Pending order saved to Firestore with ID:", orderRef.id);
+                // Store the Firestore order ID to use in onApprove
+                paypalContainer.dataset.firestoreOrderId = orderRef.id; 
+            } catch (e) {
+                console.error("Error saving pending order to Firestore:", e);
+                formErrorElement.textContent = "Could not start checkout. Please try again.";
+                formErrorElement.classList.remove('hidden');
+                return actions.reject();
+            }
+            
+            // 6. Create the order with PayPal
+            return actions.order.create({
+                purchase_units: purchase_units,
+                application_context: {
+                    shipping_preference: 'SET_PROVIDED_ADDRESS'
+                }
+            });
+        },
+
+        // --- onApprove ---
+        // This is called after the user successfully authorizes the payment.
+        onApprove: async (data, actions) => {
+            console.log("PayPal onApprove started...");
+            try {
+                const details = await actions.order.capture();
+                console.log("Payment successful:", details);
+
+                const firestoreOrderId = paypalContainer.dataset.firestoreOrderId;
+                if (!firestoreOrderId) {
+                    throw new Error("No Firestore order ID found.");
+                }
+
+                // 1. Update the order in Firestore to 'Paid'
+                const orderRef = doc(db, 'orders', firestoreOrderId);
+                await updateDoc(orderRef, {
+                    status: 'Paid',
+                    paypalOrderId: details.id,
+                    paypalCaptureDetails: details // Save the full receipt
+                });
+                console.log("Firestore order updated to 'Paid'.");
+                
+                // 2. THIS IS THE FIX: Clear the cart
+                clearCart();
+                
+                // 3. THIS IS THE FIX: Redirect to the confirmation page
+                // We pass the Firestore Order ID so the page can look it up
+                window.location.href = `/order-confirmation/?orderId=${firestoreOrderId}`;
+
+            } catch (err) {
+                console.error("Error capturing payment or updating order:", err);
+                formErrorElement.textContent = "Payment failed after approval. Please contact support.";
+                formErrorElement.classList.remove('hidden');
+            }
+        },
+
+        // --- onError ---
+        // This is called if an error occurs during the PayPal flow
+        onError: (err) => {
+            console.error("PayPal Error:", err);
+            formErrorElement.textContent = "An error occurred with the payment. Please try again.";
+            formErrorElement.classList.remove('hidden');
+        },
+
+        // --- onCancel ---
+        // This is called if the user cancels the payment
+        onCancel: (data) => {
+            console.log("PayPal payment cancelled.", data);
+            // Optionally remove the 'Pending' order from Firestore
+            // For now, we'll leave it
+        }
+
+    }).render(paypalContainer).then(() => {
+        // Hide loader once buttons are rendered
+        paypalLoader.classList.add('hidden');
+    }).catch((err) => {
+        console.error("Failed to render PayPal buttons:", err);
+        paypalLoader.classList.add('hidden');
+        paypalContainer.innerHTML = "<p class='text-red-600 text-center'>Error loading payment options. Please refresh.</p>";
     });
-  });
-
-  container.querySelectorAll('button[data-product-id]').forEach(button => {
-    button.addEventListener('click', (e) => {
-      const id = e.target.dataset.productId;
-      removeCartItem(id);
-    });
-  });
-
-  // Update subtotal
-  subtotalElement.textContent = `$${subtotal.toFixed(2)}`;
 }
 
-/**
- * Returns the current cart object. Used by checkout.
- */
-export function getCart() {
-  return cart;
-}
-
-/**
- * Clears the entire cart, both locally and in Firestore.
- */
-export async function clearCart() {
-  cart = {};
-  updateCartUI();
-  localStorage.removeItem('localCart');
-
-  if (cartRef) {
-    try {
-      // Set the 'items' field to an empty map
-      await setDoc(cartRef, { items: {} });
-      console.log("Cart cleared in Firestore.");
-    } catch (error) {
-      console.error("Error clearing cart in Firestore:", error);
-    }
-  }
-}
-
-// --- LocalStorage Guest Cart ---
-
-/**
- * Saves the current local 'cart' object to localStorage.
- */
-function saveCartToLocalStorage() {
-  try {
-    localStorage.setItem('localCart', JSON.stringify(cart));
-  } catch (e) {
-    console.error("Failed to save cart to localStorage:", e);
-  }
-}
-
-/**
- * Loads the cart from localStorage into the local 'cart' object.
- */
-function loadCartFromLocalStorage() {
-  try {
-    const localData = localStorage.getItem('localCart');
-    if (localData) {
-      cart = JSON.parse(localData);
-      console.log("Cart loaded from localStorage:", cart);
-    }
-  } catch (e) {
-    console.error("Failed to load cart from localStorage:", e);
-    cart = {};
-  }
-}
-
-/**
- * Merges the localStorage cart with the Firestore cart when a user logs in.
- * Firestore cart takes precedence.
- */
-async function mergeLocalStorageCart() {
-  if (!cartRef) return; // Not logged in, nothing to merge
-
-  const localData = localStorage.getItem('localCart');
-  if (!localData) return; // No local cart, nothing to merge
-
-  try {
-    const localCart = JSON.parse(localData);
-    if (Object.keys(localCart).length === 0) {
-      localStorage.removeItem('localCart');
-      return;
-    }
-
-    console.log("Merging local cart into Firestore cart...");
-    
-    // Use a batch write to merge all items at once
-    const batch = writeBatch(db);
-    
-    // 'cart' is the Firestore cart, 'localCart' is from localStorage
-    const mergedCart = { ...cart }; // Start with Firestore data
-    let itemsMerged = false;
-
-    for (const productId in localCart) {
-      const localItem = localCart[productId];
-      const firestoreItem = mergedCart[productId];
-
-      if (firestoreItem) {
-        // Item exists in both. Firestore wins quantity.
-        // We'll just ignore the local one.
-      } else {
-        // Item only exists locally. Add it to Firestore.
-        mergedCart[productId] = localItem; // Add to our local cache
-        
-        // Add to batch
-        const itemUpdate = {};
-        itemUpdate[`items.${productId}.name`] = localItem.name;
-        itemUpdate[`items.${productId}.price`] = localItem.price;
-        itemUpdate[`items.${productId}.imageUrl`] = localItem.imageUrl;
-        itemUpdate[`items.${productId}.quantity`] = localItem.quantity;
-        
-        // Use setDoc with merge to add this new item to the map
-        batch.set(cartRef, itemUpdate, { merge: true });
-        itemsMerged = true;
-      }
-    }
-
-    if (itemsMerged) {
-      await batch.commit();
-      console.log("Successfully merged local cart into Firestore.");
-    }
-
-    // Clear local storage cart after successful merge
-    localStorage.removeItem('localCart');
-    cart = mergedCart; // Update our main local cart object
-    updateCartUI(); // Update UI with merged cart
-    
-  } catch (e) {
-    console.error("Failed to merge local cart:", e);
-  }
-}
-
-// --- Notifications ---
-
-/**
- * Shows a temporary notification message.
- * @param {string} message The message to display.
- * @param {'success' | 'error'} type The type of notification.
- */
-function showCartNotification(message, type = 'success') {
-  const notificationElement = document.getElementById('cart-notification');
-  if (!notificationElement) {
-    console.log("Cart Notification:", message);
-    return;
-  }
-
-  const textElement = notificationElement.querySelector('p');
-  if (!textElement) return;
-
-  textElement.textContent = message;
-
-  // Set color based on type
-  if (type === 'error') {
-    notificationElement.classList.remove('bg-green-600');
-    notificationElement.classList.add('bg-red-600');
-  } else {
-    notificationElement.classList.remove('bg-red-600');
-    notificationElement.classList.add('bg-green-600');
-  }
-
-  // Show notification
-  notificationElement.classList.remove('opacity-0', '-translate-y-full');
-  notificationElement.classList.add('opacity-100', 'translate-y-0');
-
-  // Hide after 3 seconds
-  setTimeout(() => {
-    notificationElement.classList.remove('opacity-100', 'translate-y-0');
-    notificationElement.classList.add('opacity-0', '-translate-y-full');
-  }, 3000);
-}
-
-// Listen for a custom event to add items (decouples from product page)
-document.addEventListener('addToCart', (e) => {
-  const { productId, name, price, imageUrl } = e.detail;
-  addToCart(productId, name, price, imageUrl);
-});
+// --- Initialize Bubble on Load ---
+// This runs on every page load to ensure the header
+// bubble is always up-to-date.
+document.addEventListener('DOMContentLoaded', updateCartBubble);

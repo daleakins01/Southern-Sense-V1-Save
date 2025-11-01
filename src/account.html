@@ -1,253 +1,335 @@
 ---
 layout: layout.html
-title: "Your Account | Southern Sense"
-description: "Manage your Southern Sense account, view order history, and update your details."
+title: "My Account - Southern Sense"
+description: "Manage your account, view order history, and update your details."
 ---
 
 <!-- 
-  ACCOUNT PAGE (src/account.html)
-  This page serves as the customer's dashboard.
-  It is protected by the global auth listener in firebase-loader.js.
-  If a user is not logged in, they will be redirected to /login/.
-
-  This page is responsible for:
-  1. Greeting the logged-in user.
-  2. Displaying their name and email (fetched from Firestore).
-  3. Allowing them to sign out.
-  4. (Future) Displaying their order history.
+  This page allows users to view and update their account information.
+  It is protected and will redirect if the user is not logged in.
 -->
+<div class="bg-parchment">
+    <div class="container mx-auto px-4 py-12 md:py-20 min-h-[60vh]">
+        <div class="max-w-2xl mx-auto bg-white p-8 md:p-12 rounded-lg shadow-lg">
+            
+            <!-- Page Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl md:text-5xl font-playfair text-charcoal mb-4">
+                    My Account
+                </h1>
+                <p class="text-lg text-stone">
+                    Welcome back, <span id="user-name" class="font-semibold text-charcoal">...</span>
+                </p>
+            </div>
 
-<div class="bg-parchment-100 min-h-screen py-12 md:py-24">
-  <div class="container mx-auto max-w-2xl px-4">
+            <!-- Loading Spinner -->
+            <div id="loading-spinner" class="text-center py-12">
+                <svg class="animate-spin h-10 w-10 text-burnt-orange mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-stone mt-4">Loading your details...</p>
+            </div>
 
-    <!-- Page Header -->
-    <div class="text-center mb-10">
-      <h1 class="text-4xl md:text-5xl font-playfair text-charcoal-700 mb-4">Your Account</h1>
-      <p class="text-lg text-stone-600 font-roboto">Welcome back to Southern Sense.</p>
-    </div>
+            <!-- Account Details Form -->
+            <form id="account-form" class="hidden space-y-6">
+                
+                <!-- Form Error Message -->
+                <div id="form-error" class="hidden p-4 bg-red-100 text-red-800 rounded-lg">
+                    <!-- Error message will be injected here -->
+                </div>
 
-    <!-- Account Details Card -->
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden border border-stone-200">
-      
-      <!-- Card Header -->
-      <div class="bg-stone-50 border-b border-stone-200 p-6">
-        <h2 class="text-2xl font-playfair text-charcoal-600">Account Details</h2>
-      </div>
+                <!-- Form Success Message -->
+                <div id="form-success" class="hidden p-4 bg-green-100 text-green-800 rounded-lg">
+                    Your account has been updated successfully!
+                </div>
 
-      <!-- Card Body: User Info -->
-      <div class="p-6 md:p-8 space-y-5">
-        
-        <!-- Loading Spinner -->
-        <div id="account-loader" class="text-center py-10">
-          <svg class="animate-spin h-8 w-8 text-burnt-orange-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <p class="text-stone-500 mt-3 font-roboto">Loading your details...</p>
+                <!-- First Name -->
+                <div>
+                    <label for="firstName" class="block text-sm font-medium text-charcoal mb-1">First Name</label>
+                    <input type="text" id="firstName" name="firstName" required
+                           class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent"
+                           placeholder="Enter your first name">
+                </div>
+                
+                <!-- Last Name -->
+                <div>
+                    <label for="lastName" class="block text-sm font-medium text-charcoal mb-1">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" required
+                           class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent"
+                           placeholder="Enter your last name">
+                </div>
+
+                <!-- Email (Read-only) -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-charcoal mb-1">Email</label>
+                    <input type="email" id="email" name="email" readonly
+                           class="w-full px-4 py-3 border border-stone/30 rounded-lg bg-stone/10 text-stone shadow-sm"
+                           placeholder="your-email@example.com">
+                </div>
+
+                <!-- Phone (Optional) -->
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-charcoal mb-1">Phone <span class="text-xs text-stone">(Optional)</span></label>
+                    <input type="tel" id="phone" name="phone"
+                           class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent"
+                           placeholder="Enter your phone number">
+                </div>
+
+                <!-- Form Actions -->
+                <div class="pt-6 space-y-4 md:flex md:items-center md:justify-between md:space-y-0">
+                    <button type="submit" id="update-profile-btn"
+                            class="w-full md:w-auto bg-charcoal text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-burnt-orange transition-all duration-300
+                                   disabled:opacity-50 disabled:cursor-not-allowed">
+                        Save Changes
+                    </button>
+                    
+                    <button type="button" id="logout-btn"
+                            class="w-full md:w-auto text-center text-burnt-orange font-semibold hover:text-charcoal transition-colors">
+                        Log Out
+                    </button>
+                </div>
+
+            </form>
+
+            <!-- Order History (Placeholder) -->
+            <div id="order-history" class="hidden mt-12 pt-8 border-t border-stone/20">
+                <h2 class="text-3xl font-playfair text-charcoal mb-6 text-center">
+                    Order History
+                </h2>
+                <div class="text-center text-stone bg-parchment p-8 rounded-lg">
+                    <p>Your order history is empty.</p>
+                    <a href="/shop/" class="inline-block mt-4 bg-burnt-orange text-white font-semibold py-2 px-6 rounded-lg shadow-md hover:bg-charcoal transition-all duration-300">
+                        Start Shopping
+                    </a>
+                </div>
+            </div>
+
         </div>
-
-        <!-- Error Message -->
-        <div id="account-error" class="hidden bg-red-50 border border-red-200 text-red-700 p-4 rounded-md">
-          <h3 class="font-bold font-roboto">Error Loading Account</h3>
-          <p class="font-roboto" id="account-error-message">Could not load your account details. Please try refreshing the page.</p>
-        </div>
-        
-        <!-- User Details (Populated by JS) -->
-        <div id="account-details" class="hidden space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-stone-500 font-roboto">Full Name</label>
-            <p id="user-name" class="text-lg font-roboto text-charcoal-700">...</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-stone-500 font-roboto">Email Address</label>
-            <p id="user-email" class="text-lg font-roboto text-charcoal-700">...</p>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Card Footer: Sign Out Button -->
-      <div class="bg-stone-50 border-t border-stone-200 p-6 text-right">
-        <button id="sign-out-button" class="bg-charcoal-700 text-white font-roboto py-2 px-5 rounded-md hover:bg-charcoal-800 focus:outline-none focus:ring-2 focus:ring-charcoal-500 focus:ring-opacity-50 transition duration-150 ease-in-out">
-          Sign Out
-        </button>
-      </div>
-
     </div>
-
-    <!-- Order History (Placeholder) -->
-    <div class="mt-12">
-      <h2 class="text-3xl font-playfair text-charcoal-700 mb-6 text-center md:text-left">Order History</h2>
-      <div class="bg-white rounded-lg shadow-lg border border-stone-200 p-8 text-center">
-        <p class="text-stone-600 font-roboto">Your future order history will appear here.</p>
-      </div>
-    </div>
-
-  </div>
 </div>
 
 
 <!-- 
-  ACCOUNT PAGE SCRIPT
-  This script handles fetching the user's data from Firestore
-  and managing the "Sign Out" button.
+  JavaScript for the Account Page.
+  - Checks auth state. Redirects if not logged in.
+  - Loads user data from Firestore.
+  - Handles profile updates.
+  - Handles logout.
+  - FIX 8.1: Added admin collection check.
+  - FIX 9.1: Added "self-healing" for users with no Firestore document.
+  - FIX 10.1: Added listener for 'firebase-ready' to fix race condition.
 -->
 <script type="module">
-  // --- 
-  // CRITICAL IMPORT FIX (Self-Healing): 
-  // We import 'db' and 'auth' from our *own* firebase-loader.
-  // We import all *Firestore functions* (doc, getDoc, setDoc) directly from the SDK.
-  // ---
-  import { auth, db } from '/firebase-loader.js';
-  import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  import { signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    // Import all services and functions from our central loader
+    import { 
+        auth, 
+        db, 
+        onAuthStateChanged, 
+        signOut,
+        doc,
+        getDoc,
+        setDoc,
+        updateDoc
+    } from '/firebase-loader.js';
 
-  // --- DOM Element References ---
-  const loader = document.getElementById('account-loader');
-  const errorDisplay = document.getElementById('account-error');
-  const errorMessage = document.getElementById('account-error-message');
-  const detailsDisplay = document.getElementById('account-details');
-  
-  const userNameEl = document.getElementById('user-name');
-  const userEmailEl = document.getElementById('user-email');
-  const signOutButton = document.getElementById('sign-out-button');
-
-  /**
-   * Fetches the current user's data from the /users collection in Firestore
-   * and populates the account details card.
-   */
-  async function loadUserData() {
-    try {
-      // 1. Get the current authenticated user
-      const user = auth.currentUser;
-      if (!user) {
-        throw new Error("No authenticated user found.");
-      }
-
-      // 2. Set the email address (we get this from Auth)
-      userEmailEl.textContent = user.email || 'No email provided';
-
-      // 3. Create references to *both* potential document locations
-      const userDocRef = doc(db, "users", user.uid);
-      const adminDocRef = doc(db, "admins", user.uid);
-
-      // 4. Fetch the standard 'users' document first
-      let docSnap = await getDoc(userDocRef);
-      let userData;
-      let userDocExists = docSnap.exists();
-
-      if (userDocExists) {
-        // --- 5a. Standard Customer Found ---
-        userData = docSnap.data();
-        const fullName = `${userData.firstName} ${userData.lastName}`;
-        userNameEl.textContent = fullName;
-        
-      } else {
-        // --- 5b. No Customer Doc. Check if they are an Admin ---
-        console.warn("No 'users' document found. Checking 'admins' collection...");
-        docSnap = await getDoc(adminDocRef);
-
-        if (docSnap.exists()) {
-          // --- Admin Found ---
-          userData = docSnap.data();
-          // Admins might not have firstName/lastName, so use email or a placeholder
-          const adminName = userData.name || userData.email || "Admin";
-          userNameEl.textContent = `${adminName} (Admin)`;
-          
-          // **IMPORTANT**: We found an admin, but they have a "bad" user document
-          // in the 'users' collection from our previous bug. Let's clean it up.
-          const badUserDocRef = doc(db, "users", user.uid);
-          const badUserDocSnap = await getDoc(badUserDocRef);
-          if (badUserDocSnap.exists() && badUserDocSnap.data().firstName === "Valued") {
-            console.log("Cleaning up erroneously created 'Valued Customer' document.");
-            // We can't delete it due to rules, but we can stop here.
-            // For now, just showing their admin name is correct.
-          }
-
-        } else {
-          // --- 5c. SELF-HEALING FIX ---
-          // This user is not in 'users' OR 'admins'.
-          // This must be a broken registration. Create a 'users' doc for them.
-          console.warn("User document does not exist in Firestore. Creating one...");
-          
-          const newUserData = {
-              firstName: "Valued",
-              lastName: "Customer",
-              email: user.email // Use the email from the auth object
-          };
-
-          // Use setDoc to create the new document in the 'users' collection
-          await setDoc(userDocRef, newUserData);
-          
-          // Now populate the page with this new data
-          userNameEl.textContent = `${newUserData.firstName} ${newUserData.lastName}`;
-        }
-      }
-
-      // 10. Hide loader, show details
-      loader.classList.add('hidden');
-      detailsDisplay.classList.remove('hidden');
-
-    } catch (err) {
-      console.error("Error loading user data:", err);
-      // Show error message
-      errorMessage.textContent = `Error loading user data: ${err.message}`;
-      loader.classList.add('hidden');
-      errorDisplay.classList.remove('hidden');
-    }
-  }
-
-  /**
-   * Attaches a click listener to the "Sign Out" button.
-   */
-  function attachSignOutListener() {
-    if (signOutButton) {
-      signOutButton.addEventListener('click', async () => {
-        try {
-          // 1. Disable button to prevent double-clicks
-          signOutButton.disabled = true;
-          signOutButton.textContent = "Signing out...";
-
-          // 2. Call Firebase sign out
-          await signOut(auth);
-          
-          // 3. The 'onAuthStateChanged' listener in firebase-loader.js
-          // will automatically detect this sign-out and redirect
-          // the user to the /login/ page.
-          console.log("Sign-out successful. Redirecting...");
-          window.location.href = '/login/';
-
-        } catch (err) {
-          console.error("Sign out error:", err);
-          // 4. Re-enable button if sign-out fails
-          signOutButton.disabled = false;
-          signOutButton.textContent = "Sign Out";
-          // Show error to user
-          errorMessage.textContent = `Error signing out: ${err.message}`;
-          errorDisplay.classList.remove('hidden');
-        }
-      });
-    }
-  }
-
-  // --- Initialize the Page ---
-  
-  // 1. Wait for the 'auth' service to be ready.
-  // We can't load user data until 'auth.currentUser' is populated.
-  const unsubscribe = auth.onAuthStateChanged(user => {
-    // Stop listening, we only needed this to fire once
-    unsubscribe(); 
+    // Get DOM elements
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const accountForm = document.getElementById('account-form');
+    const orderHistory = document.getElementById('order-history');
     
-    if (user) {
-      // User is authenticated, proceed to load their data
-      loadUserData();
-      attachSignOutListener();
-    } else {
-      // User is not authenticated.
-      // The global listener in firebase-loader.js will handle the redirect.
-      console.log("No user found, global listener will redirect.");
+    const userNameSpan = document.getElementById('user-name');
+    const firstNameInput = document.getElementById('firstName');
+    const lastNameInput = document.getElementById('lastName');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    
+    const updateProfileBtn = document.getElementById('update-profile-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    const formError = document.getElementById('form-error');
+    const formSuccess = document.getElementById('form-success');
+
+    let currentUserId = null; // Store the user's ID
+    let currentUserRole = 'user'; // 'user' or 'admin'
+    let isSubmitting = false; // Prevent double-clicks
+
+    /**
+     * Loads user data from Firestore and populates the form.
+     * Checks both 'users' and 'admins' collections.
+     * If no doc exists, it creates one in the 'users' collection.
+     */
+    async function loadUserData(user) {
+        if (!user) return;
+        currentUserId = user.uid; // Store the UID
+
+        try {
+            // 1. Check the 'users' collection first
+            let userDocRef = doc(db, 'users', currentUserId);
+            let docSnap = await getDoc(userDocRef);
+
+            if (docSnap.exists()) {
+                // Found in 'users' collection
+                currentUserRole = 'user';
+                populateForm(docSnap.data(), user.email);
+            } else {
+                // 2. Not in 'users', check the 'admins' collection
+                userDocRef = doc(db, 'admins', currentUserId);
+                docSnap = await getDoc(userDocRef);
+
+                if (docSnap.exists()) {
+                    // Found in 'admins' collection
+                    currentUserRole = 'admin';
+                    populateForm(docSnap.data(), user.email);
+                } else {
+                    // 3. Does not exist in 'users' OR 'admins'.
+                    // This is the "self-healing" logic.
+                    console.warn(`User document not found for ${currentUserId}. Creating one.`);
+                    const newUserData = {
+                        firstName: "Valued",
+                        lastName: "Customer",
+                        phone: "",
+                        createdAt: new Date()
+                    };
+                    // Create the doc in the 'users' collection by default
+                    await setDoc(doc(db, 'users', currentUserId), newUserData);
+                    
+                    // Now populate the form with this new data
+                    currentUserRole = 'user';
+                    populateForm(newUserData, user.email);
+                }
+            }
+        } catch (error) {
+            console.error("Error loading user data:", error);
+            showFormError("Could not load your account details. Please refresh the page.");
+        }
     }
-  });
+
+    /**
+     * Fills the form fields with user data.
+     */
+    function populateForm(data, email) {
+        userNameSpan.textContent = data.firstName || 'Customer';
+        firstNameInput.value = data.firstName || '';
+        lastNameInput.value = data.lastName || '';
+        phoneInput.value = data.phone || '';
+        emailInput.value = email || ''; // Email comes from auth, not doc
+
+        // Hide loader, show form
+        loadingSpinner.classList.add('hidden');
+        accountForm.classList.remove('hidden');
+        orderHistory.classList.remove('hidden');
+    }
+
+    /**
+     * Handles the "Save Changes" form submission.
+     */
+    async function handleProfileUpdate(e) {
+        e.preventDefault();
+        if (isSubmitting) return;
+
+        setLoading(true);
+        hideMessages();
+
+        try {
+            const updatedData = {
+                firstName: firstNameInput.value.trim(),
+                lastName: lastNameInput.value.trim(),
+                phone: phoneInput.value.trim()
+            };
+
+            // Determine which collection to update
+            const collectionName = currentUserRole === 'admin' ? 'admins' : 'users';
+            const userDocRef = doc(db, collectionName, currentUserId);
+
+            // Update the document in Firestore
+            await updateDoc(userDocRef, updatedData);
+
+            // Update the display name in Firebase Auth as well
+            const displayName = `${updatedData.firstName} ${updatedData.lastName}`;
+            await updateProfile(auth.currentUser, {
+                displayName: displayName
+            });
+
+            // Update the welcome message
+            userNameSpan.textContent = updatedData.firstName;
+            showFormSuccess("Your account has been updated successfully!");
+
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            showFormError("An error occurred. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    /**
+     * Handles the "Log Out" button click.
+     */
+    async function handleLogout() {
+        try {
+            await signOut(auth);
+            // Auth state listener below will handle the redirect
+            console.log("User logged out.");
+            window.location.href = '/'; // Redirect to home
+        } catch (error) {
+            console.error("Error logging out:", error);
+        }
+    }
+
+    // --- Helper Functions for UI ---
+
+    function setLoading(isLoading) {
+        isSubmitting = isLoading;
+        updateProfileBtn.disabled = isLoading;
+        updateProfileBtn.textContent = isLoading ? "Saving..." : "Save Changes";
+    }
+
+    function showFormError(message) {
+        formError.textContent = message;
+        formError.classList.remove('hidden');
+    }
+
+    function showFormSuccess(message) {
+        formSuccess.textContent = message;
+        formSuccess.classList.remove('hidden');
+    }
+
+    function hideMessages() {
+        formError.classList.add('hidden');
+        formSuccess.classList.add('hidden');
+    }
+
+    // --- MAIN EXECUTION ---
+
+    // This is the function that runs when the 'firebase-ready' signal is received.
+    function initializePage() {
+        console.log("Account page: Firebase is ready. Setting up auth listener.");
+        
+        // Listen for changes in authentication state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in.
+                // Load their data from Firestore.
+                loadUserData(user);
+            } else {
+                // User is not signed in.
+                // Redirect them to the login page.
+                console.log("No user signed in. Redirecting to /login/");
+                // Add a URL parameter to redirect back here after login
+                window.location.href = '/login/?redirect=/account/';
+            }
+        });
+
+        // Attach event listeners for the form and buttons
+        accountForm.addEventListener('submit', handleProfileUpdate);
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+
+    // --- THIS IS THE FIX ---
+    // We wait for the 'firebase-ready' event *before* we try to set up
+    // the auth listener or do anything with Firebase.
+    document.addEventListener('firebase-ready', initializePage);
 
 </script>
 

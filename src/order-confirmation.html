@@ -1,62 +1,240 @@
 ---
 layout: layout.html
-title: "Order Confirmed!"
+title: "Order Confirmation"
 ---
 
-<main
-  class="container mx-auto px-4 py-16 text-center min-h-[70vh] flex items-center justify-center">
-  <div>
-    <h1 class="text-5xl font-playfair font-bold text-charcoal">
-      Thank You!
-    </h1>
-    <h2 class="mt-4 text-3xl font-playfair font-semibold text-charcoal">
-      Your Order is Confirmed
-    </h2>
-    <p class="mt-4 text-lg text-stone max-w-lg mx-auto">
-      We are now preparing your order. You will receive an email
-      confirmation shortly with your order details.
-    </p>
-    <p class="mt-2 text-lg text-stone max-w-lg mx-auto">
-      Your Order ID is:
-      <strong id="order-id" class="text-charcoal">Loading...</strong>
-    </p>
-    <div class="mt-8 space-x-4">
-      <a href="/shop.html"
-        class="inline-block bg-burnt-orange text-white font-roboto px-8 py-3 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300">
-        Continue Shopping
-      </a>
-      <a href="/account.html"
-        class="inline-block bg-stone text-white font-roboto px-8 py-3 rounded-md shadow-lg hover:bg-charcoal transition-all duration-300"
-        id="view-orders-link">
-        View My Orders
-      </a>
+<main class="container mx-auto px-4 py-16">
+  <div class="max-w-3xl mx-auto text-center">
+    <!-- (Pillar 1/Checkout): This is the final step of the checkout epic.
+         - We will pull the Order ID from the URL (e.g., ?orderId=XYZ).
+         - We will fetch that specific order from Firestore.
+         - We will display the order details and a "Thank You" message.
+         - This page MUST be secure and only show the order if the user is 
+           the owner OR an admin (matching our Firestore rules).
+    -->
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="flex flex-col justify-center items-center h-64 text-stone">
+      <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-burnt-orange" xmlns="http://www.w3.org/2000/svg" fill="none"
+        viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+        </path>
+      </svg>
+      <span class="text-2xl font-playfair mt-4">Loading Order Details...</span>
+    </div>
+
+    <!-- Error Message -->
+    <div id="error-message" class="hidden">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24"
+        stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <h1 class="mt-6 font-playfair text-5xl font-bold text-charcoal">
+        Order Not Found
+      </h1>
+      <p class="mt-4 text-xl text-stone">
+        We couldn't find the order you're looking for. Please check the link or
+        log in to your account to see your order history.
+      </p>
+      <div class="mt-10">
+        <a href="/shop.html"
+          class="bg-burnt-orange text-white font-roboto px-8 py-4 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg font-medium">
+          Continue Shopping
+        </a>
+      </div>
+    </div>
+
+    <!-- Confirmation Content -->
+    <div id="confirmation-content" class="hidden">
+      <!-- Success Icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-green-500 mx-auto" fill="none" viewBox="0 0 24 24"
+        stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <h1 class="mt-6 font-playfair text-5xl font-bold text-charcoal">
+        Thank You for Your Order!
+      </h1>
+      <p class="mt-4 text-xl text-stone">
+        Your order has been placed successfully. A confirmation email has been
+        sent to <strong id="customer-email" class="text-charcoal">...</strong>.
+      </p>
+      <p class="mt-2 text-lg text-stone">
+        Your Order ID is:
+        <strong id="order-id" class="text-charcoal">...</strong>
+      </p>
+
+      <!-- Order Summary -->
+      <div class="mt-12 text-left bg-parchment/50 p-8 rounded-lg shadow-sm border border-stone/20">
+        <h2 class="font-playfair text-3xl font-semibold text-charcoal mb-6">
+          Order Summary
+        </h2>
+
+        <!-- Items List -->
+        <div id="items-list" class="space-y-4 border-b border-stone/30 pb-4">
+          <!-- Items will be injected here -->
+        </div>
+
+        <!-- Totals -->
+        <div class="mt-6 space-y-3">
+          <div class="flex justify-between text-lg text-stone">
+            <span>Subtotal</span>
+            <span id="order-subtotal" class="font-medium text-charcoal">...</span>
+          </div>
+          <div class="flex justify-between text-lg text-stone">
+            <span>Shipping</span>
+            <span id="order-shipping" class="font-medium text-charcoal">...</span>
+          </div>
+          <div class="flex justify-between text-lg text-stone">
+            <span>Tax</span>
+            <span id="order-tax" class="font-medium text-charcoal">...</span>
+          </div>
+          <div class="flex justify-between text-2xl font-semibold text-charcoal border-t border-stone/30 pt-4 mt-4">
+            <span>Total</span>
+            <span id="order-total" class="text-burnt-orange">...</span>
+          </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="mt-8">
+          <h3 class="font-playfair text-2xl font-semibold text-charcoal">
+            Shipping Address
+          </h3>
+          <div id="shipping-address" class="mt-3 text-stone text-lg leading-relaxed">
+            <!-- Address will be injected here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Continue Shopping -->
+      <div class="mt-12">
+        <a href="/shop.html"
+          class="bg-burnt-orange text-white font-roboto px-8 py-4 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg font-medium">
+          Continue Shopping
+        </a>
+      </div>
     </div>
   </div>
 </main>
 
 <script type="module">
-  import { auth, onAuthStateChanged } from "/src/firebase-loader.js";
+  import {
+    db,
+    doc,
+    getDoc,
+    auth,
+    onAuthStateChanged,
+  } from "/src/firebase-loader.js";
 
-  document.addEventListener("DOMContentLoaded", () => {
-    // Get order ID from URL query parameter
-    const params = new URLSearchParams(window.location.search);
-    const orderId = params.get("orderId");
-    const viewOrdersLink = document.getElementById("view-orders-link");
+  // Get elements
+  const loadingSpinner = document.getElementById("loading-spinner");
+  const errorMessage = document.getElementById("error-message");
+  const confirmationContent = document.getElementById("confirmation-content");
 
-    if (orderId) {
-      document.getElementById("order-id").textContent = `${orderId.substring(
-        0,
-        8
-      )}...`;
-    } else {
-      document.getElementById("order-id").textContent = "N/A";
-    }
+  const customerEmailEl = document.getElementById("customer-email");
+  const orderIdEl = document.getElementById("order-id");
+  const itemsListEl = document.getElementById("items-list");
+  const subtotalEl = document.getElementById("order-subtotal");
+  const shippingEl = document.getElementById("order-shipping");
+  const taxEl = document.getElementById("order-tax");
+  const totalEl = document.getElementById("order-total");
+  const addressEl = document.getElementById("shipping-address");
 
-    // Hide "View My Orders" link if user is not logged in
+  // Get Order ID from URL
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get("orderId");
+
+  if (!orderId) {
+    showError();
+  } else {
+    // Wait for auth state to be ready before fetching
     onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        viewOrdersLink.style.display = "none";
-      }
+      // This will run for both logged-in users and anonymous/null users
+      // Our Firestore rules will handle the security
+      loadOrder(orderId, user ? user.uid : null);
     });
-  });
+  }
+
+  async function loadOrder(id, userId) {
+    try {
+      const docRef = doc(db, "orders", id);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        showError();
+        return;
+      }
+
+      const orderData = docSnap.data();
+
+      // --- Security Check ---
+      // Check if user is authorized to view this.
+      // 1. Is it a guest order (no userId)? Allow (security by obscurity, but ok for now)
+      // 2. Is the user logged in AND their ID matches the order? Allow.
+      // 3. (Admin check is handled by Firestore rules, but we can't check admin status here easily)
+      //
+      // If the order has a userId and the current user is not that user, deny access.
+      if (orderData.userId && orderData.userId !== userId) {
+        console.warn("Security check failed. User does not own this order.");
+        showError();
+        return;
+      }
+
+      // --- Populate Page ---
+      customerEmailEl.textContent = orderData.customer.email;
+      orderIdEl.textContent = docSnap.id;
+      subtotalEl.textContent = `$${orderData.totals.subtotal}`;
+      shippingEl.textContent = `$${orderData.totals.shipping}`;
+      taxEl.textContent = `$${orderData.totals.tax}`;
+      totalEl.textContent = `$${orderData.totals.total}`;
+
+      // Populate shipping address
+      const addr = orderData.customer.shippingAddress;
+      addressEl.innerHTML = `
+        ${orderData.customer.name}<br>
+        ${addr.line1}
+        ${addr.line2 ? `<br>${addr.line2}` : ""}<br>
+        ${addr.city}, ${addr.state} ${addr.postal_code}<br>
+        ${addr.country}
+      `;
+
+      // Populate items
+      itemsListEl.innerHTML = ""; // Clear
+      orderData.items.forEach((item) => {
+        const itemEl = document.createElement("div");
+        itemEl.className =
+          "flex justify-between items-center text-lg";
+        itemEl.innerHTML = `
+          <div>
+            <span class="font-medium text-charcoal">${item.name}</span>
+            <span class="text-stone ml-2">x ${item.quantity}</span>
+          </div>
+          <span class="font-medium text-charcoal">$${(
+            item.price * item.quantity
+          ).toFixed(2)}</span>
+        `;
+        itemsListEl.appendChild(itemEl);
+      });
+
+      showConfirmation();
+    } catch (error) {
+      console.error("Error loading order:", error);
+      showError();
+    }
+  }
+
+  function showError() {
+    loadingSpinner.style.display = "none";
+    confirmationContent.style.display = "none";
+    errorMessage.style.display = "block";
+  }
+
+  function showConfirmation() {
+    loadingSpinner.style.display = "none";
+    errorMessage.style.display = "none";
+    confirmationContent.style.display = "block";
+  }
 </script>

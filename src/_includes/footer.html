@@ -1,136 +1,157 @@
 <!-- 
-  This is an "include" file for Eleventy. 
-  It is injected into layout.html.
-  It has NO front matter.
+  This is the site footer partial.
+  It is included by the main layout.html file.
 -->
-<footer class="bg-charcoal text-parchment font-roboto">
+<footer class="bg-charcoal text-parchment/70 mt-24">
   <div
-    class="container mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-4 gap-12"
+    class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-4 gap-8"
   >
-    <!-- Column 1: Brand -->
+    <!-- Logo & Copyright -->
     <div>
+      <!--
+        (FIX 8:56 PM): Corrected asset path.
+        Changed "/src/logo.webp" to "/logo.webp"
+      -->
       <img
-        src="/src/logo.webp"
+        class="h-16 w-auto"
+        src="/logo.webp"
         alt="Southern Sense Logo"
-        class="h-24 w-auto mb-4"
       />
-      <p class="text-stone text-sm">
-        Hand-poured in North Carolina, bringing warmth and light from our
-        home to yours.
+      <p class="text-sm mt-4">
+        &copy; 2024 Southern Sense. <br />All rights reserved.
       </p>
-      <!-- Social Icons -->
-      <div class="flex space-x-4 mt-6">
+      <div class="flex gap-x-4 mt-4">
+        <!-- 
+          (FIX 8:56 PM): Corrected social icon paths and links.
+          - Updated Facebook link.
+          - Set TikTok to "#" as a placeholder.
+          - Fixed image src paths (removed "/src/").
+        -->
         <a
-          href="https://www.facebook.com/southernsenseco"
+          href="https://www.facebook.com/profile.php?id=61581857193998"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Facebook"
-          class="hover:opacity-80 transition-opacity"
         >
+          <span class="sr-only">Facebook</span>
           <img
-            src="/src/facebook-icon.webp"
+            src="/facebook-icon.webp"
             alt="Facebook"
-            class="w-6 h-6"
+            class="h-8 w-8 opacity-70 hover:opacity-100 transition-opacity"
           />
         </a>
-        <a
-          href="https://www.tiktok.com/@southernsenseco"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="TikTok"
-          class="hover:opacity-80 transition-opacity"
-        >
+        <a href="#" target="_blank" rel="noopener noreferrer">
+          <span class="sr-only">TikTok</span>
           <img
-            src="/src/tiktok-icon.webp"
+            src="/tiktok-icon.webp"
             alt="TikTok"
-            class="w-6 h-6"
+            class="h-8 w-8 opacity-70 hover:opacity-100 transition-opacity"
           />
         </a>
       </div>
     </div>
 
-    <!-- Column 2: Shop -->
+    <!-- Quick Links -->
     <div>
-      <h3 class="font-playfair text-xl font-semibold mb-4">Shop</h3>
-      <ul class="space-y-3">
-        <li>
-          <a href="/shop.html" class="footer-link">All Products</a>
-        </li>
+      <h3 class="font-playfair text-lg font-semibold text-white">
+        Quick Links
+      </h3>
+      <ul class="mt-4 space-y-2">
         <li>
           <a
-            href="/shop.html?filter=candle"
-            class="footer-link"
-            >Candles</a
+            href="/shop.html"
+            class="hover:text-white transition-colors"
+            >Shop All</a
           >
         </li>
         <li>
           <a
-            href="/shop.html?filter=wax-melt"
-            class="footer-link"
-            >Wax Melts</a
-          >
-        </li>
-      </ul>
-    </div>
-
-    <!-- Column 3: Discover -->
-    <div>
-      <h3 class="font-playfair text-xl font-semibold mb-4">Discover</h3>
-      <ul class="space-y-3">
-        <li>
-          <a href="/about.html" class="footer-link">Our Story</a>
-        </li>
-        <li>
-          <a href="/scent-guide.html" class="footer-link"
+            href="/scent-guide.html"
+            class="hover:text-white transition-colors"
             >Scent Guide</a
           >
         </li>
         <li>
-          <a href="/scent-glossary.html" class="footer-link"
-            >Scent Glossary</a
+          <a
+            href="/about.html"
+            class="hover:text-white transition-colors"
+            >Our Story</a
           >
         </li>
         <li>
-          <a href="/candle-care.html" class="footer-link"
+          <a
+            href="/contact.html"
+            class="hover:text-white transition-colors"
+            >Contact</a
+          >
+        </li>
+      </ul>
+    </div>
+
+    <!-- Customer Care -->
+    <div>
+      <h3 class="font-playfair text-lg font-semibold text-white">
+        Customer Care
+      </h3>
+      <ul class="mt-4 space-y-2">
+        <li>
+          <a
+            href="/account.html"
+            class="hover:text-white transition-colors"
+            >My Account</a
+          >
+        </li>
+        <li>
+          <a
+            href="/candle-care.html"
+            class="hover:text-white transition-colors"
             >Candle Care</a
           >
         </li>
         <li>
-          <a href="/refill-program.html" class="footer-link"
+          <a
+            href="/refill-program.html"
+            class="hover:text-white transition-colors"
             >Refill Program</a
           >
         </li>
-      </ul>
-    </div>
-
-    <!-- Column 4: Customer Care -->
-    <div>
-      <h3 class="font-playfair text-xl font-semibold mb-4">Customer</h3>
-      <ul class="space-y-3">
         <li>
-          <a href="/account.html" class="footer-link">My Account</a>
-        </li>
-        <li>
-          <a href="/contact.html" class="footer-link">Contact Us</a>
-        </li>
-        <!-- (Future Feature): Add Shipping/Returns page -->
-        <!-- 
-        <li>
-          <a href="/shipping.html" class="footer-link"
-            >Shipping & Returns</a
+          <a
+            href="/scent-glossary.html"
+            class="hover:text-white transition-colors"
+            >Scent Glossary</a
           >
         </li>
-         -->
       </ul>
     </div>
-  </div>
 
-  <!-- Bottom Bar -->
-  <div class="bg-black bg-opacity-20 py-4">
-    <div
-      class="container mx-auto px-4 text-center text-sm text-stone"
-    >
-      &copy; 2025 Southern Sense. All Rights Reserved.
+    <!-- Newsletter -->
+    <div>
+      <h3 class="font-playfair text-lg font-semibold text-white">
+        Join Our List
+      </h3>
+      <p class="mt-4 text-sm">
+        Get updates on new scents, special offers, and more.
+      </p>
+      <!-- (Pillar 2): This form needs to be wired up. -->
+      <form class="mt-4 flex">
+        <label for="email-address" class="sr-only">Email address</label>
+        <input
+          type="email"
+          name="email-address"
+          id="email-address"
+          autocomplete="email"
+          required
+          class="w-full min-w-0 appearance-none rounded-l-md border-0 bg-parchment/80 px-3 py-2 text-charcoal shadow-sm ring-1 ring-inset ring-stone/30 placeholder:text-stone/60 focus:ring-2 focus:ring-inset focus:ring-burnt-orange"
+          placeholder="Enter your email"
+        />
+        <button
+          type="submit"
+          class="flex-shrink-0 rounded-r-md bg-burnt-orange px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-opacity-90"
+        >
+          Sign Up
+        </button>
+      </form>
     </div>
   </div>
 </footer>
+

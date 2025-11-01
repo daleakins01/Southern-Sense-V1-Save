@@ -4,62 +4,140 @@ title: "Contact Us"
 ---
 
 <main class="container mx-auto px-4 py-16">
-  <div class="max-w-2xl mx-auto">
-    <h1
-      class="font-playfair text-4xl md:text-5xl font-semibold text-charcoal text-center mb-8">
-      Get in Touch
-    </h1>
-    <p class="text-lg text-stone text-center leading-relaxed mb-12">
-      Have a question about an order, a scent, or just want to say hello?
-      We'd love to hear from you. Fill out the form below or email us
-      directly.
-    </p>
+  <div class="max-w-4xl mx-auto">
+    <!-- Header Section -->
+    <section class="text-center">
+      <h1 class="font-playfair text-5xl font-bold text-charcoal">
+        Get in Touch
+      </h1>
+      <p class="mt-4 text-xl text-stone">
+        We'd love to hear from you. Fill out the form below or find us on
+        social media.
+      </p>
+    </section>
 
-    <!-- (Pillar 1 Fix): This form needs to be wired up to a service or database.
-         Currently, it redirects to "message-sent.html" without sending.
-         A good solution would be a simple Firestore collection `contact-messages`.
+    <!-- (Pillar 2): This form is insecure.
+         - It uses a 'mailto:' link, which is unreliable and exposes the user's email client.
+         - We need to replace this with a proper backend function (e.g., Firebase Function)
+         - that takes the form data and sends an email via a service like SendGrid or Resend.
+         - For now, we'll link it to a simple "Message Sent" confirmation page.
     -->
-    <form action="/message-sent.html" method="GET" class="space-y-6">
-      <!-- Name -->
-      <div>
-        <label for="name"
-          class="block text-sm font-medium text-charcoal mb-1">Full Name</label>
-        <input type="text" id="name" name="name" required
-          class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent" />
-      </div>
 
-      <!-- Email -->
-      <div>
-        <label for="email"
-          class="block text-sm font-medium text-charcoal mb-1">Email
-          Address</label>
-        <input type="email" id="email" name="email" required
-          class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent" />
-      </div>
+    <!-- Contact Form -->
+    <section class="mt-16">
+      <form
+        action="/message-sent.html"
+        method="GET"
+        class="grid grid-cols-1 md:grid-cols-2 gap-8"
+      >
+        <!-- Form Fields -->
+        <div class="space-y-6">
+          <div>
+            <label
+              for="name"
+              class="block text-sm font-medium text-charcoal"
+            >
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              required
+              class="mt-1 block w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-burnt-orange focus:border-burnt-orange"
+            />
+          </div>
+          <div>
+            <label
+              for="email"
+              class="block text-sm font-medium text-charcoal"
+            >
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              class="mt-1 block w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-burnt-orange focus:border-burnt-orange"
+            />
+          </div>
+          <div>
+            <label
+              for="phone"
+              class="block text-sm font-medium text-charcoal"
+            >
+              Phone Number (Optional)
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              class="mt-1 block w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-burnt-orange focus:border-burnt-orange"
+            />
+          </div>
+        </div>
 
-      <!-- Subject -->
-      <div>
-        <label for="subject"
-          class="block text-sm font-medium text-charcoal mb-1">Subject</label>
-        <input type="text" id="subject" name="subject" required
-          class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent" />
-      </div>
+        <!-- Message -->
+        <div class="space-y-6">
+          <div>
+            <label
+              for="message"
+              class="block text-sm font-medium text-charcoal"
+            >
+              Message
+            </label>
+            <textarea
+              id="message"
+              name="message"
+              rows="9"
+              required
+              class="mt-1 block w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-burnt-orange focus:border-burnt-orange"
+            ></textarea>
+          </div>
+          <div>
+            <button
+              type="submit"
+              class="w-full bg-burnt-orange text-white font-roboto px-8 py-4 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg font-medium"
+            >
+              Send Message
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
 
-      <!-- Message -->
-      <div>
-        <label for="message"
-          class="block text-sm font-medium text-charcoal mb-1">Message</label>
-        <textarea id="message" name="message" rows="6" required
-          class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent"></textarea>
+    <!-- Social Media Links -->
+    <section class="mt-24 text-center">
+      <h2 class="font-playfair text-3xl font-semibold text-charcoal">
+        Find Us on Social
+      </h2>
+      <div class="flex justify-center gap-8 mt-8">
+        <a
+          href="https://www.facebook.com/southernsensecandles"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="opacity-70 hover:opacity-100 transition-opacity"
+        >
+          <img
+            src="/src/facebook-icon.webp"
+            alt="Facebook"
+            class="w-10 h-10"
+          />
+        </a>
+        <a
+          href="https://www.tiktok.com/@southernsenseco"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="opacity-70 hover:opacity-100 transition-opacity"
+        >
+          <img
+            src="/src/tiktok-icon.webp"
+            alt="TikTok"
+            class="w-10 h-10"
+          />
+        </a>
       </div>
-
-      <!-- Submit Button -->
-      <div class="text-center">
-        <button type="submit"
-          class="bg-burnt-orange text-white font-roboto px-10 py-3 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105">
-          Send Message
-        </button>
-      </div>
-    </form>
+    </section>
   </div>
 </main>

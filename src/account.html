@@ -3,94 +3,314 @@ layout: layout.html
 title: "My Account"
 ---
 
-<main class="container mx-auto px-4 py-16 min-h-[70vh]">
-  <h1 class="font-playfair text-4xl font-semibold text-charcoal mb-8">
-    My Account
-  </h1>
+<main class="container mx-auto px-4 py-16">
+  <div class="max-w-xl mx-auto">
+    <h1 class="font-playfair text-4xl font-bold text-charcoal text-center">
+      My Account
+    </h1>
 
-  <!-- Loading Spinner -->
-  <div id="loading-spinner"
-    class="flex justify-center items-center h-64 text-stone">
-    <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-burnt-orange"
-      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-        stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-      </path>
-    </svg>
-    <span class="text-xl">Loading Account Details...</span>
-  </div>
+    <!-- (Pillar 1): This is the Customer Account epic.
+         - We need to check auth state on page load.
+         - If NOT logged in, show a message and redirect to /login.html
+         - If logged in, fetch user data from /users/{uid} and populate the form.
+         - Add an "Update Profile" button and function.
+         - Add a "View Order History" section (fetches from /orders where userId == uid).
+    -->
 
-  <!-- Account Content (Hidden by default) -->
-  <div id="account-content" class="hidden">
-    <!-- Profile Section -->
-    <section id="profile-section" class="mb-12">
-      <h2 class="font-playfair text-2xl font-semibold text-charcoal mb-4">
-        My Profile
-      </h2>
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <p class="text-lg">
-          <strong class="text-stone">Name:</strong>
-          <span id="user-name" class="ml-2 text-charcoal"></span>
+    <!-- Loading Spinner (shown by default) -->
+    <div id="loading-spinner" class="flex justify-center items-center mt-12">
+      <svg
+        class="animate-spin -ml-1 mr-3 h-8 w-8 text-burnt-orange"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          class="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          stroke-width="4"
+        ></circle>
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+      </svg>
+      <span class="text-xl text-stone">Loading Account...</span>
+    </div>
+
+    <!-- Not Logged In Message (hidden by default) -->
+    <div id="not-logged-in" class="hidden text-center mt-12">
+      <p class="text-xl text-stone">
+        You are not logged in.
+      </p>
+      <a
+        href="/login.html"
+        class="mt-6 inline-block bg-burnt-orange text-white font-roboto px-8 py-3 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg font-medium"
+      >
+        Go to Login
+      </a>
+    </div>
+
+    <!-- Account Content (hidden by default) -->
+    <div id="account-content" class="hidden mt-12">
+      <!-- Welcome Message -->
+      <div class="text-center mb-10">
+        <p class="text-xl text-stone">
+          Welcome back,
+          <strong id="user-name" class="font-medium text-charcoal"></strong>!
         </p>
-        <p class="text-lg mt-2">
-          <strong class="text-stone">Email:</strong>
-          <span id="user-email" class="ml-2 text-charcoal"></span>
-        </p>
-        <button id="logout-button"
-          class="mt-6 bg-stone text-white font-roboto px-6 py-2 rounded-md shadow-lg hover:bg-charcoal transition-all duration-300">
-          Sign Out
+        <p class="text-stone" id="user-email"></p>
+        <button
+          id="logout-button"
+          class="mt-4 text-sm text-burnt-orange hover:underline"
+        >
+          (Not you? Log out)
         </button>
       </div>
-    </section>
 
-    <!-- Order History Section -->
-    <section id="order-history-section">
-      <h2 class="font-playfair text-2xl font-semibold text-charcoal mb-4">
-        Order History
-      </h2>
-      <div id="order-list"
-        class="bg-white p-6 rounded-lg shadow-md divide-y divide-gray-200">
-        <!-- Orders will be dynamically inserted here -->
-        <p id="no-orders-message" class="text-stone text-lg italic">
-          You have not placed any orders yet.
-        </p>
-      </div>
-    </section>
+      <!-- User Profile Form -->
+      <section>
+        <h2 class="font-playfair text-2xl font-semibold text-charcoal mb-6">
+          My Profile
+        </h2>
+        <form id="profile-form" class="space-y-6">
+          <div>
+            <label
+              for="profile-name"
+              class="block text-sm font-medium text-charcoal"
+            >
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="profile-name"
+              class="mt-1 block w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-burnt-orange focus:border-burnt-orange"
+              placeholder="Enter your name"
+            />
+          </div>
+
+          <!-- Note: Email is display-only, cannot be changed -->
+          <div>
+            <label
+              for="profile-email"
+              class="block text-sm font-medium text-charcoal"
+            >
+              Email
+            </label>
+            <input
+              type="email"
+              id="profile-email"
+              disabled
+              class="mt-1 block w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm bg-stone/10 text-stone"
+            />
+          </div>
+
+          <div>
+            <label
+              for="profile-phone"
+              class="block text-sm font-medium text-charcoal"
+            >
+              Phone Number (Optional)
+            </label>
+            <input
+              type="tel"
+              id="profile-phone"
+              class="mt-1 block w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-burnt-orange focus:border-burnt-orange"
+              placeholder="Enter your phone number"
+            />
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              id="update-profile-button"
+              class="w-full bg-charcoal text-white font-roboto px-8 py-3 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg font-medium"
+            >
+              Update Profile
+            </button>
+            <p
+              id="profile-message"
+              class="text-green-600 text-center mt-4 hidden"
+            ></p>
+          </div>
+        </form>
+      </section>
+
+      <!-- Order History -->
+      <section class="mt-16">
+        <h2 class="font-playfair text-2xl font-semibold text-charcoal mb-6">
+          Order History
+        </h2>
+        <div id="order-history-container" class="space-y-6">
+          <!-- Orders will be injected here -->
+          <p id="no-orders-message" class="text-stone text-lg italic">
+            You have not placed any orders yet.
+          </p>
+        </div>
+      </section>
+    </div>
   </div>
 </main>
 
 <script type="module">
   import {
     auth,
+    onAuthStateChanged,
+    signOut,
     db,
     doc,
     getDoc,
+    setDoc,
     collection,
-    getDocs,
     query,
     where,
-    onAuthStateChanged,
-    signOut,
+    getDocs,
   } from "/src/firebase-loader.js";
 
-  // Get elements
+  // Get Elements
   const loadingSpinner = document.getElementById("loading-spinner");
+  const notLoggedInContent = document.getElementById("not-logged-in");
   const accountContent = document.getElementById("account-content");
   const userNameEl = document.getElementById("user-name");
   const userEmailEl = document.getElementById("user-email");
   const logoutButton = document.getElementById("logout-button");
-  const orderList = document.getElementById("order-list");
+
+  const profileForm = document.getElementById("profile-form");
+  const profileNameInput = document.getElementById("profile-name");
+  const profileEmailInput = document.getElementById("profile-email");
+  const profilePhoneInput = document.getElementById("profile-phone");
+  const updateProfileButton = document.getElementById("update-profile-button");
+  const profileMessage = document.getElementById("profile-message");
+
+  const orderHistoryContainer = document.getElementById(
+    "order-history-container"
+  );
   const noOrdersMessage = document.getElementById("no-orders-message");
 
-  // Function to load user orders
-  async function loadUserOrders(userId) {
+  let currentUser = null;
+
+  // --- AUTHENTICATION ---
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      // User is logged in
+      currentUser = user;
+      await loadUserData(user.uid);
+      await loadOrderHistory(user.uid);
+      showContent("account");
+    } else {
+      // User is not logged in
+      currentUser = null;
+      showContent("not-logged-in");
+    }
+  });
+
+  logoutButton.addEventListener("click", () => {
+    signOut(auth)
+      .then(() => {
+        window.location.href = "/";
+      })
+      .catch((error) => {
+        console.error("Error signing out: ", error);
+        alert("Error signing out. Please try again.");
+      });
+  });
+
+  // --- UI CONTROL ---
+  function showContent(section) {
+    loadingSpinner.style.display = "none";
+    if (section === "account") {
+      accountContent.style.display = "block";
+      notLoggedInContent.style.display = "none";
+    } else {
+      accountContent.style.display = "none";
+      notLoggedInContent.style.display = "block";
+    }
+  }
+
+  // --- PROFILE DATA ---
+  async function loadUserData(uid) {
+    try {
+      const userRef = doc(db, "users", uid);
+      const docSnap = await getDoc(userRef);
+
+      let userName = currentUser.displayName || "Valued Customer";
+      let userPhone = "";
+
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        userName = userData.name || userName;
+        userPhone = userData.phone || "";
+      }
+
+      // Populate welcome message and form
+      userNameEl.textContent = userName;
+      userEmailEl.textContent = currentUser.email;
+      profileNameInput.value = userName;
+      profileEmailInput.value = currentUser.email;
+      profilePhoneInput.value = userPhone;
+    } catch (error) {
+      console.error("Error loading user data:", error);
+      profileMessage.textContent = "Error loading profile.";
+      profileMessage.style.color = "red";
+      profileMessage.style.display = "block";
+    }
+  }
+
+  profileForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    updateProfileButton.disabled = true;
+    updateProfileButton.textContent = "Updating...";
+
+    const newName = profileNameInput.value;
+    const newPhone = profilePhoneInput.value;
+
+    try {
+      const userRef = doc(db, "users", currentUser.uid);
+      // Use setDoc with merge: true to create or update
+      await setDoc(
+        userRef,
+        {
+          name: newName,
+          phone: newPhone,
+          email: currentUser.email, // Keep email in sync
+        },
+        { merge: true }
+      );
+
+      // Also update auth profile if possible (displayName)
+      // Note: This is separate from Firestore
+      if (auth.currentUser.displayName !== newName) {
+        // This is a placeholder for a future update profile function
+        // await updateProfile(auth.currentUser, { displayName: newName });
+      }
+
+      userNameEl.textContent = newName; // Update welcome message
+      profileMessage.textContent = "Profile updated successfully!";
+      profileMessage.style.color = "green";
+      profileMessage.style.display = "block";
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      profileMessage.textContent = "Error updating profile. Please try again.";
+      profileMessage.style.color = "red";
+      profileMessage.style.display = "block";
+    }
+
+    setTimeout(() => {
+      profileMessage.style.display = "none";
+      updateProfileButton.disabled = false;
+      updateProfileButton.textContent = "Update Profile";
+    }, 3000);
+  });
+
+  // --- ORDER HISTORY ---
+  async function loadOrderHistory(uid) {
     try {
       const ordersRef = collection(db, "orders");
-      const q = query(ordersRef, where("userId", "==", userId)); // (Pillar 1 Fix): Add sorting by date
-      // const q = query(ordersRef, where("userId", "==", userId), orderBy("createdAt", "desc"));
-
+      const q = query(ordersRef, where("userId", "==", uid));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
@@ -99,105 +319,79 @@ title: "My Account"
       }
 
       noOrdersMessage.style.display = "none";
-      orderList.innerHTML = ""; // Clear the list
+      orderHistoryContainer.innerHTML = ""; // Clear existing
 
+      let orders = [];
       querySnapshot.forEach((doc) => {
-        const order = doc.data();
-        const orderId = doc.id;
+        orders.push({ id: doc.id, ...doc.data() });
+      });
 
-        const orderElement = document.createElement("div");
-        orderElement.className = "py-4";
-        orderElement.innerHTML = `
-          <div class="flex justify-between items-center">
-            <div>
-              <p class="text-lg font-semibold text-charcoal">Order #${
-                orderId.substring(0, 8) // Shortened Order ID
-              }...</p>
-              <p class="text-sm text-stone">Placed on: ${
-                new Date(
-                  order.createdAt.seconds * 1000
-                ).toLocaleDateString()}</p>
-              <p class="text-sm text-stone">Status: <span class="capitalize font-medium ${
-                order.status === "shipped"
-                  ? "text-green-600"
-                  : "text-burnt-orange"
-              }">${order.status}</span></p>
-            </div>
-            <div class="text-right">
-              <p class="text-lg font-semibold text-charcoal">$${
-                order.totalAmount
-              }</p>
-              <p class="text-sm text-stone">${
-                order.items.length
-              } item(s)</p>
-            </div>
-          </div>
-          <!-- (Future Feature): Add a "View Details" button here -->
-        `;
-        orderList.appendChild(orderElement);
+      // (Pillar 2): We need to sort by date.
+      // Firestore `orderBy` requires an index, so we'll sort in JS.
+      orders.sort((a, b) => b.createdAt - a.createdAt);
+
+      orders.forEach((order) => {
+        orderHistoryContainer.appendChild(createOrderCard(order));
       });
     } catch (error) {
-      console.error("Error fetching orders:", error);
-      noOrdersMessage.innerText =
-        "Could not load order history. Please try again later.";
+      console.error("Error loading order history:", error);
+      noOrdersMessage.textContent = "Error loading order history.";
       noOrdersMessage.style.display = "block";
     }
   }
 
-  // Function to load user profile
-  async function loadUserProfile(userId) {
-    try {
-      const userDocRef = doc(db, "users", userId);
-      const userDocSnap = await getDoc(userDocRef);
+  function createOrderCard(order) {
+    const card = document.createElement("div");
+    card.className =
+      "border border-stone/20 rounded-lg p-6 bg-white shadow-sm";
 
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-        userNameEl.textContent =
-          userData.displayName || "No name set";
-        userEmailEl.textContent = userData.email;
-      } else {
-        console.warn("User profile document not found.");
-        userNameEl.textContent = "Profile not found";
-        userEmailEl.textContent = auth.currentUser.email; // Fallback
-      }
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-      userNameEl.textContent = "Error loading profile";
-      userEmailEl.textContent = "Error loading profile";
-    }
+    const orderDate = new Date(order.createdAt.seconds * 1000);
+    const formattedDate = orderDate.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    let itemsHtml = order.items
+      .map(
+        (item) => `
+      <li class="flex items-center space-x-3 text-sm">
+        <span class="font-medium text-charcoal">${item.name}</span>
+        <span class="text-stone">(Qty: ${item.quantity})</span>
+      </li>
+    `
+      )
+      .join("");
+
+    card.innerHTML = `
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center">
+        <div>
+          <h3 class="text-lg font-semibold text-charcoal">Order #${order.id.substring(
+            0,
+            8
+          )}...</h3>
+          <p class="text-sm text-stone">Placed on ${formattedDate}</p>
+        </div>
+        <div class="mt-4 sm:mt-0 text-left sm:text-right">
+          <p class="text-lg font-medium text-charcoal">$${Number(
+            order.total
+          ).toFixed(2)}</p>
+          <span class="px-3 py-1 text-xs font-medium rounded-full ${
+            order.status === "Pending"
+              ? "bg-yellow-100 text-yellow-800"
+              : "bg-green-100 text-green-800"
+          }">
+            ${order.status || "Pending"}
+          </span>
+        </div>
+      </div>
+      <div class="mt-6 border-t border-stone/20 pt-4">
+        <h4 class="text-sm font-medium text-stone mb-2">Items:</h4>
+        <ul class="space-y-2">
+          ${itemsHtml}
+        </ul>
+      </div>
+    `;
+    return card;
   }
-
-  // Auth state listener
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      // User is signed in
-      // Load profile and orders
-      Promise.all([
-        loadUserProfile(user.uid),
-        loadUserOrders(user.uid),
-      ]).then(() => {
-        // Show content and hide spinner
-        loadingSpinner.style.display = "none";
-        accountContent.style.display = "block";
-      });
-    } else {
-      // User is signed out
-      // Redirect to login page
-      console.log("User is not authenticated. Redirecting to login.");
-      window.location.href = "/login.html";
-    }
-  });
-
-  // Logout button event
-  logoutButton.addEventListener("click", () => {
-    signOut(auth)
-      .then(() => {
-        console.log("User signed out successfully.");
-        window.location.href = "/"; // Redirect to homepage
-      })
-      .catch((error) => {
-        console.error("Sign out error:", error);
-        // (Future Feature): Show a user-friendly error message
-      });
-  });
 </script>

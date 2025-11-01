@@ -1,140 +1,124 @@
 ---
 layout: layout.html
-title: "Our Story"
+title: "About Us"
 ---
 
-<main class="bg-parchment text-charcoal font-roboto">
-  <!-- Hero Section -->
-  <section class="relative h-[400px] bg-stone text-white">
-    <img src="/src/candles-header.webp" alt="Close-up of a lit candle"
-      class="w-full h-full object-cover opacity-50" />
-    <div
-      class="absolute inset-0 flex flex-col justify-center items-center text-center px-4">
-      <h1
-        class="font-playfair text-5xl md:text-7xl font-bold text-shadow-lg">
+<main class="container mx-auto px-4 py-16">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header Section -->
+    <section class="text-center">
+      <h1 class="font-playfair text-5xl font-bold text-charcoal">
         Our Story
       </h1>
-      <p class="mt-4 text-xl md:text-2xl font-light text-shadow">
-        Crafting moments, one scent at a time.
+      <p class="mt-4 text-xl text-stone">
+        From a simple hobby to a cherished business, this is Southern Sense.
       </p>
-    </div>
-  </section>
+    </section>
 
-  <!-- Our Founder Section -->
-  <section class="container mx-auto px-4 py-16 md:py-24">
-    <div class="flex flex-col md:flex-row items-center gap-12">
+    <!-- Main Content Grid -->
+    <section class="mt-16 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
       <!-- Image -->
-      <div class="w-full md:w-1/2 lg:w-5/12">
-        <img src="/src/paula-bryan-portrait.webp" alt="Portrait of Paula Bryan, founder of Southern Sense"
-          class="rounded-lg shadow-2xl object-cover w-full h-auto" />
+      <div>
+        <img
+          src="/src/paula-bryan-portrait.webp"
+          alt="Paula Bryan, founder of Southern Sense"
+          class="w-full h-auto rounded-lg shadow-xl object-cover"
+        />
       </div>
-      <!-- Text -->
-      <div class="w-full md:w-1/2 lg:w-7/12">
-        <h2 class="font-playfair text-4xl font-semibold text-charcoal">
-          From Our Home to Yours
-        </h2>
-        <p class="mt-6 text-lg text-stone leading-relaxed" id="about-founder-text">
-          Loading founder story...
-        </p>
-        <p class="mt-4 text-lg text-stone leading-relaxed">
-          Our journey began in a small North Carolina kitchen, armed with a
-          passion for fragrance and a dream to bring warmth into people's
-          homes. Southern Sense is more than just a brand; it's a family
-          tradition, a commitment to quality, and a celebration of the
-          simple joys that a beautiful scent can bring.
-        </p>
-        <p class="mt-8 font-great-vibes text-5xl text-burnt-orange">
-          Paula Bryan
-        </p>
-        <p class="text-stone text-lg">Founder, Southern Sense</p>
-      </div>
-    </div>
-  </section>
 
-  <!-- Our Commitment Section -->
-  <section class="bg-white py-16 md:py-24">
-    <div class="container mx-auto px-4">
+      <!-- Text Content -->
+      <div class="text-stone text-lg leading-relaxed">
+        <p>
+          Welcome to Southern Sense! My name is Paula Bryan, and I'm the heart
+          and hands behind every candle you see. What started as a creative
+          outlet in my kitchen has blossomed into a passion I’m thrilled to
+          share with you.
+        </p>
+        <p class="mt-4">
+          Based in the charming town of Kinston, North Carolina, Southern Sense
+          is built on the belief that scent is a powerful part of our lives.
+          It’s tied to our memories, our moods, and our homes. That's why I
+          pour so much care into every small batch.
+        </p>
+        <p class="mt-4">
+          I hand-pour each candle using a premium soy-paraffin wax blend,
+          which provides the best of both worlds: the clean burn of soy and the
+          exceptional scent-throw of paraffin. Paired with high-quality,
+          phthalate-free fragrance oils and lead-free cotton wicks, the result
+          is a beautifully aromatic, long-lasting candle that you can feel
+          good about burning.
+        </p>
+        <p class="mt-4">
+          Thank you for supporting my small business. I hope my candles bring
+          as much warmth and joy to your home as I find in making them.
+        </p>
+        <div class="mt-6">
+          <span
+            class="font-great-vibes text-5xl text-burnt-orange -ml-2"
+            aria-hidden="true"
+          >
+            Paula Bryan
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Our Values Section -->
+    <section class="mt-24">
       <h2
-        class="text-center font-playfair text-4xl font-semibold text-charcoal mb-12">
-        Our Commitment to Quality
+        class="font-playfair text-4xl font-semibold text-charcoal text-center"
+      >
+        Our Commitment
       </h2>
       <div
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-center">
-        <!-- Finest Wax -->
-        <div class="p-6">
-          <img src="/src/finest-wax.webp" alt="Icon of a wax pour"
-            class="h-24 w-24 mx-auto mb-4" />
-          <h3 class="font-playfair text-2xl font-semibold mb-2">
-            The Finest Wax
+        class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-10 text-center"
+      >
+        <!-- Value 1 -->
+        <div class="flex flex-col items-center">
+          <img
+            src="/src/finest-wax.webp"
+            alt="Hand-poured wax"
+            class="w-32 h-32 object-cover rounded-full shadow-lg"
+          />
+          <h3 class="font-playfair text-2xl font-semibold text-charcoal mt-4">
+            Quality Ingredients
           </h3>
-          <p class="text-stone leading-relaxed">
-            We use a premium, all-natural soy wax blend. This ensures a
-            clean, slow burn that's eco-friendly and free from harmful
-            toxins, giving you a purer fragrance experience.
+          <p class="text-stone mt-2">
+            We use a premium soy-paraffin blend for a clean burn and powerful
+            scent.
           </p>
         </div>
-        <!-- Clean Oils -->
-        <div class="p-6">
-          <img src="/src/clean-oils.webp" alt="Icon of an oil droplet"
-            class="h-24 w-24 mx-auto mb-4" />
-          <h3 class="font-playfair text-2xl font-semibold mb-2">
-            Phthalate-Free Oils
+        <!-- Value 2 -->
+        <div class="flex flex-col items-center">
+          <img
+            src="/src/clean-oils.webp"
+            alt="Fragrance oil dropper"
+            class="w-32 h-32 object-cover rounded-full shadow-lg"
+          />
+          <h3 class="font-playfair text-2xl font-semibold text-charcoal mt-4">
+            Clean Scents
           </h3>
-          <p class="text-stone leading-relaxed">
-            Your health matters. Our scents are crafted from the highest
-            quality, phthalate-free fragrance oils, so you can breathe
-            easy knowing your air is clean.
+          <p class="text-stone mt-2">
+            All our fragrance oils are 100% phthalate-free and safe for your
+            home.
           </p>
         </div>
-        <!-- Hand-Poured -->
-        <div class="p-6 md:col-span-2 lg:col-span-1">
-          <img src="/src/paula-bryan-portrait.webp" alt="Icon of hands crafting"
-            class="h-24 w-24 mx-auto mb-4 rounded-full" />
-          <h3 class="font-playfair text-2xl font-semibold mb-2">
-            Hand-Poured in NC
+        <!-- Value 3 -->
+        <div class="flex flex-col items-center">
+          <img
+            src="/src/candles-header.webp"
+            alt="Finished candles curing"
+            class="w-32 h-32 object-cover rounded-full shadow-lg"
+          />
+          <h3 class="font-playfair text-2xl font-semibold text-charcoal mt-4">
+            Handcrafted in NC
           </h3>
-          <p class="text-stone leading-relaxed">
-            Every single one of our products is hand-poured with meticulous
-            care in small batches right here in North Carolina. This ensures
-            unmatched quality and attention to detail.
+          <p class="text-stone mt-2">
+            Every product is hand-poured in small batches in Kinston, North
+            Carolina.
           </p>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 </main>
-
-<script type="module">
-  import {
-    db,
-    doc,
-    getDoc,
-  } from "/src/firebase-loader.js";
-
-  async function loadSiteContent() {
-    try {
-      const docRef = doc(db, "siteContent", "aboutPage");
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        document.getElementById("about-founder-text").innerHTML =
-          data.founderStory ||
-          "Failed to load founder story. Please check connection.";
-      } else {
-        console.warn("About page content document not found.");
-        document.getElementById("about-founder-text").innerHTML =
-          "Our founder's story is being written...";
-      }
-    } catch (error) {
-      console.error("Error loading site content:", error);
-      document.getElementById("about-founder-text").innerHTML =
-        "Error loading content. Please try again later.";
-    }
-  }
-
-  // Load the content when the page is ready
-  document.addEventListener("DOMContentLoaded", () => {
-    loadSiteContent();
-  });
-</script>

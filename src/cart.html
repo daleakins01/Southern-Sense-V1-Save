@@ -3,242 +3,139 @@ layout: layout.html
 title: "Shopping Cart"
 ---
 
-<main class="container mx-auto px-4 py-16 min-h-[70vh]">
-  <h1 class="font-playfair text-4xl font-semibold text-charcoal mb-8">
-    My Cart
-  </h1>
+<!-- 
+  This is the new cart.html file, located in /src and given 
+  Eleventy front matter, just like index.html.
+-->
+<main class="container mx-auto px-4 py-12">
+  <header class="text-center mb-12">
+    <h1 class="font-playfair text-4xl text-charcoal font-bold">
+      Shopping Cart
+    </h1>
+  </header>
 
   <!-- Cart Content -->
-  <div class="flex flex-col lg:flex-row gap-12">
+  <div
+    class="flex flex-col lg:flex-row gap-12"
+    id="cart-container"
+    data-paypal-client-id=""
+  >
     <!-- Cart Items (Left Side) -->
-    <div class="w-full lg:w-2/3">
-      <!-- Cart Items Header -->
-      <div
-        class="hidden md:grid grid-cols-6 gap-4 font-roboto text-sm uppercase text-stone pb-2 border-b border-stone/30">
-        <div class="col-span-3">Product</div>
-        <div class="col-span-1 text-center">Quantity</div>
-        <div class="col-span-1 text-right">Price</div>
-        <div class="col-span-1 text-right">Total</div>
+    <div class="lg:w-2/3">
+      <div id="cart-items-list" class="divide-y divide-stone/20">
+        <!-- Cart items will be injected here by cart.js -->
       </div>
 
-      <!-- Cart Items List -->
-      <div id="cart-items-container" class="divide-y divide-stone/20">
-        <!-- Cart items will be injected here by cart.js -->
+      <!-- Empty Cart Message -->
+      <div id="empty-cart-message" class_="hidden text-center py-12">
+        <svg
+          class="mx-auto h-12 w-12 text-stone/50"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+          />
+        </svg>
+        <h2 class="mt-4 text-xl font-playfair text-charcoal">
+          Your cart is empty
+        </h2>
+        <p class="mt-2 text-stone">
+          Looks like you haven't added anything to your cart yet.
+        </p>
+        <a
+          href="/shop.html"
+          class="mt-6 inline-block bg-burnt-orange text-white font-roboto px-8 py-3 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300"
+        >
+          Shop Our Products
+        </a>
+      </div>
 
-        <!-- Loading/Empty State -->
-        <div id="cart-empty-message" class="py-8 text-center">
-          <p class="text-xl text-stone italic">Your cart is empty.</p>
-          <a href="/shop.html"
-            class="mt-6 inline-block bg-burnt-orange text-white font-roboto px-8 py-3 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300">
-            Start Shopping
-          </a>
-        </div>
-        <div id="cart-loading-spinner" class="py-8 text-center hidden">
-          <div class="flex justify-center items-center h-40 text-stone">
-            <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-burnt-orange"
-              xmlns="http://www.w3.org/2000/svg" fill="none"
-              viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10"
-                stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-              </path>
-            </svg>
-            <span class="text-xl">Loading Cart...</span>
-          </div>
-        </div>
+      <!-- Loading Spinner -->
+      <div id="cart-loading-spinner" class="flex justify-center py-12">
+        <svg
+          class="animate-spin h-10 w-10 text-burnt-orange"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        <span class="text-2xl font-playfair text-stone ml-4"
+          >Loading Cart...</span
+        >
       </div>
     </div>
 
     <!-- Order Summary (Right Side) -->
-    <div id="order-summary-container" class="w-full lg:w-1/3 hidden">
-      <div class="bg-white p-6 rounded-lg shadow-lg sticky top-28">
-        <h2
-          class="font-playfair text-2xl font-semibold text-charcoal pb-4 border-b border-stone/20">
+    <aside class="lg:w-1/3">
+      <div
+        id="order-summary"
+        class="bg-parchment/50 p-6 md:p-8 rounded-lg shadow-lg sticky top-24"
+      >
+        <h2 class="font-playfair text-2xl text-charcoal font-semibold mb-6">
           Order Summary
         </h2>
-        <div class="space-y-3 mt-4 text-lg">
-          <div class="flex justify-between text-stone">
+        <div class="space-y-4 text-lg">
+          <div class="flex justify-between text-charcoal">
             <span>Subtotal</span>
-            <span id="cart-subtotal" class="font-medium">$0.00</span>
+            <span id="cart-subtotal">$0.00</span>
           </div>
-          <div class="flex justify-between text-stone">
+          <div class="flex justify-between text-charcoal">
             <span>Shipping</span>
-            <span id="cart-shipping" class="font-medium">Calculated at
-              checkout</span>
+            <span id="cart-shipping" class="font-light">
+              (Calculated at checkout)
+            </span>
           </div>
-          <!-- (Future Feature): Add discount code input here -->
-        </div>
-        <div
-          class="flex justify-between text-charcoal font-semibold text-xl mt-4 pt-4 border-t border-stone/20">
-          <span>Total</span>
-          <span id="cart-total">$0.00</span>
+          <!-- (Pillar 2): Add discount code UI here -->
+          <div class="border-t border-stone/30 pt-4 mt-4">
+            <div class="flex justify-between text-charcoal font-bold text-xl">
+              <span>Estimated Total</span>
+              <span id="cart-total">$0.00</span>
+            </div>
+          </div>
         </div>
 
-        <!-- (Pillar 1 Fix): This checkout button needs to be replaced with a link
-             to a real checkout page or integrated with PayPal.
-             For now, it's a placeholder.
+        <!-- Checkout Button -->
+        <div class="mt-8">
+          <button
+            id="checkout-btn"
+            class="w-full bg-charcoal text-white font-roboto px-8 py-4 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg font-medium"
+          >
+            Proceed to Checkout
+          </button>
+        </div>
+
+        <!-- PayPal Button Container -->
+        <!-- (Pillar 1 Fix): The checkout.js logic is not yet implemented.
+             This button will be functional once we migrate that file.
         -->
-        <button id="checkout-button"
-          class="mt-6 w-full bg-burnt-orange text-white font-roboto px-6 py-3 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg">
-          Proceed to Checkout
-        </button>
-        <p class="text-sm text-stone text-center mt-4">
-          Checkout is not yet implemented.
-        </p>
+        <div id="paypal-button-container" class="mt-6">
+          <!-- PayPal buttons will render here -->
+        </div>
+        <p id="checkout-message" class="text-red-600 mt-4 text-sm"></p>
       </div>
-    </div>
+    </aside>
   </div>
 </main>
 
-<!-- Cart Item Template -->
-<template id="cart-item-template">
-  <div
-    class="cart-item grid grid-cols-6 gap-4 py-4 items-center animate-fade-in">
-    <!-- Product Info -->
-    <div class="col-span-6 md:col-span-3">
-      <div class="flex items-center gap-4">
-        <a class="product-link">
-          <img class="product-image w-20 h-20 object-cover rounded-md shadow-sm"
-            src="" alt="Product Image" />
-        </a>
-        <div>
-          <a
-            class="product-link font-playfair text-lg font-semibold text-charcoal hover:text-burnt-orange">
-            <span class="product-name">Product Name</span>
-          </a>
-          <button
-            class="remove-item-btn text-sm text-red-600 hover:text-red-800 transition-colors">
-            Remove
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Quantity -->
-    <div class="col-span-2 md:col-span-1 text-left md:text-center">
-      <label class="sr-only" for="quantity">Quantity</label>
-      <input type="number" min="1"
-        class="quantity-input form-input w-20 px-3 py-1 border border-stone/30 rounded-md shadow-sm text-center"
-        value="1" />
-    </div>
-
-    <!-- Price -->
-    <div
-      class="col-span-2 md:col-span-1 text-left md:text-right text-stone text-lg">
-      <span class="md:hidden">Price: </span>
-      <span class="item-price">$0.00</span>
-    </div>
-
-    <!-- Total -->
-    <div
-      class="col-span-2 md:col-span-1 text-left md:text-right text-charcoal font-semibold text-lg">
-      <span class="md:hidden">Total: </span>
-      <span class="item-total">$0.00</span>
-    </div>
-  </div>
-</template>
-
-<style>
-  /* Simple fade-in animation for cart items */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
-  }
-</style>
-
-<script type="module">
-  import {
-    getCart,
-    updateCartItemQuantity,
-    removeCartItem,
-    onCartUpdate,
-  } from "/src/cart.js";
-
-  // Get elements
-  const itemsContainer = document.getElementById("cart-items-container");
-  const emptyMessage = document.getElementById("cart-empty-message");
-  const loadingSpinner = document.getElementById("cart-loading-spinner");
-  const summaryContainer = document.getElementById("order-summary-container");
-  const subtotalEl = document.getElementById("cart-subtotal");
-  const totalEl = document.getElementById("cart-total");
-  const itemTemplate = document.getElementById("cart-item-template");
-
-  // Show loading state
-  loadingSpinner.classList.remove("hidden");
-  emptyMessage.classList.add("hidden");
-
-  // Render the cart
-  function renderCart(cart) {
-    loadingSpinner.classList.add("hidden");
-    itemsContainer.innerHTML = ""; // Clear list
-
-    if (cart.items.length === 0) {
-      emptyMessage.classList.remove("hidden");
-      summaryContainer.classList.add("hidden");
-      return;
-    }
-
-    emptyMessage.classList.add("hidden");
-    summaryContainer.classList.remove("hidden");
-
-    let subtotal = 0;
-
-    cart.items.forEach((item) => {
-      const templateClone = itemTemplate.content.cloneNode(true);
-      const cartItemEl = templateClone.querySelector(".cart-item");
-      
-      const itemTotal = item.price * item.quantity;
-      subtotal += itemTotal;
-
-      cartItemEl.dataset.id = item.id;
-      templateClone.querySelector(".product-link").href = `/product.html?id=${item.id}`;
-      templateClone.querySelector(".product-image").src = `/src/${item.imageUrl}`;
-      templateClone.querySelector(".product-image").alt = item.name;
-      templateClone.querySelector(".product-name").textContent = item.name;
-      templateClone.querySelector(".item-price").textContent = `$${parseFloat(item.price).toFixed(2)}`;
-      templateClone.querySelector(".quantity-input").value = item.quantity;
-      templateClone.querySelector(".item-total").textContent = `$${itemTotal.toFixed(2)}`;
-      
-      // Add event listeners
-      templateClone.querySelector(".quantity-input").addEventListener("change", (e) => {
-        let newQuantity = parseInt(e.target.value, 10);
-        if (newQuantity < 1) newQuantity = 1;
-        e.target.value = newQuantity; // Ensure UI reflects valid quantity
-        updateCartItemQuantity(item.id, newQuantity);
-      });
-
-      templateClone.querySelector(".remove-item-btn").addEventListener("click", () => {
-        removeCartItem(item.id);
-      });
-
-      itemsContainer.appendChild(templateClone);
-    });
-
-    // Update summary
-    subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-    totalEl.textContent = `$${subtotal.toFixed(2)}`; // (Future): Add shipping, taxes
-  }
-
-  // Initial load
-  getCart().then(renderCart);
-
-  // Listen for real-time updates
-  onCartUpdate(renderCart);
-
-  // (Pillar 1 Fix): Checkout button logic
-  document.getElementById("checkout-button").addEventListener("click", () => {
-    // This is a placeholder. In a real build, this would redirect
-    // to a checkout page or initiate the PayPal SDK.
-    alert("Checkout is not yet implemented.");
-  });
-</script>
+<!-- 
+  The cart.js module is loaded via the layout.html (via main.js).
+  It finds the 'cart-container' ID and initializes itself.
+-->

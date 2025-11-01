@@ -1,39 +1,45 @@
 module.exports = function (eleventyConfig) {
-  // === PASSTHROUGH (COPY) RULES ===
+  // --- Eleventy Configuration ---
+  eleventyConfig.setLiquidOptions({
+    dynamicPartials: false,
+    strictFilters: false, // For easier debugging
+  });
 
-  // Copy root-level static assets to output
-  eleventyConfig.addPassthroughCopy("output.css"); // Main compiled stylesheet
+  // --- Passthrough Copy ---
+  // Copies files directly to the output directory (_site) without processing.
 
-  // Copy JS modules from /src to output
-  eleventyConfig.addPassthroughCopy("src/main.js");
-  eleventyConfig.addPassthroughCopy("src/auth.js");
-  eleventyConfig.addPassthroughCopy("src/cart.js");
-  eleventyConfig.addPassthroughCopy("src/firebase-loader.js");
+  // 1. Passthrough the main compiled CSS file from the root
+  eleventyConfig.addPassthroughCopy("output.css");
 
-  // Copy images
-  eleventyConfig.addPassthroughCopy("src/*.webp");
+  // 2. Passthrough all assets *inside* src.
+  // These paths must be relative to the `src` input directory.
+  // (FIX 8:09 PM): Removed the conflicting "src/output.css" passthrough.
+  eleventyConfig.addPassthroughCopy("logo.webp"); // Logo
+  eleventyConfig.addPassthroughCopy("js"); // Main JS folder
+  eleventyConfig.addPassthroughCopy("auth.js");
+  eleventyConfig.addPassthroughCopy("cart.js");
+  eleventyConfig.addPassthroughCopy("firebase-loader.js");
+  eleventyConfig.addPassthroughCopy("main.js");
 
-  // Copy legacy /src/js folder (if any contents are still used)
-  eleventyConfig.addPassthroughCopy("src/js");
+  // Copy all images from /src
+  eleventyConfig.addPassthroughCopy("*.webp");
 
-  // === NEW PASSTHROUGH RULES FOR ADMIN PANEL ===
-  // These are standalone apps and should not be processed by Eleventy.
-  // They will be copied directly from the root to the `_site` output folder.
-  eleventyConfig.addPassthroughCopy("admin.html");
-  eleventyConfig.addPassthroughCopy("admin-login.html");
-  eleventyConfig.addPassthroughCopy("AdminPageFunctionsGuide.html");
-  // === END NEW RULES ===
+  // --- Watch Targets ---
+  // Reload the browser when these files change.
+  eleventyConfig.addWatchTarget("output.css");
+  eleventyConfig.addWatchTarget("src/js/index.js");
 
+  // --- Directory Configuration ---
   return {
     dir: {
-      input: "src",
-      includes: "_includes",
-      output: "_site",
+      input: "src", // Source files
+      includes: "_includes", // Layouts and partials
+      data: "_data", // Global data
+      output: "_site", // Build output
     },
-    passthroughFileCopy: true,
-    // Define template formats to process
-    templateFormats: ["html", "md"],
+    // Use Nunjucks as the templating engine for HTML
     htmlTemplateEngine: "njk",
     markdownTemplateEngine: "njk",
   };
 };
+

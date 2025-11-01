@@ -6,7 +6,7 @@
  * initialized once and provides a central point for all database/auth imports.
  */
 
-// (FIX 9:34 PM): Moved 'setLogLevel' to the 'firebase-app' import, as it
+// (FIX 9:54 PM): Moved 'setLogLevel' to the 'firebase-app' import, as it
 // is a service of the core app, not the auth module.
 import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import {
@@ -50,7 +50,7 @@ try {
   auth = getAuth(app);
   db = getFirestore(app);
 
-  // (FIX 9:34 PM): Set log level for easier debugging in development
+  // (FIX 9:54 PM): Set log level for easier debugging in development
   // This will be disabled in a production build.
   if (window.location.hostname === "localhost") {
     setLogLevel("debug");

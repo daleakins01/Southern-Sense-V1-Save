@@ -1,124 +1,65 @@
 ---
 layout: layout.html
 title: "About Us"
+description: "Learn about the story of Southern Sense, our founder Paula Bryan, and our commitment to hand-poured, clean-burning candles."
 ---
 
-<main class="container mx-auto px-4 py-16">
-  <div class="max-w-4xl mx-auto">
-    <!-- Header Section -->
-    <section class="text-center">
-      <h1 class="font-playfair text-5xl font-bold text-charcoal">
-        Our Story
-      </h1>
-      <p class="mt-4 text-xl text-stone">
-        From a simple hobby to a cherished business, this is Southern Sense.
-      </p>
-    </section>
-
-    <!-- Main Content Grid -->
-    <section class="mt-16 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-      <!-- Image -->
-      <div>
-        <img
-          src="/src/paula-bryan-portrait.webp"
+<!-- 
+  About Page Content
+-->
+<div class="relative py-16 bg-white overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="lg:grid lg:grid-cols-2 lg:gap-16">
+      
+      <!-- 1. Founder Image -->
+      <div class="relative h-96 rounded-lg shadow-lg overflow-hidden lg:h-auto">
+        <!-- 
+          FIX (1:43 PM): Removed '/src' prefix. Path is now relative to the site root.
+        -->
+        <img 
+          class="w-full h-full object-cover object-center" 
+          src="/paula-bryan-portrait.webp" 
           alt="Paula Bryan, founder of Southern Sense"
-          class="w-full h-auto rounded-lg shadow-xl object-cover"
-        />
+          onerror="this.onerror=null; this.src='https://placehold.co/600x720/A8A29E/3D352E?text=Paula+Bryan&font=playfairdisplay';"
+        >
       </div>
 
-      <!-- Text Content -->
-      <div class="text-stone text-lg leading-relaxed">
-        <p>
-          Welcome to Southern Sense! My name is Paula Bryan, and I'm the heart
-          and hands behind every candle you see. What started as a creative
-          outlet in my kitchen has blossomed into a passion I’m thrilled to
-          share with you.
-        </p>
-        <p class="mt-4">
-          Based in the charming town of Kinston, North Carolina, Southern Sense
-          is built on the belief that scent is a powerful part of our lives.
-          It’s tied to our memories, our moods, and our homes. That's why I
-          pour so much care into every small batch.
-        </p>
-        <p class="mt-4">
-          I hand-pour each candle using a premium soy-paraffin wax blend,
-          which provides the best of both worlds: the clean burn of soy and the
-          exceptional scent-throw of paraffin. Paired with high-quality,
-          phthalate-free fragrance oils and lead-free cotton wicks, the result
-          is a beautifully aromatic, long-lasting candle that you can feel
-          good about burning.
-        </p>
-        <p class="mt-4">
-          Thank you for supporting my small business. I hope my candles bring
-          as much warmth and joy to your home as I find in making them.
-        </p>
-        <div class="mt-6">
-          <span
-            class="font-great-vibes text-5xl text-burnt-orange -ml-2"
-            aria-hidden="true"
-          >
+      <!-- 2. Text Content -->
+      <div class="relative mt-12 lg:mt-0 lg:py-16">
+        <div class="text-base text-stone-600 space-y-6">
+          <h1 class="text-4xl font-playfair font-bold text-charcoal sm:text-5xl">
+            From Our Home to Yours
+          </h1>
+          <p class="text-xl">
+            Hi, I'm Paula Bryan, the founder of Southern Sense. My journey into candlemaking 
+            started right here in my North Carolina kitchen, born from a desire to fill my 
+            home with warm, inviting scents that felt both luxurious and safe for my family.
+          </p>
+          <p>
+            What began as a personal passion quickly grew. I was frustrated with mass-produced 
+            candles that burned unevenly, lost their scent, and were made with harsh chemicals. 
+            I knew there had to be a better way—a way to combine the art of traditional 
+            candlemaking with modern, clean ingredients.
+          </p>
+          <p>
+            Southern Sense is the result of that dream. Every candle we offer is hand-poured 
+            in small batches. We use a premium blend of natural soy wax, clean-burning cotton wicks, 
+            and phthalate-free fragrance oils infused with essential oils. 
+          </p>
+          <p class="font-semibold text-charcoal">
+            Our mission is simple: to create high-quality, clean-burning candles that 
+            bring a sense of comfort, elegance, and southern hospitality into your home.
+          </p>
+          <p>
+            Thank you for supporting our small business and letting us share our passion with you.
+          </p>
+          <p class="font-accent text-4xl text-burnt-orange mt-4">
             Paula Bryan
-          </span>
+          </p>
         </div>
       </div>
-    </section>
 
-    <!-- Our Values Section -->
-    <section class="mt-24">
-      <h2
-        class="font-playfair text-4xl font-semibold text-charcoal text-center"
-      >
-        Our Commitment
-      </h2>
-      <div
-        class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-10 text-center"
-      >
-        <!-- Value 1 -->
-        <div class="flex flex-col items-center">
-          <img
-            src="/src/finest-wax.webp"
-            alt="Hand-poured wax"
-            class="w-32 h-32 object-cover rounded-full shadow-lg"
-          />
-          <h3 class="font-playfair text-2xl font-semibold text-charcoal mt-4">
-            Quality Ingredients
-          </h3>
-          <p class="text-stone mt-2">
-            We use a premium soy-paraffin blend for a clean burn and powerful
-            scent.
-          </p>
-        </div>
-        <!-- Value 2 -->
-        <div class="flex flex-col items-center">
-          <img
-            src="/src/clean-oils.webp"
-            alt="Fragrance oil dropper"
-            class="w-32 h-32 object-cover rounded-full shadow-lg"
-          />
-          <h3 class="font-playfair text-2xl font-semibold text-charcoal mt-4">
-            Clean Scents
-          </h3>
-          <p class="text-stone mt-2">
-            All our fragrance oils are 100% phthalate-free and safe for your
-            home.
-          </p>
-        </div>
-        <!-- Value 3 -->
-        <div class="flex flex-col items-center">
-          <img
-            src="/src/candles-header.webp"
-            alt="Finished candles curing"
-            class="w-32 h-32 object-cover rounded-full shadow-lg"
-          />
-          <h3 class="font-playfair text-2xl font-semibold text-charcoal mt-4">
-            Handcrafted in NC
-          </h3>
-          <p class="text-stone mt-2">
-            Every product is hand-poured in small batches in Kinston, North
-            Carolina.
-          </p>
-        </div>
-      </div>
-    </section>
+    </div>
   </div>
-</main>
+</div>
+

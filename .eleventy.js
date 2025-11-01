@@ -1,54 +1,64 @@
-module.exports = function (eleventyConfig) {
-  // --- Eleventy Configuration ---
-  eleventyConfig.setLiquidOptions({
-    dynamicPartials: false,
-    strictFilters: false,
-    dataDeepMerge: true,
-  });
+// This is the configuration file for Eleventy.
+// It tells Eleventy how to build the site.
 
-  // --- Passthrough Copy ---
-  // Copies files directly from /src to /_site without processing.
+module.exports = function(eleventyConfig) {
 
-  // (FIX 10:18 PM): Updated to copy the CSS file from its correct location
-  // inside /src, matching the 'build:css' script in package.json.
-  eleventyConfig.addPassthroughCopy("src/output.css");
+    // --- Passthrough Copy ---
+    // This tells Eleventy to copy files directly from 'src' to '_site'
+    // without trying to process them as templates. This is essential
+    // for CSS, JavaScript, images, and other assets.
 
-  // Passthrough all JS modules
-  eleventyConfig.addPassthroughCopy("src/auth.js");
-  eleventyConfig.addPassthroughCopy("src/cart.js");
-  eleventyConfig.addPassthroughCopy("src/firebase-loader.js");
-  eleventyConfig.addPassthroughCopy("src/main.js");
-  eleventyConfig.addPassthroughCopy("src/js/index.js");
+    // 1. CSS: Copy 'src/output.css' to '_site/css/style.css'
+    // This was the fix we implemented earlier.
+    eleventyConfig.addPassthroughCopy({ "src/output.css": "css/style.css" });
 
-  // Passthrough all images
-  eleventyConfig.addPassthroughCopy("src/*.webp");
+    // 2. JavaScript: Copy all '.js' files from 'src' to the root of '_site/src'
+    // This will fix the 404 errors for 'main.js', 'firebase-loader.js', etc.
+    eleventyConfig.addPassthroughCopy("src/**/*.js");
 
-  // Passthrough the standalone Admin Panel files
-  // (These are in the root, not /src)
-  eleventyConfig.addPassthroughCopy("admin.html");
-  eleventyConfig.addPassthroughCopy("admin-login.html");
-  eleventyConfig.addPassthroughCopy("AdminPageFunctionsGuide.html");
+    // 3. WebP Images: Copy all '.webp' files from 'src' to the root of '_site/src'
+    // This will fix all the 404 errors for 'logo.webp', 'candles-header.webp', etc.
+    eleventyConfig.addPassthroughCopy("src/**/*.webp");
 
-  // --- Watch Targets ---
-  // Tell Eleventy to trigger a rebuild when these files change.
-  eleventyConfig.addWatchTarget("src/output.css");
-  eleventyConfig.addWatchTarget("src/main.js");
+    
+    // --- Watch Targets ---
+    // This tells Eleventy to automatically rebuild the site if these files change.
+    
+    // 1. Watch the compiled CSS file for changes.
+    eleventyConfig.addWatchTarget("src/output.css");
+    
+    // 2. Watch JavaScript files for changes.
+    eleventyConfig.addWatchTarget("src/**/*.js");
+    
+    // 3. Watch image files for changes.
+    eleventyConfig.addWatchTarget("src/**/*.webp");
 
-  // --- Base Configuration ---
-  return {
-    // Set the source and output directories
-    dir: {
-      input: "src",
-      includes: "_includes",
-      data: "_data",
-      output: "_site",
-    },
-    // Set default template engines
-    templateFormats: ["html", "md", "njk", "liquid"],
-    markdownTemplateEngine: "liquid",
-    // (FIX 12:28 PM): Removed 'htmlTemplateEngine: "njk"'. This was
-    // forcing the Nunjucks engine to parse plain HTML files,
-    // which was crashing the build silently.
-    dataTemplateEngine: "njk",
-  };
+
+    // --- Layout Aliasing ---
+    // This allows you to specify 'layout: "layout.html"' in your front matter
+    // instead of the full path. It's a quality-of-life improvement.
+    eleventyConfig.addLayoutAlias("layout", "layout.html");
+
+    // --- Base Configuration ---
+    // These are the main settings for the project.
+    return {
+        // 'dir' configures the directory structure.
+        dir: {
+            input: "src",         // Source files are in the 'src' folder.
+            output: "_site",      // The built site will be in the '_site' folder.
+            includes: "_includes",// Partials (header, footer) are in 'src/_includes'.
+            data: "_data"         // Global data files are in 'src/_data'.
+        },
+        // 'templateFormats' specifies which file types Eleventy should process.
+        templateFormats: [
+            "html",   // Process .html files (using Liquid by default).
+            "liquid", // Process .liquid files.
+            "md"      // Process .md (Markdown) files.
+        ],
+        // 'htmlTemplateEngine' sets Liquid as the default engine for .html files.
+        htmlTemplateEngine: "liquid",
+        // 'markdownTemplateEngine' sets Liquid as the engine for .md files.
+        markdownTemplateEngine: "liquid"
+    };
 };
+

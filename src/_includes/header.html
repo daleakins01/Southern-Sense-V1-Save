@@ -1,225 +1,103 @@
 <!-- 
-  This is the site header partial.
-  It is included by the main layout.html file.
+  This is the header partial. It gets included by 'layout.html'.
+  It contains the logo, main navigation, and mobile menu.
 -->
-<header class="bg-parchment sticky top-0 z-50 shadow-md">
-  <nav
-    class="container mx-auto px-4 sm:px-6 lg:px-8"
-    aria-label="Main navigation"
-  >
-    <div class="flex justify-between items-center h-20">
-      <!-- Logo -->
-      <a href="/" class="flex-shrink-0 flex items-center">
-        <!-- (FIX 8:43 PM): Corrected path from /src/logo.webp to /logo.webp -->
-        <img
-          class="h-16 w-auto"
-          src="/logo.webp"
-          alt="Southern Sense"
-          onerror="this.src='https://placehold.co/150x64/FBF9F6/3D352E?text=Southern+Sense&font=playfairdisplay';"
-        />
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="flex justify-between items-center h-20">
+    
+    <!-- 1. Main Navigation (Desktop) -->
+    <div class="hidden md:flex md:items-center md:space-x-6">
+      <a href="/shop.html" class="text-base font-medium text-stone-300 hover:text-white transition-colors">Shop</a>
+      <a href="/about.html" class="text-base font-medium text-stone-300 hover:text-white transition-colors">About</a>
+      <a href="/scent-guide.html" class="text-base font-medium text-stone-300 hover:text-white transition-colors">Scent Guide</a>
+    </div>
+    
+    <!-- 2. Logo -->
+    <div class="flex-shrink-0">
+      <a href="/index.html" aria-label="Home">
+        <!-- 
+          FIX (1:43 PM): Removed '/src' prefix. Path is now relative to the site root.
+        -->
+        <img 
+          class="h-16 w-auto" 
+          src="/logo.webp" 
+          alt="Southern Sense Logo"
+          onerror="this.onerror=null; this.src='https://placehold.co/200x64/FBF9F6/3D352E?text=Southern+Sense&font=playfairdisplay';"
+        >
       </a>
-
-      <!-- Desktop Navigation -->
-      <!-- (FIX 10:08 PM): Re-added responsive classes 'hidden md:flex' -->
-      <div class="hidden md:flex md:items-center md:space-x-8">
-        <a
-          href="/"
-          class="font-roboto text-stone hover:text-burnt-orange transition-colors duration-200"
-          >Home</a
-        >
-        <a
-          href="/shop.html"
-          class="font-roboto text-stone hover:text-burnt-orange transition-colors duration-200"
-          >Shop</a
-        >
-        <a
-          href="/about.html"
-          class="font-roboto text-stone hover:text-burnt-orange transition-colors duration-200"
-          >About</a
-        >
-        <a
-          href="/contact.html"
-          class="font-roboto text-stone hover:text-burnt-orange transition-colors duration-200"
-          >Contact</a
-        >
-      </div>
-
-      <!-- Right-side Icons (Desktop) -->
-      <!-- (FIX 10:08 PM): Re-added responsive classes 'hidden md:flex' -->
-      <div class="hidden md:flex md:items-center md:space-x-6">
-        <a
-          href="/login.html"
-          id="nav-account-link"
-          class="text-stone hover:text-burnt-orange transition-colors duration-200"
-        >
-          <span class="sr-only">My Account</span>
-          <svg
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
-        </a>
-        <a
-          href="/cart.html"
-          class="relative text-stone hover:text-burnt-orange transition-colors duration-200"
-        >
-          <span class="sr-only">Shopping Cart</span>
-          <svg
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-          <span
-            id="cart-count-bubble"
-            class="absolute -top-2 -right-2 bg-burnt-orange text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden"
-          >
-            0
-          </span>
-        </a>
-      </div>
-
-      <!-- Mobile Menu Button -->
-      <!-- (FIX 10:08 PM): Re-added responsive class 'md:hidden' -->
-      <div class="md:hidden flex items-center">
-        <!-- (FIX 9:06 PM): ID updated to match main.js -->
-        <button
-          type="button"
-          id="mobile-menu-open-btn"
-          class="inline-flex items-center justify-center p-2 rounded-md text-stone hover:text-burnt-orange"
-          aria-controls="mobile-menu"
-          aria-expanded="false"
-        >
-          <span class="sr-only">Open main menu</span>
-          <svg
-            class="block h-6 w-6"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h16m-7 6h7"
-            />
-          </svg>
-        </button>
-      </div>
     </div>
-  </nav>
-
-  <!-- Mobile Menu, show/hide based on menu state. -->
-  <!-- (FIX 10:08 PM): Re-added responsive class 'md:hidden' -->
-  <div class="md:hidden hidden" id="mobile-menu">
-    <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-      <a
-        href="/"
-        class="block px-3 py-2 rounded-md text-base font-medium text-charcoal"
-        >Home</a
+    
+    <!-- 3. Mobile Menu Button (Hamburger) -->
+    <div class="md:hidden flex items-center">
+      <button 
+        type="button" 
+        class="inline-flex items-center justify-center p-2 rounded-md text-stone-300 hover:text-white hover:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-parchment" 
+        aria-controls="mobile-menu-panel" 
+        aria-expanded="false"
+        id="mobile-menu-button" <!-- FIX (1:50 PM): Was 'mobile-menu-open' -->
       >
-      <a
-        href="/shop.html"
-        class="block px-3 py-2 rounded-md text-base font-medium text-stone hover:text-burnt-orange"
-        >Shop</a
-      >
-      <a
-        href="/about.html"
-        class="block px-3 py-2 rounded-md text-base font-medium text-stone hover:text-burnt-orange"
-        >About</a
-      >
-      <a
-        href="/contact.html"
-        class="block px-3 py-2 rounded-md text-base font-medium text-stone hover:text-burnt-orange"
-        >Contact</a
-      >
-    </div>
-    <!-- Mobile Account/Cart Icons -->
-    <div class="border-t border-stone/20 pt-4 pb-3">
-      <div class="flex items-center px-5">
-        <a
-          href="/login.html"
-          id="nav-account-link-mobile"
-          class="flex-shrink-0 p-1 rounded-full text-stone hover:text-burnt-orange"
-        >
-          <span class="sr-only">My Account</span>
-          <svg
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
-        </a>
-        <a
-          href="/cart.html"
-          class="ml-4 relative flex-shrink-0 p-1 rounded-full text-stone hover:text-burnt-orange"
-        >
-          <span class="sr-only">Shopping Cart</span>
-          <svg
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-          <span
-            id="cart-count-bubble-mobile"
-            class="absolute -top-2 -right-2 bg-burnt-orange text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden"
-          >
-            0
-          </span>
-        </a>
-      </div>
-      <div class="mt-3 px-2 space-y-1">
-        <a
-          href="/login.html"
-          id="nav-auth-action-mobile"
-          class="block px-3 py-2 rounded-md text-base font-medium text-stone hover:text-burnt-orange"
-          >Sign in / Register</a
-        >
-      </div>
-    </div>
-    <!-- Close Menu Button -->
-    <div class="px-5 py-3">
-      <!-- (FIX 9:06 PM): ID added to match main.js -->
-      <button
-        type="button"
-        id="mobile-menu-close-btn"
-        class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-burnt-orange"
-      >
-        Close
+        <span class="sr-only">Open main menu</span>
+        <!-- Heroicon name: outline/menu -->
+        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
       </button>
     </div>
+
+    <!-- 4. Account & Cart (Desktop) -->
+    <div class="hidden md:flex md:items-center md:space-x-6">
+      <a href="/contact.html" class="text-base font-medium text-stone-300 hover:text-white transition-colors">Contact</a>
+      <a href="/login.html" class="text-base font-medium text-stone-300 hover:text-white transition-colors" aria-label="Account">
+        <!-- Heroicon name: outline/user -->
+        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      </a>
+      <a href="/cart.html" class="text-base font-medium text-stone-300 hover:text-white transition-colors" aria-label="Cart">
+        <!-- Heroicon name: outline/shopping-bag -->
+        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+      </a>
+    </div>
+
   </div>
-</header>
+</div>
+
+<!-- 
+  Mobile Menu Panel (Flyout) 
+  This is hidden by default and shown/hidden by 'main.js'.
+-->
+<div 
+  class="md:hidden hidden" 
+  id="mobile-menu-panel" <!-- FIX (1:50 PM): Was 'mobile-menu' -->
+>
+  <div class="fixed inset-0 bg-stone-900 bg-opacity-75 z-20" aria-hidden="true"></div>
+  <div class="fixed top-0 right-0 max-w-xs w-full h-full bg-parchment z-30 shadow-lg p-4">
+    <!-- Close Button -->
+    <div class="flex justify-end">
+      <button 
+        type="button" 
+        class="p-2 rounded-md text-stone-500 hover:text-charcoal hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-burnt-orange"
+        id="mobile-menu-close-button" <!-- FIX (1:50 PM): Was 'mobile-menu-close' -->
+      >
+        <span class="sr-only">Close menu</span>
+        <!-- Heroicon name: outline/x -->
+        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Mobile Nav Links -->
+    <nav class="mt-8 space-y-4">
+      <a href="/shop.html" class="block px-3 py-2 rounded-md text-lg font-medium text-charcoal hover:bg-stone-200">Shop</a>
+      <a href="/about.html" class="block px-3 py-2 rounded-md text-lg font-medium text-charcoal hover:bg-stone-200">About</a>
+      <a href="/scent-guide.html" class="block px-3 py-2 rounded-md text-lg font-medium text-charcoal hover:bg-stone-200">Scent Guide</a>
+      <a href="/contact.html" class="block px-3 py-2 rounded-md text-lg font-medium text-charcoal hover:bg-stone-200">Contact</a>
+      <a href="/login.html" class="block px-3 py-2 rounded-md text-lg font-medium text-charcoal hover:bg-stone-200">Account</a>
+      <a href="/cart.html" class="block px-3 py-2 rounded-md text-lg font-medium text-charcoal hover:bg-stone-200">Cart</a>
+    </nav>
+  </div>
+</div>
 

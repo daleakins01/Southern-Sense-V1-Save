@@ -1,38 +1,20 @@
-This file tells Eleventy to ignore files/directories from being processed.
+This file tells Eleventy to ignore specific files or directories.
 
-Ignore node_modules
+Ignore the node_modules directory
+
 node_modules/
 
-(FIX 8:05 PM): Ignore all old V1.1 HTML files in the root folder.
-This prevents them from conflicting with the new pages in /src.
-404.html
-about.html
-account.html
-admin-login.html
-admin.html
-AdminPageFunctionsGuide.html
-candle-care.html
-contact.html
-login.html
-message-sent.html
-order-confirmation.html
-product.html
-refill-program.html
-register.html
-scent-glossary.html
-scent-guide.html
-shop.html
-cart.html
-footer.html
-header.html
+Ignore the output directory to prevent recursion
 
-=== THE FIX ===
+_site/
 
-This tells Eleventy to NOT process the "ghost" partial files
+--- CRITICAL FIX ---
 
-in the /src directory as standalone pages, which stops
+Ignore the "ghost" header and footer files that exist
 
-the build from crashing.
+in the root of /src. These are NOT pages and are
+
+crashing the build. The real files are in /src/_includes/
 
 src/header.html
 src/footer.html

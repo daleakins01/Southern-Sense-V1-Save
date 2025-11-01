@@ -1,157 +1,85 @@
 <!-- 
-  This is the site footer partial.
-  It is included by the main layout.html file.
+  This is the footer partial. It gets included by 'layout.html'.
+  It contains navigation links, a newsletter signup, social media icons,
+  and the copyright notice.
 -->
-<footer class="bg-charcoal text-parchment/70 mt-24">
-  <div
-    class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-4 gap-8"
-  >
-    <!-- Logo & Copyright -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+    
+    <!-- 1. Quick Links -->
     <div>
-      <!--
-        (FIX 8:56 PM): Corrected asset path.
-        Changed "/src/logo.webp" to "/logo.webp"
-      -->
-      <img
-        class="h-16 w-auto"
-        src="/logo.webp"
-        alt="Southern Sense Logo"
-      />
-      <p class="text-sm mt-4">
-        &copy; 2024 Southern Sense. <br />All rights reserved.
-      </p>
-      <div class="flex gap-x-4 mt-4">
+      <h3 class="text-lg font-playfair font-semibold text-parchment">Quick Links</h3>
+      <ul class="mt-4 space-y-2">
+        <li><a href="/shop.html" class="text-stone-300 hover:text-white transition-colors">Shop All</a></li>
+        <li><a href="/about.html" class="text-stone-300 hover:text-white transition-colors">About Us</a></li>
+        <li><a href="/contact.html" class="text-stone-300 hover:text-white transition-colors">Contact</a></li>
+        <li><a href="/candle-care.html" class="text-stone-300 hover:text-white transition-colors">Candle Care</a></li>
+        <li><a href="/refill-program.html" class="text-stone-300 hover:text-white transition-colors">Refill Program</a></li>
+      </ul>
+    </div>
+
+    <!-- 2. Our Scents -->
+    <div>
+      <h3 class="text-lg font-playfair font-semibold text-parchment">Our Scents</h3>
+      <ul class="mt-4 space-y-2">
+        <li><a href="/scent-guide.html" class="text-stone-300 hover:text-white transition-colors">Scent Guide</a></li>
+        <li><a href="/scent-glossary.html" class="text-stone-300 hover:text-white transition-colors">Scent Glossary</a></li>
+      </ul>
+    </div>
+
+    <!-- 3. Social Media -->
+    <div>
+      <h3 class="text-lg font-playfair font-semibold text-parchment">Follow Us</h3>
+      <div class="flex space-x-4 mt-4">
         <!-- 
-          (FIX 8:56 PM): Corrected social icon paths and links.
-          - Updated Facebook link.
-          - Set TikTok to "#" as a placeholder.
-          - Fixed image src paths (removed "/src/").
+          Facebook Icon 
+          FIX (1:43 PM): Removed '/src' prefix. Path is now relative to the site root.
         -->
-        <a
-          href="https://www.facebook.com/profile.php?id=61581857193998"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span class="sr-only">Facebook</span>
-          <img
-            src="/facebook-icon.webp"
-            alt="Facebook"
-            class="h-8 w-8 opacity-70 hover:opacity-100 transition-opacity"
-          />
+        <a href="httpsS://www.facebook.com/SouthernSenseCo" target="_blank" rel="noopener noreferrer" class="text-stone-300 hover:text-white transition-colors" aria-label="Facebook">
+          <img src="/facebook-icon.webp" alt="Facebook Icon" class="h-8 w-8" onerror="this.onerror=null; this.src='https://placehold.co/32x32/FBF9F6/3D352E?text=FB&font=roboto';">
         </a>
-        <a href="#" target="_blank" rel="noopener noreferrer">
-          <span class="sr-only">TikTok</span>
-          <img
-            src="/tiktok-icon.webp"
-            alt="TikTok"
-            class="h-8 w-8 opacity-70 hover:opacity-100 transition-opacity"
-          />
+        <!-- 
+          TikTok Icon 
+          FIX (1:43 PM): Removed '/src' prefix. Path is now relative to the site root.
+        -->
+        <a href="https://www.tiktok.com/@southernsenseco" target="_blank" rel="noopener noreferrer" class="text-stone-300 hover:text-white transition-colors" aria-label="TikTok">
+          <img src="/tiktok-icon.webp" alt="TikTok Icon" class="h-8 w-8" onerror="this.onerror=null; this.src='https://placehold.co/32x32/FBF9F6/3D352E?text=TT&font=roboto';">
         </a>
       </div>
     </div>
 
-    <!-- Quick Links -->
+    <!-- 4. Newsletter Signup -->
     <div>
-      <h3 class="font-playfair text-lg font-semibold text-white">
-        Quick Links
-      </h3>
-      <ul class="mt-4 space-y-2">
-        <li>
-          <a
-            href="/shop.html"
-            class="hover:text-white transition-colors"
-            >Shop All</a
+      <h3 class="text-lg font-playfair font-semibold text-parchment">Stay in Touch</h3>
+      <p class="mt-4 text-stone-300">Sign up for our newsletter to hear about new scents and special offers.</p>
+      <form class="mt-4">
+        <label for="footer-email" class="sr-only">Email address</label>
+        <div class="flex rounded-md shadow-sm">
+          <input 
+            type="email" 
+            name="email-address" 
+            id="footer-email" 
+            autocomplete="email" 
+            required 
+            class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md bg-parchment border-stone-300 text-stone-900 placeholder-stone-500 focus:outline-none focus:ring-burnt-orange focus:border-burnt-orange sm:text-sm" 
+            placeholder="Enter your email"
           >
-        </li>
-        <li>
-          <a
-            href="/scent-guide.html"
-            class="hover:text-white transition-colors"
-            >Scent Guide</a
+          <button 
+            type="submit" 
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md shadow-sm text-parchment bg-burnt-orange hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-burnt-orange transition-colors"
           >
-        </li>
-        <li>
-          <a
-            href="/about.html"
-            class="hover:text-white transition-colors"
-            >Our Story</a
-          >
-        </li>
-        <li>
-          <a
-            href="/contact.html"
-            class="hover:text-white transition-colors"
-            >Contact</a
-          >
-        </li>
-      </ul>
-    </div>
-
-    <!-- Customer Care -->
-    <div>
-      <h3 class="font-playfair text-lg font-semibold text-white">
-        Customer Care
-      </h3>
-      <ul class="mt-4 space-y-2">
-        <li>
-          <a
-            href="/account.html"
-            class="hover:text-white transition-colors"
-            >My Account</a
-          >
-        </li>
-        <li>
-          <a
-            href="/candle-care.html"
-            class="hover:text-white transition-colors"
-            >Candle Care</a
-          >
-        </li>
-        <li>
-          <a
-            href="/refill-program.html"
-            class="hover:text-white transition-colors"
-            >Refill Program</a
-          >
-        </li>
-        <li>
-          <a
-            href="/scent-glossary.html"
-            class="hover:text-white transition-colors"
-            >Scent Glossary</a
-          >
-        </li>
-      </ul>
-    </div>
-
-    <!-- Newsletter -->
-    <div>
-      <h3 class="font-playfair text-lg font-semibold text-white">
-        Join Our List
-      </h3>
-      <p class="mt-4 text-sm">
-        Get updates on new scents, special offers, and more.
-      </p>
-      <!-- (Pillar 2): This form needs to be wired up. -->
-      <form class="mt-4 flex">
-        <label for="email-address" class="sr-only">Email address</label>
-        <input
-          type="email"
-          name="email-address"
-          id="email-address"
-          autocomplete="email"
-          required
-          class="w-full min-w-0 appearance-none rounded-l-md border-0 bg-parchment/80 px-3 py-2 text-charcoal shadow-sm ring-1 ring-inset ring-stone/30 placeholder:text-stone/60 focus:ring-2 focus:ring-inset focus:ring-burnt-orange"
-          placeholder="Enter your email"
-        />
-        <button
-          type="submit"
-          class="flex-shrink-0 rounded-r-md bg-burnt-orange px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-opacity-90"
-        >
-          Sign Up
-        </button>
+            Sign Up
+          </button>
+        </div>
       </form>
     </div>
+
+  </div> <!-- /End Grid -->
+
+  <!-- Copyright -->
+  <div class="mt-12 border-t border-stone-700 pt-8 text-center">
+    <p class="text-base text-stone-400">&copy; 2024 Southern Sense. All rights reserved.</p>
   </div>
-</footer>
+
+</div>
 

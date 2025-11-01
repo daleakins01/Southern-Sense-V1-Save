@@ -33,6 +33,16 @@ module.exports = function(eleventyConfig) {
     // 3. Watch image files for changes.
     eleventyConfig.addWatchTarget("src/**/*.webp");
 
+    // --- CRITICAL FIX (1.2) ---
+    // This adds the "safe" filter.
+    // The product pages use this to render raw HTML (e.g., <p> tags)
+    // from the product's 'longDescription' field in Firestore.
+    // Without this, the build will crash with an "undefined filter: safe" error.
+    eleventyConfig.addFilter("safe", (content) => {
+        return content ? content : '';
+    });
+    // --- END FIX ---
+
 
     // --- Layout Aliasing ---
     // This allows you to specify 'layout: "layout.html"' in your front matter
@@ -61,4 +71,3 @@ module.exports = function(eleventyConfig) {
         markdownTemplateEngine: "liquid"
     };
 };
-

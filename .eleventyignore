@@ -1,13 +1,10 @@
 This file tells Eleventy to ignore files/directories from being processed.
 
 Ignore node_modules
-
 node_modules/
 
 (FIX 8:05 PM): Ignore all old V1.1 HTML files in the root folder.
-
 This prevents them from conflicting with the new pages in /src.
-
 404.html
 about.html
 account.html
@@ -28,3 +25,14 @@ shop.html
 cart.html
 footer.html
 header.html
+
+=== THE FIX ===
+
+This tells Eleventy to NOT process the "ghost" partial files
+
+in the /src directory as standalone pages, which stops
+
+the build from crashing.
+
+src/header.html
+src/footer.html

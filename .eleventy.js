@@ -46,10 +46,9 @@ module.exports = function (eleventyConfig) {
     // Set default template engines
     templateFormats: ["html", "md", "njk", "liquid"],
     markdownTemplateEngine: "liquid",
-    // (FIX 12:02 PM): Removed 'htmlTemplateEngine: "njk"'. This was
+    // (FIX 12:28 PM): Removed 'htmlTemplateEngine: "njk"'. This was
     // forcing the Nunjucks engine to parse plain HTML files,
     // which was crashing the build silently.
     dataTemplateEngine: "njk",
   };
 };
-

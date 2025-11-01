@@ -4,97 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 
-      Dynamically set page title.
-      - 'title' comes from the front matter of each page (e.g., index.html, about.html).
-      - 'site.name' comes from '_data/site.json'.
-      - 'default: "Southern Sense"' provides a fallback if 'title' is missing.
-    -->
-    <title>{{ title | default: "Southern Sense" }} | {{ site.name }}</title>
-
-    <meta name="description" content="{{ description | default: site.description }}">
+    <!-- Page Title and Meta Description -->
+    <!-- 'title' and 'description' are set in each page's front matter -->
+    <title>{{ title | default: site.defaultTitle }}</title>
+    <meta name="description" content="{{ description | default: site.defaultDescription }}">
     
-    <!-- 
-      Favicon Links
-      TODO: Add actual favicon files to the root or a designated 'assets' folder
-    -->
-    <!-- 
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <link rel="manifest" href="/site.webmanifest">
-    -->
-
-    <!-- 
-      FONTS: Load custom fonts from Google Fonts
-      - Playfair Display (Headings)
-      - Roboto (Body)
-      - Great Vibes (Accent)
-    -->
+    <!-- Brand Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-
-    <!-- 
-      CSS STYLESHEET:
-      - This path is set by Eleventy's passthrough copy.
-      - We configure '.eleventy.js' to copy 'src/output.css' to '_site/css/style.css'.
-    -->
-    <link rel="stylesheet" href="/css/style.css">
-
-    <!-- 
-      FIREBASE SDKs:
-      - Loaded from firebase-loader.js to initialize Firebase.
-      - This script MUST execute before other scripts that depend on Firebase (auth, cart).
-      
-      FIX (1:43 PM): Removed '/src' prefix. Path is now relative to the site root.
-    -->
-    <script src="/firebase-loader.js" type="module"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;700&family=Great+Vibes&display=swap" rel="stylesheet">
     
+    <!-- Main Stylesheet (compiled by Tailwind) -->
+    <!-- This path is /css/style.css because .eleventy.js copies it there -->
+    <link rel="stylesheet" href="/css/style.css">
+    
+    <!-- FIX 5.3: Add favicon links -->
+    <link rel="icon" href="/logo.webp" type="image/webp">
+    <link rel="apple-touch-icon" href="/logo.webp">
+
+    <!-- 
+      FIX 5.4: Correct JavaScript paths.
+      FIX 5.5: Added type="module" to firebase-loader.js because it uses
+               the ES6 'import' syntax. 'main.js' is a standard
+               script and does not get 'type="module"'.
+    -->
+
+    <!-- Firebase SDKs (as a module) -->
+    <script src="/firebase-loader.js" type="module" defer></script>
+    
+    <!-- Main Site JavaScript (as a standard script) -->
+    <script src="/main.js" defer></script>
 </head>
-<body class="bg-parchment text-stone-700 font-roboto flex flex-col min-h-screen">
+<body class="bg-parchment text-charcoal font-roboto flex flex-col min-h-screen">
+    
+    <!-- Header -->
+    <!-- This pulls in the header partial from src/_includes/header.html -->
+    {% include "header.html" %}
 
-    <!-- 
-      Page Header
-      - The header content is loaded from '/src/_includes/header.html'.
-    -->
-    <header id="main-header" class="sticky top-0 z-50">
-        {% include "header.html" %}
-    </header>
-
-    <!-- 
-      Main Content Area
-      - This is where the content from individual pages (like index.html, about.html, etc.) 
-        will be injected.
-    -->
+    <!-- Main Content -->
+    <!-- 'content' is the content from the individual .html files (e.g., shop.html) -->
     <main class="flex-grow">
         {{ content }}
     </main>
 
-    <!-- 
-      Page Footer
-      - The footer content is loaded from '/src/_includes/footer.html'.
-    -->
-    <footer id="main-footer" class="bg-charcoal text-parchment py-12">
-        {% include "footer.html" %}
-    </footer>
-
-    <!-- 
-      Global Site JavaScript
-      - 'main.js' should contain scripts needed on *every* page.
-      - This includes mobile nav toggles, cart icon updates, auth state listeners.
-      - It is loaded as a 'module' to allow 'import/export' syntax.
-
-      FIX (1:43 PM): Removed '/src' prefix. Path is now relative to the site root.
-    -->
-    <script src="/main.js" type="module"></script>
-    
-    <!-- 
-      Page-Specific JavaScript
-      - This 'pageScript' block allows individual pages to inject their own 
-        specific JavaScript files.
-    -->
-    {{ pageScript | default: "" }}
+    <!-- Footer -->
+    <!-- This pulls in the footer partial from src/_includes/footer.html -->
+    {% include "footer.html" %}
 
 </body>
 </html>

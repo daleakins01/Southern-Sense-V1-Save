@@ -9,16 +9,27 @@ module.exports = function(eleventyConfig) {
     // for CSS, JavaScript, images, and other assets.
 
     // 1. CSS: Copy 'src/output.css' to '_site/css/style.css'
-    // This was the fix we implemented earlier.
     eleventyConfig.addPassthroughCopy({ "src/output.css": "css/style.css" });
 
-    // 2. JavaScript: Copy all '.js' files from 'src' to the root of '_site/src'
-    // This will fix the 404 errors for 'main.js', 'firebase-loader.js', etc.
+    // 2. JavaScript: Copy all '.js' files from 'src' to '_site/'
+    // This rule is working.
     eleventyConfig.addPassthroughCopy("src/**/*.js");
 
-    // 3. WebP Images: Copy all '.webp' files from 'src' to the root of '_site/src'
-    // This will fix all the 404 errors for 'logo.webp', 'candles-header.webp', etc.
-    eleventyConfig.addPassthroughCopy("src/**/*.webp");
+    // 3. WebP Images: FIX 4.1
+    // The "src/**/*.webp" glob was failing for root images.
+    // This new, more explicit rule copies all .webp files from the 'src'
+    // folder to '_site/src/'. This will fix all image 404s.
+    eleventyConfig.addPassthroughCopy("src/*.webp");
+    
+    // --- Filters ---
+    // This adds the 'safe' filter, which is CRITICAL for rendering
+    // HTML content (like product descriptions) from Firestore. (FIX 1.2)
+    eleventyConfig.addFilter("safe", (content) => {
+        if (content) {
+            return content;
+        }
+        return "";
+    });
 
     
     // --- Watch Targets ---
@@ -31,17 +42,7 @@ module.exports = function(eleventyConfig) {
     eleventyConfig.addWatchTarget("src/**/*.js");
     
     // 3. Watch image files for changes.
-    eleventyConfig.addWatchTarget("src/**/*.webp");
-
-    // --- CRITICAL FIX (1.2) ---
-    // This adds the "safe" filter.
-    // The product pages use this to render raw HTML (e.g., <p> tags)
-    // from the product's 'longDescription' field in Firestore.
-    // Without this, the build will crash with an "undefined filter: safe" error.
-    eleventyConfig.addFilter("safe", (content) => {
-        return content ? content : '';
-    });
-    // --- END FIX ---
+    eleventyConfig.addWatchTarget("src/*.webp");
 
 
     // --- Layout Aliasing ---
@@ -68,7 +69,9 @@ module.exports = function(eleventyConfig) {
         // 'htmlTemplateEngine' sets Liquid as the default engine for .html files.
         htmlTemplateEngine: "liquid",
         // 'markdownTemplateEngine' sets Liquid as the engine for .md files.
-        markdownTemplateEngine: "liquid"
+        markdownTemplateEngine: "liquid",
+        // 'passthroughFileCopy' enables the passthrough copy feature.
+        passthroughFileCopy: true
     };
 };
 

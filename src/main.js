@@ -1,118 +1,112 @@
-/*
-  Southern Sense - main.js
-  --------------------------
-  Primary JavaScript file for site-wide functionality.
-  Includes:
-  1. Mobile Menu Toggle
-  2. Dynamic HTML Content Loading (for admin, product, etc. - DEPRECATED)
-  3. General utilities
-*/
+// This is the main JavaScript file for the Southern Sense website.
+// It handles global functionality like the mobile menu and cart count.
 
 /**
  * Main function to initialize all site scripts.
- * This runs after the DOM is fully loaded.
+ * This is the entry point for all client-side JavaScript.
  */
 function main() {
-  console.log('Southern Sense main.js loaded.');
-  attachMobileMenuListeners();
-  
-  // (DEPRECATED)
-  // The 'loadHTML' function was part of the old, broken build system.
-  // It is no longer needed as Eleventy now builds all pages.
-  // We are keeping it here but commented out for historical reference.
-  // loadHTML();
+    console.log("Southern Sense main.js loaded.");
+    
+    // Initialize event listeners
+    attachMobileMenuListeners();
+    
+    // Other global initializations can go here...
+    // e.g., initializeCartBubble();
 }
 
 /**
- * (DEPRECATED)
- * Dynamically loads shared HTML content like headers and footers.
- * This is no longer in use, as Eleventy's layout system handles this.
- */
-/*
-function loadHTML() {
-  const elements = document.querySelectorAll('[include-html]');
-  console.log(`Found ${elements.length} elements to include HTML.`); // Debug log
-  
-  Array.prototype.forEach.call(elements, function(el) {
-    const file = el.getAttribute('include-html');
-    if (file) {
-      console.log(`Fetching ${file}`); // Debug log
-      fetch(file)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`Failed to load ${file}: ${response.statusText}`);
-          }
-          return response.text();
-        })
-        .then(data => {
-          el.innerHTML = data;
-          el.removeAttribute('include-html');
-          
-          // After loading, re-attach listeners if it was the header
-          if (file.includes('header.html')) {
-            console.log('Header loaded, re-attaching mobile menu listeners.');
-            attachMobileMenuListeners();
-          }
-        })
-        .catch(err => {
-          console.error(`Error loading HTML from ${file}:`, err);
-          el.innerHTML = `<p class="text-red-500">Error: Could not load ${file}</p>`;
-        });
-    }
-  });
-}
-*/
-
-/**
- * Attaches click event listeners for the mobile (hamburger) menu.
- * Toggles visibility of the mobile menu panel.
+ * Attaches click event listeners to the mobile menu button and panel.
+ * This allows the user to toggle the mobile navigation.
+ * * FIX 5.1: This function is now called *after* the DOM is loaded,
+ * so 'button' and 'panel' will be found.
  */
 function attachMobileMenuListeners() {
-  // ---
-  // FIX (1:57 PM):
-  // Correcting the IDs to match the IDs in `_includes/header.html`
-  // This fixes the 'not found' error.
-  // ---
-  
-  // These IDs MUST match the IDs in `_includes/header.html`
-  const openButton = document.getElementById('mobile-menu-open-button');
-  const closeButton = document.getElementById('mobile-menu-close-button');
-  const menuPanel = document.getElementById('mobile-menu-panel');
-
-  if (openButton && closeButton && menuPanel) {
-    // Show the panel when open button is clicked
-    openButton.addEventListener('click', () => {
-      menuPanel.classList.remove('hidden');
-    });
-
-    // Hide the panel when close button is clicked
-    closeButton.addEventListener('click', () => {
-      menuPanel.classList.add('hidden');
-    });
+    const button = document.getElementById('mobile-menu-button');
+    const panel = document.getElementById('mobile-menu-panel');
+    const svgOpen = button ? button.querySelector('svg') : null; // Get the hamburger icon
+    const svgClose = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); // Create a close icon (X)
     
-    // Optional: Hide the panel if clicking outside of it (on the overlay)
-    // The first child of the menuPanel is the overlay div
-    if (menuPanel.firstElementChild && menuPanel.firstElementChild.tagName === 'DIV') {
-      menuPanel.firstElementChild.addEventListener('click', () => {
-        menuPanel.classList.add('hidden');
-      });
+    // Configure the close icon
+    svgClose.setAttribute('class', 'w-8 h-8');
+    svgClose.setAttribute('fill', 'none');
+    svgClose.setAttribute('stroke', 'currentColor');
+    svgClose.setAttribute('viewBox', '0 0 24 24');
+    svgClose.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+    svgClose.style.display = 'none'; // Hide it initially
+
+    if (button && panel && svgOpen) {
+        // Add the close icon to the button
+        button.appendChild(svgClose);
+
+        button.addEventListener('click', () => {
+            const isHidden = panel.classList.toggle('hidden');
+            const isExpanded = button.getAttribute('aria-expanded') === 'true';
+
+            // Toggle visibility
+            panel.setAttribute('aria-hidden', isHidden);
+            button.setAttribute('aria-expanded', !isExpanded);
+
+            // Toggle icons
+            if (isHidden) {
+                svgOpen.style.display = 'block';
+                svgClose.style.display = 'none';
+                button.setAttribute('aria-label', 'Open navigation menu');
+            } else {
+                svgOpen.style.display = 'none';
+                svgClose.style.display = 'block';
+                button.setAttribute('aria-label', 'Close navigation menu');
+            }
+        });
+    } else {
+        // This log will no longer appear, but we keep it for safety.
+        console.warn("Mobile menu buttons or panel not found.");
     }
-    
-  } else {
-    // This error means the IDs in this file don't match the IDs in header.html
-    console.error('Mobile menu buttons or panel not found.');
-  }
 }
 
-// ---
-// Initializer
-// ---
-// We wrap the main() call in a DOMContentLoaded listener to ensure
-// the HTML is fully parsed before we try to find elements.
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', main);
-} else {
-  // DOM is already loaded
-  main();
+
+// --- Utility Functions ---
+
+/**
+ * Formats a price (in cents or as a string) into a USD currency string.
+ * e.g., 2000 -> "$20.00"
+ * e.g., "20.00" -> "$20.00"
+ * @param {number|string} price - The price in cents or as a string.
+ * @returns {string} - A formatted USD string.
+ */
+function formatPrice(price) {
+    let priceInCents;
+    if (typeof price === 'string') {
+        priceInCents = parseFloat(price) * 100;
+    } else if (typeof price === 'number') {
+        // Assume it's already in cents if it's a large integer
+        // This logic might need refinement based on data source
+        if (price > 1000) { 
+            priceInCents = price;
+        } else {
+            priceInCents = price * 100;
+        }
+    } else {
+        return "$0.00";
+    }
+
+    if (isNaN(priceInCents)) {
+        return "$0.00";
+    }
+
+    return (priceInCents / 100).toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD'
+    });
 }
 
+
+// --- Global Execution ---
+
+/**
+ * FIX 5.1:
+ * We must wait for the DOM to be fully loaded before running main().
+ * This prevents the "Mobile menu buttons... not found" error,
+ * which was a race condition.
+ */
+document.addEventListener('DOMContentLoaded', main);

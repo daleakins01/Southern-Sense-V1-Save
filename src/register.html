@@ -1,180 +1,113 @@
 ---
 layout: layout.html
+title: Create Account - Southern Sense
+description: Sign up for a new Southern Sense account.
 ---
 
-<main class="container mx-auto px-4 py-12">
-  <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
-    <h1 class="font-playfair text-3xl font-bold text-charcoal text-center mb-6">
-      Create Account
-    </h1>
-    <form id="register-form" class="space-y-4">
-      <div>
-        <label for="register-name" class="block text-sm font-medium text-stone"
-          >Full Name</label
-        >
-        <input
-          type="text"
-          id="register-name"
-          class="mt-1 block w-full px-3 py-2 border border-stone/30 rounded-md shadow-sm focus:outline-none focus:ring-burnt-orange focus:border-burnt-orange"
-          required
-        />
-      </div>
-      <div>
-        <label for="register-email" class="block text-sm font-medium text-stone"
-          >Email Address</label
-        >
-        <input
-          type="email"
-          id="register-email"
-          class="mt-1 block w-full px-3 py-2 border border-stone/30 rounded-md shadow-sm focus:outline-none focus:ring-burnt-orange focus:border-burnt-orange"
-          required
-        />
-      </div>
-      <div>
-        <label
-          for="register-password"
-          class="block text-sm font-medium text-stone"
-          >Password</label
-        >
-        <input
-          type="password"
-          id="register-password"
-          class="mt-1 block w-full px-3 py-2 border border-stone/30 rounded-md shadow-sm focus:outline-none focus:ring-burnt-orange focus:border-burnt-orange"
-          required
-          minlength="6"
-        />
-      </div>
-      <div>
-        <label
-          for="register-password-confirm"
-          class="block text-sm font-medium text-stone"
-          >Confirm Password</label
-        >
-        <input
-          type="password"
-          id="register-password-confirm"
-          class="mt-1 block w-full px-3 py-2 border border-stone/30 rounded-md shadow-sm focus:outline-none focus:ring-burnt-orange focus:border-burnt-orange"
-          required
-        />
-      </div>
-      <div>
-        <button
-          type="submit"
-          id="register-button"
-          class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-lg text-lg font-medium text-white bg-burnt-orange hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-burnt-orange transition-all duration-300"
-        >
-          Create Account
-        </button>
-      </div>
-    </form>
-    <p id="register-message" class="mt-4 text-center text-red-600"></p>
-    <p class="mt-6 text-center text-sm text-stone">
-      Already have an account?
-      <a href="/login.html" class="font-medium text-burnt-orange hover:underline"
-        >Sign in</a
-      >
-    </p>
-  </div>
-</main>
+<div class="container mx-auto px-4 py-12 max-w-lg">
+    <div class="bg-white p-8 md:p-12 rounded-lg shadow-lg border border-stone/20">
+        
+        <h1 class="text-4xl font-playfair font-bold text-charcoal mb-6 text-center">Create Account</h1>
+        
+        <!-- Error Message Placeholder -->
+        <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-6" role="alert">
+            <p id="error-text">Error placeholder</p>
+        </div>
 
-<script type="module">
-  import {
-    auth,
-    createUserWithEmailAndPassword,
-    updateProfile,
-    db,
-    doc,
-    setDoc,
-  } from "/src/firebase-loader.js";
+        <!-- Registration Form -->
+        <form id="register-form" class="space-y-6">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- First Name -->
+                <div>
+                    <label for="firstName" class="block text-sm font-medium text-charcoal mb-2">First Name</label>
+                    <input 
+                        type="text" 
+                        id="firstName" 
+                        name="firstName" 
+                        required 
+                        class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent transition-all"
+                        placeholder="First"
+                    >
+                </div>
+                
+                <!-- Last Name -->
+                <div>
+                    <label for="lastName" class="block text-sm font-medium text-charcoal mb-2">Last Name</label>
+                    <input 
+                        type="text" 
+                        id="lastName" 
+                        name="lastName" 
+                        required 
+                        class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent transition-all"
+                        placeholder="Last"
+                    >
+                </div>
+            </div>
 
-  const registerForm = document.getElementById("register-form");
-  const registerButton = document.getElementById("register-button");
-  const nameInput = document.getElementById("register-name");
-  const emailInput = document.getElementById("register-email");
-  const passwordInput = document.getElementById("register-password");
-  const passwordConfirmInput = document.getElementById(
-    "register-password-confirm"
-  );
-  const messageEl = document.getElementById("register-message");
+            <!-- Email Input -->
+            <div>
+                <label for="email" class="block text-sm font-medium text-charcoal mb-2">Email Address</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    required 
+                    class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent transition-all"
+                    placeholder="you@example.com"
+                >
+            </div>
+            
+            <!-- Password Input -->
+            <div>
+                <label for="password" class="block text-sm font-medium text-charcoal mb-2">Password</labe>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required 
+                    minlength="6"
+                    class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent transition-all"
+                    placeholder="Minimum 6 characters"
+                >
+            </div>
+            
+            <!-- Submit Button -->
+            <div>
+                <button 
+                    type="submit" 
+                    id="register-button"
+                    class="w-full bg-burnt-orange text-white font-bold py-3 px-6 rounded-full shadow-md hover:bg-burnt-orange/90 transition-all duration-300 transform hover:scale-105"
+                >
+                    <!-- Spinner and Text -->
+                    <span id="button-text">Create My Account</span>
+                    <span id="button-spinner" class.remove="hidden" class="hidden">
+                        <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </span>
+                </button>
+            </div>
+        </form>
+        
+        <hr class="my-8 border-stone/20">
+        
+        <!-- Link to Login -->
+        <div class="text-center">
+            <p class="text-stone">
+                Already have an account?
+                <a href="/login/" class="font-semibold text-burnt-orange hover:underline">Log in here</a>
+            </p>
+        </div>
+        
+    </div>
+</div>
 
-  registerForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    messageEl.textContent = "";
-    messageEl.classList.remove("text-green-600");
-    messageEl.classList.add("text-red-600");
+<!-- 
+  This script handles the registration form submission.
+  It is a "module" because it imports functions from other files.
+  FIX 8.2: The path is now corrected to "/auth.js" (no "/src/").
+-->
+<script type="module" src="/auth.js"></script>
 
-    const name = nameInput.value;
-    const email = emailInput.value;
-    const password = passwordInput.value;
-    const passwordConfirm = passwordConfirmInput.value;
-
-    if (password !== passwordConfirm) {
-      messageEl.textContent = "Passwords do not match.";
-      return;
-    }
-
-    if (password.length < 6) {
-      messageEl.textContent = "Password must be at least 6 characters long.";
-      return;
-    }
-
-    registerButton.disabled = true;
-    registerButton.textContent = "Creating account...";
-    registerButton.classList.add("opacity-75");
-
-    try {
-      // 1. Create user in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-
-      // 2. Update user's auth profile with their name
-      await updateProfile(user, {
-        displayName: name,
-      });
-
-      // 3. Create a user document in Firestore (Pillar 1)
-      // This stores non-auth info like shipping address, order history, etc.
-      const userDocRef = doc(db, "users", user.uid);
-      await setDoc(userDocRef, {
-        uid: user.uid,
-        email: user.email,
-        displayName: name,
-        createdAt: new Date().toISOString(),
-        // We can add more fields here later (e.g., address)
-      });
-
-      // 4. Success and redirect
-      messageEl.textContent =
-        "Account created successfully! Redirecting to your account page...";
-      messageEl.classList.add("text-green-600");
-      messageEl.classList.remove("text-red-600");
-
-      setTimeout(() => {
-        window.location.href = "/account.html";
-      }, 2000);
-    } catch (error) {
-      console.error("Error creating account:", error);
-      messageEl.textContent = getFirebaseErrorMessage(error.code);
-      registerButton.disabled = false;
-      registerButton.textContent = "Create Account";
-      registerButton.classList.remove("opacity-75");
-    }
-  });
-
-  function getFirebaseErrorMessage(errorCode) {
-    switch (errorCode) {
-      case "auth/email-already-in-use":
-        return "This email address is already in use.";
-      case "auth/invalid-email":
-        return "Please enter a valid email address.";
-      case "auth/weak-password":
-        return "Password is too weak. Please use at least 6 characters.";
-      default:
-        return "An error occurred. Please try again.";
-    }
-  }
-</script>

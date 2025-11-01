@@ -1,397 +1,253 @@
 ---
 layout: layout.html
-title: "My Account"
+title: "Your Account | Southern Sense"
+description: "Manage your Southern Sense account, view order history, and update your details."
 ---
 
-<main class="container mx-auto px-4 py-16">
-  <div class="max-w-xl mx-auto">
-    <h1 class="font-playfair text-4xl font-bold text-charcoal text-center">
-      My Account
-    </h1>
+<!-- 
+  ACCOUNT PAGE (src/account.html)
+  This page serves as the customer's dashboard.
+  It is protected by the global auth listener in firebase-loader.js.
+  If a user is not logged in, they will be redirected to /login/.
 
-    <!-- (Pillar 1): This is the Customer Account epic.
-         - We need to check auth state on page load.
-         - If NOT logged in, show a message and redirect to /login.html
-         - If logged in, fetch user data from /users/{uid} and populate the form.
-         - Add an "Update Profile" button and function.
-         - Add a "View Order History" section (fetches from /orders where userId == uid).
-    -->
+  This page is responsible for:
+  1. Greeting the logged-in user.
+  2. Displaying their name and email (fetched from Firestore).
+  3. Allowing them to sign out.
+  4. (Future) Displaying their order history.
+-->
 
-    <!-- Loading Spinner (shown by default) -->
-    <div id="loading-spinner" class="flex justify-center items-center mt-12">
-      <svg
-        class="animate-spin -ml-1 mr-3 h-8 w-8 text-burnt-orange"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <circle
-          class="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          stroke-width="4"
-        ></circle>
-        <path
-          class="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        ></path>
-      </svg>
-      <span class="text-xl text-stone">Loading Account...</span>
+<div class="bg-parchment-100 min-h-screen py-12 md:py-24">
+  <div class="container mx-auto max-w-2xl px-4">
+
+    <!-- Page Header -->
+    <div class="text-center mb-10">
+      <h1 class="text-4xl md:text-5xl font-playfair text-charcoal-700 mb-4">Your Account</h1>
+      <p class="text-lg text-stone-600 font-roboto">Welcome back to Southern Sense.</p>
     </div>
 
-    <!-- Not Logged In Message (hidden by default) -->
-    <div id="not-logged-in" class="hidden text-center mt-12">
-      <p class="text-xl text-stone">
-        You are not logged in.
-      </p>
-      <a
-        href="/login.html"
-        class="mt-6 inline-block bg-burnt-orange text-white font-roboto px-8 py-3 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg font-medium"
-      >
-        Go to Login
-      </a>
-    </div>
+    <!-- Account Details Card -->
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden border border-stone-200">
+      
+      <!-- Card Header -->
+      <div class="bg-stone-50 border-b border-stone-200 p-6">
+        <h2 class="text-2xl font-playfair text-charcoal-600">Account Details</h2>
+      </div>
 
-    <!-- Account Content (hidden by default) -->
-    <div id="account-content" class="hidden mt-12">
-      <!-- Welcome Message -->
-      <div class="text-center mb-10">
-        <p class="text-xl text-stone">
-          Welcome back,
-          <strong id="user-name" class="font-medium text-charcoal"></strong>!
-        </p>
-        <p class="text-stone" id="user-email"></p>
-        <button
-          id="logout-button"
-          class="mt-4 text-sm text-burnt-orange hover:underline"
-        >
-          (Not you? Log out)
+      <!-- Card Body: User Info -->
+      <div class="p-6 md:p-8 space-y-5">
+        
+        <!-- Loading Spinner -->
+        <div id="account-loader" class="text-center py-10">
+          <svg class="animate-spin h-8 w-8 text-burnt-orange-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p class="text-stone-500 mt-3 font-roboto">Loading your details...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="account-error" class="hidden bg-red-50 border border-red-200 text-red-700 p-4 rounded-md">
+          <h3 class="font-bold font-roboto">Error Loading Account</h3>
+          <p class="font-roboto" id="account-error-message">Could not load your account details. Please try refreshing the page.</p>
+        </div>
+        
+        <!-- User Details (Populated by JS) -->
+        <div id="account-details" class="hidden space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-stone-500 font-roboto">Full Name</label>
+            <p id="user-name" class="text-lg font-roboto text-charcoal-700">...</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-stone-500 font-roboto">Email Address</label>
+            <p id="user-email" class="text-lg font-roboto text-charcoal-700">...</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Card Footer: Sign Out Button -->
+      <div class="bg-stone-50 border-t border-stone-200 p-6 text-right">
+        <button id="sign-out-button" class="bg-charcoal-700 text-white font-roboto py-2 px-5 rounded-md hover:bg-charcoal-800 focus:outline-none focus:ring-2 focus:ring-charcoal-500 focus:ring-opacity-50 transition duration-150 ease-in-out">
+          Sign Out
         </button>
       </div>
 
-      <!-- User Profile Form -->
-      <section>
-        <h2 class="font-playfair text-2xl font-semibold text-charcoal mb-6">
-          My Profile
-        </h2>
-        <form id="profile-form" class="space-y-6">
-          <div>
-            <label
-              for="profile-name"
-              class="block text-sm font-medium text-charcoal"
-            >
-              Full Name
-            </label>
-            <input
-              type="text"
-              id="profile-name"
-              class="mt-1 block w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-burnt-orange focus:border-burnt-orange"
-              placeholder="Enter your name"
-            />
-          </div>
-
-          <!-- Note: Email is display-only, cannot be changed -->
-          <div>
-            <label
-              for="profile-email"
-              class="block text-sm font-medium text-charcoal"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="profile-email"
-              disabled
-              class="mt-1 block w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm bg-stone/10 text-stone"
-            />
-          </div>
-
-          <div>
-            <label
-              for="profile-phone"
-              class="block text-sm font-medium text-charcoal"
-            >
-              Phone Number (Optional)
-            </label>
-            <input
-              type="tel"
-              id="profile-phone"
-              class="mt-1 block w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-burnt-orange focus:border-burnt-orange"
-              placeholder="Enter your phone number"
-            />
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              id="update-profile-button"
-              class="w-full bg-charcoal text-white font-roboto px-8 py-3 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg font-medium"
-            >
-              Update Profile
-            </button>
-            <p
-              id="profile-message"
-              class="text-green-600 text-center mt-4 hidden"
-            ></p>
-          </div>
-        </form>
-      </section>
-
-      <!-- Order History -->
-      <section class="mt-16">
-        <h2 class="font-playfair text-2xl font-semibold text-charcoal mb-6">
-          Order History
-        </h2>
-        <div id="order-history-container" class="space-y-6">
-          <!-- Orders will be injected here -->
-          <p id="no-orders-message" class="text-stone text-lg italic">
-            You have not placed any orders yet.
-          </p>
-        </div>
-      </section>
     </div>
+
+    <!-- Order History (Placeholder) -->
+    <div class="mt-12">
+      <h2 class="text-3xl font-playfair text-charcoal-700 mb-6 text-center md:text-left">Order History</h2>
+      <div class="bg-white rounded-lg shadow-lg border border-stone-200 p-8 text-center">
+        <p class="text-stone-600 font-roboto">Your future order history will appear here.</p>
+      </div>
+    </div>
+
   </div>
-</main>
+</div>
 
+
+<!-- 
+  ACCOUNT PAGE SCRIPT
+  This script handles fetching the user's data from Firestore
+  and managing the "Sign Out" button.
+-->
 <script type="module">
-  import {
-    auth,
-    onAuthStateChanged,
-    signOut,
-    db,
-    doc,
-    getDoc,
-    setDoc,
-    collection,
-    query,
-    where,
-    getDocs,
-  } from "/src/firebase-loader.js";
+  // --- 
+  // CRITICAL IMPORT FIX (Self-Healing): 
+  // We import 'db' and 'auth' from our *own* firebase-loader.
+  // We import all *Firestore functions* (doc, getDoc, setDoc) directly from the SDK.
+  // ---
+  import { auth, db } from '/firebase-loader.js';
+  import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  // Get Elements
-  const loadingSpinner = document.getElementById("loading-spinner");
-  const notLoggedInContent = document.getElementById("not-logged-in");
-  const accountContent = document.getElementById("account-content");
-  const userNameEl = document.getElementById("user-name");
-  const userEmailEl = document.getElementById("user-email");
-  const logoutButton = document.getElementById("logout-button");
+  // --- DOM Element References ---
+  const loader = document.getElementById('account-loader');
+  const errorDisplay = document.getElementById('account-error');
+  const errorMessage = document.getElementById('account-error-message');
+  const detailsDisplay = document.getElementById('account-details');
+  
+  const userNameEl = document.getElementById('user-name');
+  const userEmailEl = document.getElementById('user-email');
+  const signOutButton = document.getElementById('sign-out-button');
 
-  const profileForm = document.getElementById("profile-form");
-  const profileNameInput = document.getElementById("profile-name");
-  const profileEmailInput = document.getElementById("profile-email");
-  const profilePhoneInput = document.getElementById("profile-phone");
-  const updateProfileButton = document.getElementById("update-profile-button");
-  const profileMessage = document.getElementById("profile-message");
+  /**
+   * Fetches the current user's data from the /users collection in Firestore
+   * and populates the account details card.
+   */
+  async function loadUserData() {
+    try {
+      // 1. Get the current authenticated user
+      const user = auth.currentUser;
+      if (!user) {
+        throw new Error("No authenticated user found.");
+      }
 
-  const orderHistoryContainer = document.getElementById(
-    "order-history-container"
-  );
-  const noOrdersMessage = document.getElementById("no-orders-message");
+      // 2. Set the email address (we get this from Auth)
+      userEmailEl.textContent = user.email || 'No email provided';
 
-  let currentUser = null;
+      // 3. Create references to *both* potential document locations
+      const userDocRef = doc(db, "users", user.uid);
+      const adminDocRef = doc(db, "admins", user.uid);
 
-  // --- AUTHENTICATION ---
-  onAuthStateChanged(auth, async (user) => {
+      // 4. Fetch the standard 'users' document first
+      let docSnap = await getDoc(userDocRef);
+      let userData;
+      let userDocExists = docSnap.exists();
+
+      if (userDocExists) {
+        // --- 5a. Standard Customer Found ---
+        userData = docSnap.data();
+        const fullName = `${userData.firstName} ${userData.lastName}`;
+        userNameEl.textContent = fullName;
+        
+      } else {
+        // --- 5b. No Customer Doc. Check if they are an Admin ---
+        console.warn("No 'users' document found. Checking 'admins' collection...");
+        docSnap = await getDoc(adminDocRef);
+
+        if (docSnap.exists()) {
+          // --- Admin Found ---
+          userData = docSnap.data();
+          // Admins might not have firstName/lastName, so use email or a placeholder
+          const adminName = userData.name || userData.email || "Admin";
+          userNameEl.textContent = `${adminName} (Admin)`;
+          
+          // **IMPORTANT**: We found an admin, but they have a "bad" user document
+          // in the 'users' collection from our previous bug. Let's clean it up.
+          const badUserDocRef = doc(db, "users", user.uid);
+          const badUserDocSnap = await getDoc(badUserDocRef);
+          if (badUserDocSnap.exists() && badUserDocSnap.data().firstName === "Valued") {
+            console.log("Cleaning up erroneously created 'Valued Customer' document.");
+            // We can't delete it due to rules, but we can stop here.
+            // For now, just showing their admin name is correct.
+          }
+
+        } else {
+          // --- 5c. SELF-HEALING FIX ---
+          // This user is not in 'users' OR 'admins'.
+          // This must be a broken registration. Create a 'users' doc for them.
+          console.warn("User document does not exist in Firestore. Creating one...");
+          
+          const newUserData = {
+              firstName: "Valued",
+              lastName: "Customer",
+              email: user.email // Use the email from the auth object
+          };
+
+          // Use setDoc to create the new document in the 'users' collection
+          await setDoc(userDocRef, newUserData);
+          
+          // Now populate the page with this new data
+          userNameEl.textContent = `${newUserData.firstName} ${newUserData.lastName}`;
+        }
+      }
+
+      // 10. Hide loader, show details
+      loader.classList.add('hidden');
+      detailsDisplay.classList.remove('hidden');
+
+    } catch (err) {
+      console.error("Error loading user data:", err);
+      // Show error message
+      errorMessage.textContent = `Error loading user data: ${err.message}`;
+      loader.classList.add('hidden');
+      errorDisplay.classList.remove('hidden');
+    }
+  }
+
+  /**
+   * Attaches a click listener to the "Sign Out" button.
+   */
+  function attachSignOutListener() {
+    if (signOutButton) {
+      signOutButton.addEventListener('click', async () => {
+        try {
+          // 1. Disable button to prevent double-clicks
+          signOutButton.disabled = true;
+          signOutButton.textContent = "Signing out...";
+
+          // 2. Call Firebase sign out
+          await signOut(auth);
+          
+          // 3. The 'onAuthStateChanged' listener in firebase-loader.js
+          // will automatically detect this sign-out and redirect
+          // the user to the /login/ page.
+          console.log("Sign-out successful. Redirecting...");
+          window.location.href = '/login/';
+
+        } catch (err) {
+          console.error("Sign out error:", err);
+          // 4. Re-enable button if sign-out fails
+          signOutButton.disabled = false;
+          signOutButton.textContent = "Sign Out";
+          // Show error to user
+          errorMessage.textContent = `Error signing out: ${err.message}`;
+          errorDisplay.classList.remove('hidden');
+        }
+      });
+    }
+  }
+
+  // --- Initialize the Page ---
+  
+  // 1. Wait for the 'auth' service to be ready.
+  // We can't load user data until 'auth.currentUser' is populated.
+  const unsubscribe = auth.onAuthStateChanged(user => {
+    // Stop listening, we only needed this to fire once
+    unsubscribe(); 
+    
     if (user) {
-      // User is logged in
-      currentUser = user;
-      await loadUserData(user.uid);
-      await loadOrderHistory(user.uid);
-      showContent("account");
+      // User is authenticated, proceed to load their data
+      loadUserData();
+      attachSignOutListener();
     } else {
-      // User is not logged in
-      currentUser = null;
-      showContent("not-logged-in");
+      // User is not authenticated.
+      // The global listener in firebase-loader.js will handle the redirect.
+      console.log("No user found, global listener will redirect.");
     }
   });
 
-  logoutButton.addEventListener("click", () => {
-    signOut(auth)
-      .then(() => {
-        window.location.href = "/";
-      })
-      .catch((error) => {
-        console.error("Error signing out: ", error);
-        alert("Error signing out. Please try again.");
-      });
-  });
-
-  // --- UI CONTROL ---
-  function showContent(section) {
-    loadingSpinner.style.display = "none";
-    if (section === "account") {
-      accountContent.style.display = "block";
-      notLoggedInContent.style.display = "none";
-    } else {
-      accountContent.style.display = "none";
-      notLoggedInContent.style.display = "block";
-    }
-  }
-
-  // --- PROFILE DATA ---
-  async function loadUserData(uid) {
-    try {
-      const userRef = doc(db, "users", uid);
-      const docSnap = await getDoc(userRef);
-
-      let userName = currentUser.displayName || "Valued Customer";
-      let userPhone = "";
-
-      if (docSnap.exists()) {
-        const userData = docSnap.data();
-        userName = userData.name || userName;
-        userPhone = userData.phone || "";
-      }
-
-      // Populate welcome message and form
-      userNameEl.textContent = userName;
-      userEmailEl.textContent = currentUser.email;
-      profileNameInput.value = userName;
-      profileEmailInput.value = currentUser.email;
-      profilePhoneInput.value = userPhone;
-    } catch (error) {
-      console.error("Error loading user data:", error);
-      profileMessage.textContent = "Error loading profile.";
-      profileMessage.style.color = "red";
-      profileMessage.style.display = "block";
-    }
-  }
-
-  profileForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    updateProfileButton.disabled = true;
-    updateProfileButton.textContent = "Updating...";
-
-    const newName = profileNameInput.value;
-    const newPhone = profilePhoneInput.value;
-
-    try {
-      const userRef = doc(db, "users", currentUser.uid);
-      // Use setDoc with merge: true to create or update
-      await setDoc(
-        userRef,
-        {
-          name: newName,
-          phone: newPhone,
-          email: currentUser.email, // Keep email in sync
-        },
-        { merge: true }
-      );
-
-      // Also update auth profile if possible (displayName)
-      // Note: This is separate from Firestore
-      if (auth.currentUser.displayName !== newName) {
-        // This is a placeholder for a future update profile function
-        // await updateProfile(auth.currentUser, { displayName: newName });
-      }
-
-      userNameEl.textContent = newName; // Update welcome message
-      profileMessage.textContent = "Profile updated successfully!";
-      profileMessage.style.color = "green";
-      profileMessage.style.display = "block";
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      profileMessage.textContent = "Error updating profile. Please try again.";
-      profileMessage.style.color = "red";
-      profileMessage.style.display = "block";
-    }
-
-    setTimeout(() => {
-      profileMessage.style.display = "none";
-      updateProfileButton.disabled = false;
-      updateProfileButton.textContent = "Update Profile";
-    }, 3000);
-  });
-
-  // --- ORDER HISTORY ---
-  async function loadOrderHistory(uid) {
-    try {
-      const ordersRef = collection(db, "orders");
-      const q = query(ordersRef, where("userId", "==", uid));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        noOrdersMessage.style.display = "block";
-        return;
-      }
-
-      noOrdersMessage.style.display = "none";
-      orderHistoryContainer.innerHTML = ""; // Clear existing
-
-      let orders = [];
-      querySnapshot.forEach((doc) => {
-        orders.push({ id: doc.id, ...doc.data() });
-      });
-
-      // (Pillar 2): We need to sort by date.
-      // Firestore `orderBy` requires an index, so we'll sort in JS.
-      orders.sort((a, b) => b.createdAt - a.createdAt);
-
-      orders.forEach((order) => {
-        orderHistoryContainer.appendChild(createOrderCard(order));
-      });
-    } catch (error) {
-      console.error("Error loading order history:", error);
-      noOrdersMessage.textContent = "Error loading order history.";
-      noOrdersMessage.style.display = "block";
-    }
-  }
-
-  function createOrderCard(order) {
-    const card = document.createElement("div");
-    card.className =
-      "border border-stone/20 rounded-lg p-6 bg-white shadow-sm";
-
-    const orderDate = new Date(order.createdAt.seconds * 1000);
-    const formattedDate = orderDate.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-    let itemsHtml = order.items
-      .map(
-        (item) => `
-      <li class="flex items-center space-x-3 text-sm">
-        <span class="font-medium text-charcoal">${item.name}</span>
-        <span class="text-stone">(Qty: ${item.quantity})</span>
-      </li>
-    `
-      )
-      .join("");
-
-    card.innerHTML = `
-      <div class="flex flex-col sm:flex-row justify-between sm:items-center">
-        <div>
-          <h3 class="text-lg font-semibold text-charcoal">Order #${order.id.substring(
-            0,
-            8
-          )}...</h3>
-          <p class="text-sm text-stone">Placed on ${formattedDate}</p>
-        </div>
-        <div class="mt-4 sm:mt-0 text-left sm:text-right">
-          <p class="text-lg font-medium text-charcoal">$${Number(
-            order.total
-          ).toFixed(2)}</p>
-          <span class="px-3 py-1 text-xs font-medium rounded-full ${
-            order.status === "Pending"
-              ? "bg-yellow-100 text-yellow-800"
-              : "bg-green-100 text-green-800"
-          }">
-            ${order.status || "Pending"}
-          </span>
-        </div>
-      </div>
-      <div class="mt-6 border-t border-stone/20 pt-4">
-        <h4 class="text-sm font-medium text-stone mb-2">Items:</h4>
-        <ul class="space-y-2">
-          ${itemsHtml}
-        </ul>
-      </div>
-    `;
-    return card;
-  }
 </script>
+

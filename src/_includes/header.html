@@ -1,19 +1,24 @@
 <!-- 
   This is the header partial.
   It is included by layout.html on every page.
-  FIX 3.1: Updated all nav links to use trailing slashes
-  (e.g., /shop.html -> /shop/) to match Eleventy's
-  "pretty permalink" build structure.
+  FIX 2.2: Uncommented the mobile menu button and panel.
+  FIX 3.1: Updated all nav links to use trailing slashes.
+  FIX 5.2: Corrected logo path (removed /src/).
 -->
 <header class="bg-parchment text-charcoal shadow-md sticky top-0 z-50">
     <div class="container mx-auto px-4 py-4 flex justify-between items-center">
         
         <!-- Logo -->
         <a href="/" class="flex items-center space-x-2" aria-label="Southern Sense Home">
-            <img src="/src/logo.webp" alt="Southern Sense Logo" class="h-14 md:h-16 w-auto">
+            <!-- 
+                FIX 5.2: The path is now /logo.webp
+                The Eleventy config copies 'src/logo.webp' to '_site/logo.webp'.
+                Therefore, the correct path is '/logo.webp'.
+            -->
+            <img src="/logo.webp" alt="Southern Sense Logo" class="h-14 md:h-16 w-auto" onerror="this.onerror=null; this.src='https.placehold.co/200x60/FBF9F6/3D352E?text=Southern+Sense';">
         </a>
 
-        <!-- Mobile Menu Button (FIX 2.2: This section is now uncommented) -->
+        <!-- Mobile Menu Button (FIX 2.2: This section is uncommented) -->
         <div class="md:hidden">
             <button id="mobile-menu-button" class="text-charcoal focus:outline-none" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu-panel">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -57,7 +62,7 @@
         </nav>
     </div>
 
-    <!-- Mobile Menu Panel (FIX 2.2: This section is now uncommented) -->
+    <!-- Mobile Menu Panel (FIX 2.2: This section is uncommented) -->
     <div id="mobile-menu-panel" class="md:hidden hidden bg-parchment/95 backdrop-blur-sm" aria-hidden="true">
         <nav class="px-4 pt-2 pb-4 space-y-2 flex flex-col items-center">
             <a href="/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">Home</a>

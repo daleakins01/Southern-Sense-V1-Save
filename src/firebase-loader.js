@@ -1,89 +1,99 @@
-/*
- * Firebase Loader (firebase-loader.js)
- *
- * This module is responsible for initializing the Firebase app and exporting
- * all necessary Firebase services. This ensures that Firebase is only
- * initialized once and provides a central point for all database/auth imports.
- */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { 
+    getAuth, 
+    onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// (FIX 10:11 PM): Moved 'setLogLevel' to the 'firebase-app' import, as it
-// is part of the core app library, not the auth library.
-import {
-  initializeApp,
-  setLogLevel,
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail,
-  updateProfile,
-  // (FIX 10:11 PM): Removed 'setLogLevel' from here.
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  collection,
-  query,
-  where,
-  limit,
-  serverTimestamp,
-  onSnapshot,
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-// --- Firebase Config ---
-// This configuration is a placeholder. In a real-world scenario,
-// you would replace this with your actual Firebase project config.
+// --- CRITICAL CONFIGURATION STEP ---
+//
+// This 'firebaseConfig' object has been populated with the
+// credentials you provided at 3:34 PM.
+//
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyCo2HoDVWjcrGs0frHhG3crlnVterhCRxc",
+  authDomain: "southernsense-store.firebaseapp.com",
+  projectId: "southernsense-store",
+  storageBucket: "southernsense-store.firebasestorage.app",
+  messagingSenderId: "154582397729",
+  appId: "1:154582397729:web:842878fbdb64af19bb4460",
+  measurementId: "G-3KHQ2T7RVZ"
 };
+// 
+// --- END OF CONFIGURATION STEP ---
+//
 
-// --- Initialize ---
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
 
-// Enable a full debug log to the console for development.
-// This was the function causing the crash.
-setLogLevel("debug");
+// --- Firebase Service Initialization ---
+// We initialize Firebase here, once, and export the services.
+// Any other file that needs Firebase (like auth.js or cart.js)
+// will import 'db' and 'auth' from this file.
+
+let app;
+let auth;
+let db;
+
+try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+} catch (error) {
+    console.error("Firebase initialization failed:", error);
+    // Display a user-friendly error on the page
+    const body = document.querySelector('body');
+    if (body) {
+        body.innerHTML = `<div style="padding: 40px; text-align: center; font-family: sans-serif; background-color: #fff1f2; color: #b91c1c; border: 1px solid #fecaca;">
+            <h1>Firebase Configuration Error</h1>
+            <p>The website could not connect to Firebase. This is usually due to an incorrect <code>firebaseConfig</code> object in <code>firebase-loader.js</code>.</p>
+            <p>Please ensure you have copied the correct config from your Firebase project console.</p>
+            <p><i>Error: ${error.message}</i></p>
+        </div>`;
+    }
+}
+
+
+// --- Global Authentication Listener ---
+// This runs on EVERY page load. It checks if the user is logged in
+// and manages page access and UI elements.
+
+onAuthStateChanged(auth, (user) => {
+    // These are the nav links in the header
+    const accountLink = document.getElementById('nav-account-link');
+    const loginLink = document.getElementById('nav-login-link');
+    
+    // This is the current page's URL path
+    const currentPage = window.location.pathname;
+
+    if (user) {
+        // --- USER IS LOGGED IN ---
+        
+        // 1. Show "Account" link, hide "Login" link in header
+        if (accountLink) accountLink.classList.remove('hidden');
+        if (loginLink) loginLink.classList.add('hidden');
+        
+        // 2. If user is on the login or register page, redirect them to /account/
+        if (currentPage.startsWith('/login/') || currentPage.startsWith('/register/')) {
+            console.log("User is logged in, redirecting from auth page to account...");
+            window.location.href = '/account/';
+        }
+        
+    } else {
+        // --- USER IS LOGGED OUT ---
+        
+        // 1. Show "Login" link, hide "Account" link in header
+        if (accountLink) accountLink.classList.add('hidden');
+        if (loginLink) loginLink.classList.remove('hidden');
+        
+        // 2. If user is on the /account/ page, redirect them to /login/
+        if (currentPage.startsWith('/account/')) {
+            console.log("User is not logged in, redirecting from account page to login...");
+            window.location.href = '/login/';
+        }
+    }
+});
+
 
 // --- Exports ---
-// Export all the services and functions for other modules to use.
-export {
-  app,
-  auth,
-  db,
-  onAuthStateChanged,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail,
-  updateProfile,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  collection,
-  query,
-  where,
-  limit,
-  serverTimestamp,
-  onSnapshot,
-};
+// Export the initialized services so other modules can use them.
+export { db, auth, app };
 

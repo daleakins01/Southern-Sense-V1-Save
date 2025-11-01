@@ -1,20 +1,18 @@
-This file tells Eleventy to ignore specific files or directories.
+This file tells Eleventy which files/folders to NOT process as pages.
 
-Ignore the node_modules directory
+CRITICAL FIX (1.1)
 
-node_modules/
+Ignore the _includes folder. Without this, Eleventy tries to
 
-Ignore the output directory to prevent recursion
+build "header.html" and "footer.html" as standalone pages,
 
-_site/
+which crashes the entire build.
 
---- CRITICAL FIX ---
+_includes/
 
-Ignore the "ghost" header and footer files that exist
+Ignore the CSS files. We handle these with "passthrough copy"
 
-in the root of /src. These are NOT pages and are
+in the .eleventy.js config file.
 
-crashing the build. The real files are in /src/_includes/
-
-src/header.html
-src/footer.html
+input.css
+output.css

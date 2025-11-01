@@ -1,103 +1,83 @@
 <!-- 
-  This is the header partial. It gets included by 'layout.html'.
-  It contains the logo, main navigation, and mobile menu.
+  This is the header partial.
+  It is included by layout.html on every page.
+  FIX 3.1: Updated all nav links to use trailing slashes
+  (e.g., /shop.html -> /shop/) to match Eleventy's
+  "pretty permalink" build structure.
 -->
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-  <div class="flex justify-between items-center h-20">
-    
-    <!-- 1. Main Navigation (Desktop) -->
-    <div class="hidden md:flex md:items-center md:space-x-6">
-      <a href="/shop.html" class="text-base font-medium text-stone-300 hover:text-white transition-colors">Shop</a>
-      <a href="/about.html" class="text-base font-medium text-stone-300 hover:text-white transition-colors">About</a>
-      <a href="/scent-guide.html" class="text-base font-medium text-stone-300 hover:text-white transition-colors">Scent Guide</a>
-    </div>
-    
-    <!-- 2. Logo -->
-    <div class="flex-shrink-0">
-      <a href="/index.html" aria-label="Home">
-        <!-- 
-          FIX (1:43 PM): Removed '/src' prefix. Path is now relative to the site root.
-        -->
-        <img 
-          class="h-16 w-auto" 
-          src="/logo.webp" 
-          alt="Southern Sense Logo"
-          onerror="this.onerror=null; this.src='https://placehold.co/200x64/FBF9F6/3D352E?text=Southern+Sense&font=playfairdisplay';"
-        >
-      </a>
-    </div>
-    
-    <!-- 3. Mobile Menu Button (Hamburger) -->
-    <div class="md:hidden flex items-center">
-      <button 
-        type="button" 
-        class="inline-flex items-center justify-center p-2 rounded-md text-stone-300 hover:text-white hover:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-parchment" 
-        aria-controls="mobile-menu-panel" 
-        aria-expanded="false"
-        id="mobile-menu-button" <!-- FIX (1:50 PM): Was 'mobile-menu-open' -->
-      >
-        <span class="sr-only">Open main menu</span>
-        <!-- Heroicon name: outline/menu -->
-        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
+<header class="bg-parchment text-charcoal shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        
+        <!-- Logo -->
+        <a href="/" class="flex items-center space-x-2" aria-label="Southern Sense Home">
+            <img src="/src/logo.webp" alt="Southern Sense Logo" class="h-14 md:h-16 w-auto">
+        </a>
+
+        <!-- Mobile Menu Button (FIX 2.2: This section is now uncommented) -->
+        <div class="md:hidden">
+            <button id="mobile-menu-button" class="text-charcoal focus:outline-none" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu-panel">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-8 6h8"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center space-x-6">
+            <a href="/" class="font-playfair text-lg hover:text-burnt-orange transition duration-300">Home</a>
+            <!-- FIX 3.1: Added trailing slash -->
+            <a href="/shop/" class="font-playfair text-lg hover:text-burnt-orange transition duration-300">Shop</a>
+            <!-- FIX 3.1: Added trailing slash -->
+            <a href="/about/" class="font-playfair text-lg hover:text-burnt-orange transition duration-300">About</a>
+            
+            <!-- More Links Dropdown -->
+            <div class="relative group">
+                <button class="font-playfair text-lg hover:text-burnt-orange transition duration-300 flex items-center">
+                    <span>More</span>
+                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="absolute right-0 mt-2 w-48 bg-parchment rounded-md shadow-lg py-1 z-20 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all duration-300">
+                    <!-- FIX 3.1: Added trailing slashes -->
+                    <a href="/scent-guide/" class="block px-4 py-2 text-charcoal hover:bg-stone/20">Scent Guide</a>
+                    <a href="/candle-care/" class="block px-4 py-2 text-charcoal hover:bg-stone/20">Candle Care</a>
+                    <a href="/refill-program/" class="block px-4 py-2 text-charcoal hover:bg-stone/20">Refill Program</a>
+                    <a href="/contact/" class="block px-4 py-2 text-charcoal hover:bg-stone/20">Contact Us</a>
+                </div>
+            </div>
+
+            <!-- FIX 3.1: Added trailing slash -->
+            <a href="/account/" id="account-link" class="hover:text-burnt-orange transition duration-300" aria-label="My Account">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            </a>
+            <!-- FIX 3.1: Added trailing slash -->
+            <a href="/cart/" class="relative hover:text-burnt-orange transition duration-300" aria-label="View Cart">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                <span id="cart-count-bubble" class="absolute -top-2 -right-2 bg-burnt-orange text-parchment text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+            </a>
+        </nav>
     </div>
 
-    <!-- 4. Account & Cart (Desktop) -->
-    <div class="hidden md:flex md:items-center md:space-x-6">
-      <a href="/contact.html" class="text-base font-medium text-stone-300 hover:text-white transition-colors">Contact</a>
-      <a href="/login.html" class="text-base font-medium text-stone-300 hover:text-white transition-colors" aria-label="Account">
-        <!-- Heroicon name: outline/user -->
-        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      </a>
-      <a href="/cart.html" class="text-base font-medium text-stone-300 hover:text-white transition-colors" aria-label="Cart">
-        <!-- Heroicon name: outline/shopping-bag -->
-        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-        </svg>
-      </a>
-    </div>
+    <!-- Mobile Menu Panel (FIX 2.2: This section is now uncommented) -->
+    <div id="mobile-menu-panel" class="md:hidden hidden bg-parchment/95 backdrop-blur-sm" aria-hidden="true">
+        <nav class="px-4 pt-2 pb-4 space-y-2 flex flex-col items-center">
+            <a href="/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">Home</a>
+            <!-- FIX 3.1: Added trailing slashes -->
+            <a href="/shop/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">Shop</a>
+            <a href="/about/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">About</a>
+            
+            <a href="/scent-guide/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">Scent Guide</a>
+            <a href="/candle-care/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">Candle Care</a>
+            <a href="/refill-program/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">Refill Program</a>
+            <a href="/contact/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">Contact Us</a>
 
-  </div>
-</div>
+            <hr class="w-3/4 border-stone/30 my-2">
 
-<!-- 
-  Mobile Menu Panel (Flyout) 
-  This is hidden by default and shown/hidden by 'main.js'.
--->
-<div 
-  class="md:hidden hidden" 
-  id="mobile-menu-panel" <!-- FIX (1:50 PM): Was 'mobile-menu' -->
->
-  <div class="fixed inset-0 bg-stone-900 bg-opacity-75 z-20" aria-hidden="true"></div>
-  <div class="fixed top-0 right-0 max-w-xs w-full h-full bg-parchment z-30 shadow-lg p-4">
-    <!-- Close Button -->
-    <div class="flex justify-end">
-      <button 
-        type="button" 
-        class="p-2 rounded-md text-stone-500 hover:text-charcoal hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-burnt-orange"
-        id="mobile-menu-close-button" <!-- FIX (1:50 PM): Was 'mobile-menu-close' -->
-      >
-        <span class="sr-only">Close menu</span>
-        <!-- Heroicon name: outline/x -->
-        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
+            <a href="/account/" id="mobile-account-link" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">My Account</a>
+            <a href="/cart/" class="relative block font-playfair text-lg hover:text-burnt-orange transition duration-300">
+                <span>Cart</span>
+                <span id="mobile-cart-count-bubble" class="absolute -top-1 -right-4 bg-burnt-orange text-parchment text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+            </a>
+        </nav>
     </div>
-    
-    <!-- Mobile Nav Links -->
-    <nav class="mt-8 space-y-4">
-      <a href="/shop.html" class="block px-3 py-2 rounded-md text-lg font-medium text-charcoal hover:bg-stone-200">Shop</a>
-      <a href="/about.html" class="block px-3 py-2 rounded-md text-lg font-medium text-charcoal hover:bg-stone-200">About</a>
-      <a href="/scent-guide.html" class="block px-3 py-2 rounded-md text-lg font-medium text-charcoal hover:bg-stone-200">Scent Guide</a>
-      <a href="/contact.html" class="block px-3 py-2 rounded-md text-lg font-medium text-charcoal hover:bg-stone-200">Contact</a>
-      <a href="/login.html" class="block px-3 py-2 rounded-md text-lg font-medium text-charcoal hover:bg-stone-200">Account</a>
-      <a href="/cart.html" class="block px-3 py-2 rounded-md text-lg font-medium text-charcoal hover:bg-stone-200">Cart</a>
-    </nav>
-  </div>
-</div>
+</header>
 

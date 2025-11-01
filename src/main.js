@@ -4,56 +4,53 @@
  * This file contains global site logic, primarily for UI interactions
  * like the mobile navigation menu.
  *
- * (FIX 9:45 PM): Removed obsolete V1.1 "Ghost Logic".
- * - Removed loadHTML() function. Header/Footer are now built by Eleventy.
+ * (FIX 10:14 PM): Removed obsolete V1.1 "Ghost Logic" (loadHTML).
+ * (FIX 10:14 PM): Updated mobile menu button ID to match header.
  */
 
 /**
- * Attaches event listeners for the mobile navigation menu.
+ * Attaches listeners to the mobile menu buttons.
+ * This is the only logic that should be in this file.
  */
 function attachMobileMenuListeners() {
-  // (FIX 9:45 PM): Updated ID to match the new header.
-  // Old ID: "mobile-menu-button"
-  const openButton = document.getElementById("mobile-menu-open-btn");
-  const closeButton = document.getElementById("mobile-menu-close-btn");
+  // Get buttons and the menu panel
+  // (FIX 10:14 PM): Updated ID from 'mobile-menu-button' to 'mobile-menu-open-btn'
+  const openBtn = document.getElementById("mobile-menu-open-btn");
+  const closeBtn = document.getElementById("mobile-menu-close-btn");
   const mobileMenu = document.getElementById("mobile-menu");
 
-  if (openButton && closeButton && mobileMenu) {
-    // Open menu
-    openButton.addEventListener("click", () => {
+  // Check if all elements exist
+  if (openBtn && closeBtn && mobileMenu) {
+    // Add listener to OPEN button
+    openBtn.addEventListener("click", () => {
       mobileMenu.classList.remove("hidden");
+      openBtn.setAttribute("aria-expanded", "true");
     });
 
-    // Close menu
-    closeButton.addEventListener("click", () => {
+    // Add listener to CLOSE button
+    closeBtn.addEventListener("click", () => {
       mobileMenu.classList.add("hidden");
+      openBtn.setAttribute("aria-expanded", "false");
     });
   } else {
-    // Log an error if any element is missing
-    if (!openButton) console.error("Mobile menu open button not found.");
-    if (!closeButton) console.error("Mobile menu close button not found.");
-    if (!mobileMenu) console.error("Mobile menu element not found.");
+    // This warning helps debug if the IDs in the header are wrong.
+    console.warn("Mobile menu buttons or panel not found.");
   }
 }
 
 /**
- * Initializes all global site scripts.
+ * Main function to run on page load.
  */
 function main() {
-  // (FIX 9:45 PM): Removed obsolete V1.1 header/footer loading.
-  // loadHTML("/header.html", "header-placeholder");
-  // loadHTML("/footer.html", "footer-placeholder");
+  // (FIX 10:14 PM): All 'loadHTML' calls have been REMOVED.
+  // Eleventy now handles the header and footer.
 
-  // Attach listeners for the mobile menu
+  // Attach the mobile menu listeners.
   attachMobileMenuListeners();
-
-  // (Pillar 1): Check auth state to update UI
-  // This logic is in auth.js, but we might add a global
-  // function here later to show/hide "Account" vs "Login"
 }
 
-// --- Main Execution ---
-// Wait for the DOM to be fully loaded before running scripts
+// --- Run Main Function ---
+// Wait for the DOM to be fully loaded before running main.js
 if (
   document.readyState === "complete" ||
   document.readyState === "interactive"

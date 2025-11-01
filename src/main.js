@@ -4,7 +4,7 @@
  * This file contains global site logic, primarily for UI interactions
  * like the mobile navigation menu.
  *
- * V1.1 (Obsolete) Logic Removed:
+ * (FIX 9:28 PM): Removed obsolete V1.1 "Ghost Logic".
  * - Removed loadHTML() function. Header/Footer are now built by Eleventy.
  */
 
@@ -12,7 +12,7 @@
  * Attaches event listeners for the mobile navigation menu.
  */
 function attachMobileMenuListeners() {
-  // (FIX 9:06 PM): Updated ID to match the new header.
+  // (FIX 9:28 PM): Updated ID to match the new header.
   // Old ID: "mobile-menu-button"
   const openButton = document.getElementById("mobile-menu-open-btn");
   const closeButton = document.getElementById("mobile-menu-close-btn");
@@ -40,7 +40,7 @@ function attachMobileMenuListeners() {
  * Initializes all global site scripts.
  */
 function main() {
-  // (FIX 9:06 PM): Removed obsolete V1.1 header/footer loading.
+  // (FIX 9:28 PM): Removed obsolete V1.1 header/footer loading.
   // loadHTML("/header.html", "header-placeholder");
   // loadHTML("/footer.html", "footer-placeholder");
 
@@ -62,4 +62,3 @@ if (
 } else {
   document.addEventListener("DOMContentLoaded", main);
 }
-

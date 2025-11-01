@@ -1,473 +1,276 @@
 ---
 layout: layout.html
-title: "Product"
+title: "Product - Southern Sense"
+description: "View details for our hand-poured soy wax candles and melts."
 ---
 
-<main class="container mx-auto px-4 py-12">
-  <!-- Loading Spinner -->
-  <div id="loading-spinner" class="flex justify-center items-center h-screen text-stone">
-    <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-burnt-orange" xmlns="http://www.w3.org/2000/svg" fill="none"
-      viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-      </path>
-    </svg>
-    <span class="text-2xl font-playfair">Loading Product...</span>
-  </div>
+<!-- 
+  This page dynamically loads a single product's details
+  based on a URL query parameter (e.g., /product/?id=PRODUCT_ID).
+-->
 
-  <!-- Product Content (Hidden by default) -->
-  <div id="product-content" class="hidden">
-    <!-- Main Product Section -->
-    <section class="flex flex-col md:flex-row gap-8 md:gap-12">
-      <!-- Product Image -->
-      <div class="w-full md:w-1/2">
-        <img id="product-image" src="" alt="Product image" class="w-full h-auto object-cover rounded-lg shadow-lg" />
-      </div>
+<div class="bg-parchment py-12 md:py-20">
+    <div class="container mx-auto px-4">
 
-      <!-- Product Details -->
-      <div class="w-full md:w-1/2">
-        <h1 id="product-name" class="font-playfair text-4xl font-bold text-charcoal"></h1>
-        <p id="product-price" class="text-3xl font-light text-burnt-orange mt-2"></p>
-        <p id="product-short-desc" class="text-lg text-stone mt-4"></p>
-
-        <!-- Scent Details -->
-        <div class="mt-6 border-t border-b border-stone/20 py-4">
-          <p class="text-charcoal">
-            <strong class="text-stone font-medium">Scent Family:</strong>
-            <span id="product-scent-family" class="ml-2 capitalize"></span>
-          </p>
-          <p class="text-charcoal mt-2">
-            <strong class="text-stone font-medium">Scent Notes:</strong>
-            <span id="product-scent-notes" class="ml-2"></span>
-          </p>
+        <!-- Loading State -->
+        <!-- This will be hidden once the product data is loaded -->
+        <div id="product-loader" class="text-center py-20">
+            <p class="text-2xl font-playfair text-stone animate-pulse">Loading Product...</p>
         </div>
 
-        <!-- Add to Cart -->
-        <div class="mt-6">
-          <button id="add-to-cart-btn"
-            class="w-full bg-burnt-orange text-white font-roboto px-8 py-4 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg font-medium">
-            Add to Cart
-          </button>
-          <p id="stock-message" class="text-red-600 text-center mt-4 text-sm hidden">
-            Out of Stock
-          </p>
+        <!-- Error Message -->
+        <!-- This will be shown if the product ID is missing or invalid -->
+        <div id="product-error" class="text-center py-20 hidden">
+            <h1 class="text-4xl font-playfair text-charcoal mb-4">Product Not Found</h1>
+            <p class="text-lg text-stone mb-8">
+                We're sorry, but we couldn't find the product you're looking for.
+            </p>
+            <a href="/shop/" class="bg-burnt-orange text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-charcoal transition-all duration-300">
+                Back to Shop
+            </a>
         </div>
 
-        <!-- Long Description (Accordion) -->
-        <div class="mt-8 border-t border-stone/20">
-          <div class="border-b border-stone/20 py-4">
-            <h3 class="font-playfair text-xl font-semibold">Description</h3>
-            <div id="product-long-desc" class="text-stone mt-2"></div>
-          </div>
-          <div class="border-b border-stone/20 py-4">
-            <h3 class="font-playfair text-xl font-semibold">Pairs Well With</h3>
-            <p id="product-pairing" class="text-stone mt-2"></p>
-          </div>
+        <!-- Product Content -->
+        <!-- This container is hidden by default and shown after data loads -->
+        <div id="product-content" class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start hidden">
+            
+            <!-- Column 1: Product Image -->
+            <div class="w-full">
+                <img id="product-image" 
+                     src="https://placehold.co/600x600/FBF9F6/3D352E?text=Loading..." 
+                     alt="Product image"
+                     class="w-full h-auto object-cover rounded-lg shadow-lg">
+            </div>
+
+            <!-- Column 2: Product Details -->
+            <div>
+                <!-- Product Name -->
+                <h1 id="product-name" class="text-4xl md:text-5xl font-playfair text-charcoal mb-4">
+                    Loading...
+                </h1>
+                
+                <!-- Product Price -->
+                <p id="product-price" class="text-3xl font-roboto text-charcoal font-medium mb-6">
+                    $0.00
+                </p>
+
+                <!-- Product Short Description -->
+                <p id="product-short-desc" class="text-lg text-stone mb-6">
+                    Loading...
+                </p>
+                
+                <!-- Add to Cart Form -->
+                <div id="add-to-cart-form" class="flex items-center gap-4 mb-6">
+                    <!-- Quantity Selector -->
+                    <div class="quantity-selector">
+                        <label for="quantity" class="sr-only">Quantity</label>
+                        <input id="quantity" 
+                               type="number" 
+                               value="1" 
+                               min="1" 
+                               max="99" 
+                               class="w-20 p-3 border border-stone/50 rounded-lg text-center font-semibold text-charcoal focus:ring-2 focus:ring-burnt-orange focus:border-transparent">
+                    </div>
+                    
+                    <!-- Add to Cart Button -->
+                    <button id="add-to-cart-button" 
+                            class="flex-grow bg-burnt-orange text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-charcoal transition-all duration-300 disabled:bg-stone/50 disabled:cursor-not-allowed">
+                        Add to Cart
+                    </button>
+                </div>
+                
+                <!-- Confirmation Message -->
+                <p id="add-to-cart-confirmation" class="text-green-700 font-semibold text-center mb-6 hidden">
+                    ✓ Added to cart!
+                </p>
+
+                <!-- Full Product Description -->
+                <div class="prose max-w-none text-stone">
+                    <h3 class="text-xl font-playfair text-charcoal mb-2">Description</h3>
+                    <!-- The long description (which contains HTML) will be injected here -->
+                    <div id="product-long-desc">
+                        <p>Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Product Details (Scent Notes, etc.) -->
+                <div class="mt-6 border-t border-stone/30 pt-6">
+                    <h3 class="text-xl font-playfair text-charcoal mb-4">Scent Profile</h3>
+                    <ul class="text-stone space-y-2">
+                        <li>
+                            <strong>Scent Notes:</strong> 
+                            <span id="product-scent-notes">Loading...</span>
+                        </li>
+                        <li>
+                            <strong>Scent Family:</strong> 
+                            <span id="product-scent-family">Loading...</span>
+                        </li>
+                        <li>
+                            <strong>Strength:</strong> 
+                            <span id="product-strength">Loading...</span> / 5
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
         </div>
-      </div>
-    </section>
+    </div>
+</div>
 
-    <!-- Recommendations Section -->
-    <section id="recommendations-section" class="mt-24">
-      <h2 class="font-playfair text-3xl font-semibold text-charcoal text-center mb-8">
-        You Might Also Like
-      </h2>
-      <div id="recommendations-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <!-- Recommendation cards will be injected here -->
-      </div>
-    </section>
-
-    <!-- Reviews Section -->
-    <section id="reviews-section" class="mt-24">
-      <h2 class="font-playfair text-3xl font-semibold text-charcoal text-center mb-8">
-        Customer Reviews
-      </h2>
-
-      <!-- (Pillar 2 Fix): This logic is currently insecure and incomplete.
-           - We need to fetch ONLY `approved: true` reviews.
-           - We need to submit new reviews to Firestore with `approved: false`.
-           - The form should only be visible if the user is logged in.
-      -->
-
-      <!-- Add Review Form (Hidden by default, shown if logged in) -->
-      <div id="add-review-form-container" class="hidden max-w-2xl mx-auto mb-12">
-        <h3 class="font-playfair text-2xl font-semibold text-charcoal mb-4">
-          Leave a Review
-        </h3>
-        <form id="add-review-form" class="bg-white p-6 rounded-lg shadow-md">
-          <p class="text-stone mb-4">
-            You must be logged in to leave a review.
-          </p>
-          <div class="mb-4">
-            <label for="review-rating" class="block text-sm font-medium text-charcoal mb-1">Rating</label>
-            <select id="review-rating" class="w-full px-3 py-2 border border-stone/30 rounded-lg" disabled>
-              <option value="5">5 Stars</option>
-              <option value="4">4 Stars</option>
-              <option value="3">3 Stars</option>
-              <option value="2">2 Stars</option>
-              <option value="1">1 Star</option>
-            </select>
-          </div>
-          <div class="mb-4">
-            <label for="review-text" class="block text-sm font-medium text-charcoal mb-1">Review</label>
-            <textarea id="review-text" rows="4" class="w-full px-3 py-2 border border-stone/30 rounded-lg"
-              disabled></textarea>
-          </div>
-          <button type="submit" id="submit-review-btn"
-            class="bg-burnt-orange text-white font-roboto px-6 py-2 rounded-md shadow-lg" disabled>
-            Submit Review
-          </button>
-          <p id="review-form-message" class="text-green-600 mt-4 hidden"></p>
-        </form>
-      </div>
-
-      <!-- Existing Reviews -->
-      <div id="reviews-list" class="max-w-2xl mx-auto space-y-6">
-        <p id="no-reviews-message" class="text-stone text-lg italic text-center">
-          No reviews yet. Be the first!
-        </p>
-        <!-- Review cards will be injected here -->
-      </div>
-    </section>
-  </div>
-</main>
-
+<!-- 
+  JavaScript for this page.
+  It fetches the product data from Firestore using the ID
+  from the URL and populates the content.
+-->
 <script type="module">
-  import {
-    db,
-    doc,
-    getDoc,
-    collection,
-    getDocs,
-    query,
-    where,
-    limit,
-    auth,
-    onAuthStateChanged,
-    addDoc,
-    Timestamp,
-  } from "/src/firebase-loader.js";
-  import { getCart, addToCart } from "/src/cart.js";
+    // Import from Firebase SDK
+    import { db } from '/firebase-loader.js';
+    import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    
+    // Import from our local cart script
+    // This is available because we added it in layout.html
+    import { addToCart } from '/cart.js';
 
-  // Get elements
-  const loadingSpinner = document.getElementById("loading-spinner");
-  const productContent = document.getElementById("product-content");
-  const productNameEl = document.getElementById("product-name");
-  const productPriceEl = document.getElementById("product-price");
-  const productShortDescEl = document.getElementById("product-short-desc");
-  const productScentFamilyEl = document.getElementById(
-    "product-scent-family"
-  );
-  const productScentNotesEl = document.getElementById("product-scent-notes");
-  const productLongDescEl = document.getElementById("product-long-desc");
-  const productPairingEl = document.getElementById("product-pairing");
-  const productImageEl = document.getElementById("product-image");
-  const addToCartBtn = document.getElementById("add-to-cart-btn");
-  const stockMessageEl = document.getElementById("stock-message");
+    // Get all the HTML elements we need to update
+    const loader = document.getElementById('product-loader');
+    const errorEl = document.getElementById('product-error');
+    const contentEl = document.getElementById('product-content');
+    
+    const imgEl = document.getElementById('product-image');
+    const nameEl = document.getElementById('product-name');
+    const priceEl = document.getElementById('product-price');
+    const shortDescEl = document.getElementById('product-short-desc');
+    const longDescEl = document.getElementById('product-long-desc');
+    const scentNotesEl = document.getElementById('product-scent-notes');
+    const scentFamilyEl = document.getElementById('product-scent-family');
+    const strengthEl = document.getElementById('product-strength');
+    
+    const quantityInput = document.getElementById('quantity');
+    const cartButton = document.getElementById('add-to-cart-button');
+    const cartConfirmation = document.getElementById('add-to-cart-confirmation');
+    
+    let currentProduct = null;
 
-  const recommendationsGrid = document.getElementById("recommendations-grid");
-  const reviewsFormContainer = document.getElementById(
-    "add-review-form-container"
-  );
-  const addReviewForm = document.getElementById("add-review-form");
-  const reviewRatingEl = document.getElementById("review-rating");
-  const reviewTextEl = document.getElementById("review-text");
-  const submitReviewBtn = document.getElementById("submit-review-btn");
-  const reviewFormMessage = document.getElementById("review-form-message");
-  const reviewFormLoginMessage = document.querySelector(
-    "#add-review-form p"
-  );
-  const reviewsList = document.getElementById("reviews-list");
-  const noReviewsMessage = document.getElementById("no-reviews-message");
+    /**
+     * Fetches a single product from Firestore and populates the page.
+     */
+    async function loadProduct() {
+        try {
+            // 1. Get the product ID from the URL
+            const params = new URLSearchParams(window.location.search);
+            const productId = params.get('id');
 
-  let currentProduct = null;
-  let currentUserId = null;
-  let currentUserEmail = null;
+            if (!productId) {
+                // If no ID is provided, show an error
+                showError();
+                return;
+            }
 
-  // Get product ID from URL
-  const params = new URLSearchParams(window.location.search);
-  const productId = params.get("id");
+            // 2. Fetch the product document from Firestore
+            const productRef = doc(db, 'products', productId);
+            const docSnap = await getDoc(productRef);
 
-  if (!productId) {
-    productContent.innerHTML =
-      '<h1 class="text-center text-3xl font-playfair text-red-600">Product not found.</h1><p class="text-center text-stone mt-4">Please check the URL or go back to the shop.</p>';
-    loadingSpinner.style.display = "none";
-    productContent.style.display = "block";
-  } else {
-    // Load product and reviews
-    loadProduct(productId);
-    loadReviews(productId);
+            if (!docSnap.exists()) {
+                // If the document doesn't exist, show an error
+                showError();
+                return;
+            }
 
-    // Listen for auth changes to unlock review form
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUserId = user.uid;
-        currentUserEmail = user.email; // Or user.displayName if you have it
-        // Enable review form
-        reviewRatingEl.disabled = false;
-        reviewTextEl.disabled = false;
-        submitReviewBtn.disabled = false;
-        reviewFormLoginMessage.textContent = `You are logged in as ${currentUserEmail}.`;
-        reviewFormLoginMessage.classList.add("text-green-600");
-      } else {
-        currentUserId = null;
-        currentUserEmail = null;
-        // Disable review form
-        reviewRatingEl.disabled = true;
-        reviewTextEl.disabled = true;
-        submitReviewBtn.disabled = true;
-        reviewFormLoginMessage.textContent = "You must be logged in to leave a review.";
-        reviewFormLoginMessage.classList.remove("text-green-600");
-      }
-    });
-  }
+            // 3. We have the data!
+            currentProduct = { id: docSnap.id, ...docSnap.data() };
+            
+            // 4. Populate the page with the data
+            const placeholderImg = `https://placehold.co/600x600/FBF9F6/3D352E?text=${currentProduct.name.replace(' ', '+')}`;
+            const imgSrc = currentProduct.imageUrl ? `/${currentProduct.imageUrl}` : placeholderImg;
 
-  // --- DATA LOADING FUNCTIONS ---
+            imgEl.src = imgSrc;
+            imgEl.alt = `Photo of ${currentProduct.name}`;
+            imgEl.onerror = () => { 
+                imgEl.src = placeholderImg; 
+                imgEl.onerror = null; 
+            };
 
-  // 1. Load Main Product
-  async function loadProduct(id) {
-    try {
-      const docRef = doc(db, "products", id);
-      const docSnap = await getDoc(docRef);
+            nameEl.textContent = currentProduct.name;
+            priceEl.textContent = `$${currentProduct.price}`;
+            shortDescEl.textContent = currentProduct.shortDescription;
+            
+            // This is the key: we set the HTML content from the database.
+            // This works because our "safe" filter is applied at the admin
+            // level (or we trust the data).
+            longDescEl.innerHTML = currentProduct.longDescription;
+            
+            scentNotesEl.textContent = currentProduct.scentNotes;
+            scentFamilyEl.textContent = currentProduct.scentFamily;
+            strengthEl.textContent = currentProduct.strength;
 
-      if (docSnap.exists()) {
-        currentProduct = { id: docSnap.id, ...docSnap.data() };
-        displayProduct(currentProduct);
-        await loadRecommendations(
-          currentProduct.scentFamily,
-          currentProduct.id
-        );
-        showProductContent();
-      } else {
-        showProductError();
-      }
-    } catch (error) {
-      console.error("Error loading product:", error);
-      showProductError();
-    }
-  }
+            // Update page title
+            document.title = `${currentProduct.name} - Southern Sense`;
 
-  // 2. Load Recommendations
-  async function loadRecommendations(scentFamily, currentProductId) {
-    try {
-      const q = query(
-        collection(db, "products"),
-        where("scentFamily", "==", scentFamily),
-        where("stock", ">", 0),
-        limit(5) // Get 5 products, one might be the current one
-      );
+            // 5. Handle stock and "Add to Cart" button
+            if (!currentProduct.stock || currentProduct.stock === 0) {
+                cartButton.textContent = 'Out of Stock';
+                cartButton.disabled = true;
+                quantityInput.disabled = true;
+            } else {
+                cartButton.disabled = false;
+                cartButton.addEventListener('click', handleAddToCart);
+            }
 
-      const querySnapshot = await getDocs(q);
-      let recommendations = [];
-      querySnapshot.forEach((doc) => {
-        // Exclude the current product from its own recommendations
-        if (doc.id !== currentProductId) {
-          recommendations.push({ id: doc.id, ...doc.data() });
+            // 6. Show the content
+            showContent();
+
+        } catch (error) {
+            console.error("Error loading product:", error);
+            showError();
         }
-      });
-
-      // Ensure we only show 4
-      recommendations = recommendations.slice(0, 4);
-
-      if (recommendations.length > 0) {
-        recommendationsGrid.innerHTML = ""; // Clear
-        recommendations.forEach((prod) => {
-          const card = createProductCard(prod);
-          recommendationsGrid.appendChild(card);
-        });
-      } else {
-        document.getElementById("recommendations-section").style.display =
-          "none";
-      }
-    } catch (error) {
-      console.error("Error loading recommendations:", error);
-      document.getElementById("recommendations-section").style.display =
-        "none";
-    }
-  }
-
-  // 3. Load Approved Reviews
-  async function loadReviews(id) {
-    try {
-      const q = query(
-        collection(db, "reviews"),
-        where("productId", "==", id),
-        where("approved", "==", true)
-      );
-
-      const querySnapshot = await getDocs(q);
-      reviewsList.innerHTML = ""; // Clear
-
-      if (querySnapshot.empty) {
-        noReviewsMessage.style.display = "block";
-      } else {
-        noReviewsMessage.style.display = "none";
-        querySnapshot.forEach((doc) => {
-          const review = doc.data();
-          const reviewCard = createReviewCard(review);
-          reviewsList.appendChild(reviewCard);
-        });
-      }
-    } catch (error) {
-      console.error("Error loading reviews:", error);
-      noReviewsMessage.textContent = "Could not load reviews at this time.";
-      noReviewsMessage.style.display = "block";
-    }
-  }
-
-  // --- UI DISPLAY FUNCTIONS ---
-
-  function displayProduct(prod) {
-    productNameEl.textContent = prod.name;
-    productPriceEl.textContent = `$${prod.price}`;
-    productShortDescEl.textContent = prod.shortDescription;
-    productScentFamilyEl.textContent = prod.scentFamily;
-    productScentNotesEl.textContent = prod.scentNotes;
-    productLongDescEl.innerHTML = prod.longDescription; // Assumes HTML content
-    productPairingEl.textContent = prod.pairing;
-    productImageEl.src = `/src/${prod.imageUrl}`;
-    productImageEl.alt = prod.name;
-
-    // Handle Stock
-    if (prod.stock > 0) {
-      stockMessageEl.classList.add("hidden");
-      addToCartBtn.disabled = false;
-      addToCartBtn.textContent = "Add to Cart";
-    } else {
-      stockMessageEl.classList.remove("hidden");
-      addToCartBtn.disabled = true;
-      addToCartBtn.textContent = "Out of Stock";
-    }
-  }
-
-  function createProductCard(prod) {
-    const card = document.createElement("a");
-    card.href = `/product.html?id=${prod.id}`;
-    card.className =
-      "group bg-white rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 hover:shadow-2xl";
-
-    card.innerHTML = `
-      <div class="relative w-full h-64">
-        <img src="/src/${prod.imageUrl}" alt="${prod.name}" class="w-full h-full object-cover">
-      </div>
-      <div class="p-6">
-        <h3 class="font-playfair text-2xl font-semibold text-charcoal group-hover:text-burnt-orange transition-colors">
-          ${prod.name}
-        </h3>
-        <p class="text-stone mt-2">${prod.shortDescription}</p>
-        <p class="text-burnt-orange text-xl font-medium mt-4">
-          $${prod.price}
-        </p>
-      </div>
-    `;
-    return card;
-  }
-
-  function createReviewCard(review) {
-    const card = document.createElement("div");
-    card.className = "border-b border-stone/20 pb-6";
-
-    // Create star rating
-    let stars = "";
-    for (let i = 0; i < 5; i++) {
-      stars += `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ${
-        i < review.rating ? "text-burnt-orange" : "text-stone/30"
-      }" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.959a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.446a1 1 0 00-.364 1.118l1.286 3.959c.3.921-.755 1.688-1.54 1.118l-3.368-2.446a1 1 0 00-1.175 0l-3.368 2.446c-.784.57-1.838-.197-1.54-1.118l1.286-3.959a1 1 0 00-.364-1.118L2.07 9.386c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.959z" />
-        </svg>`;
     }
 
-    const reviewDate = review.createdAt
-      ? review.createdAt.toDate().toLocaleDateString()
-      : "Recently";
+    /**
+     * Handles the click event for the "Add to Cart" button.
+     */
+    function handleAddToCart() {
+        const quantity = parseInt(quantityInput.value, 10);
 
-    card.innerHTML = `
-      <div class="flex items-center mb-2">
-        <div class="flex">${stars}</div>
-        <span class="ml-4 font-medium text-charcoal">${review.userName || "Anonymous"}</span>
-      </div>
-      <p class="text-stone italic">Reviewed on ${reviewDate}</p>
-      <p class="text-charcoal text-lg mt-3">${review.text}</p>
-    `;
-    return card;
-  }
+        if (!currentProduct || quantity <= 0) {
+            return;
+        }
 
-  function showProductContent() {
-    loadingSpinner.style.display = "none";
-    productContent.style.display = "block";
-    reviewsFormContainer.style.display = "block";
-  }
+        // Create the item object to be added to the cart
+        const cartItem = {
+            id: currentProduct.id,
+            name: currentProduct.name,
+            price: currentProduct.price,
+            imageUrl: currentProduct.imageUrl,
+            quantity: quantity,
+        };
+        
+        // Call the imported function from cart.js
+        addToCart(cartItem);
 
-  function showProductError() {
-    loadingSpinner.style.display = "none";
-    productContent.innerHTML =
-      '<h1 class="text-center text-3xl font-playfair text-red-600">Product not found.</h1><p class="text-center text-stone mt-4">Please check the URL or go back to the shop.</p>';
-    productContent.style.display = "block";
-    reviewsFormContainer.style.display = "none";
-  }
+        // Show confirmation message
+        cartButton.textContent = 'Added!';
+        cartConfirmation.classList.remove('hidden');
 
-  // --- EVENT LISTENERS ---
-
-  // Add to Cart
-  addToCartBtn.addEventListener("click", () => {
-    if (currentProduct) {
-      addToCart(
-        currentProduct.id,
-        currentProduct.name,
-        currentProduct.price,
-        currentProduct.imageUrl
-      );
-      // Optional: Show a confirmation message
-      addToCartBtn.textContent = "Added!";
-      setTimeout(() => {
-        addToCartBtn.textContent = "Add to Cart";
-      }, 1500);
-    }
-  });
-
-  // Submit Review
-  addReviewForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!currentUserId || !productId) {
-      reviewFormMessage.textContent = "You must be logged in to submit.";
-      reviewFormMessage.classList.add("text-red-600");
-      reviewFormMessage.classList.remove("hidden");
-      return;
+        // Reset button after 2 seconds
+        setTimeout(() => {
+            cartButton.textContent = 'Add to Cart';
+            cartConfirmation.classList.add('hidden');
+        }, 2000);
     }
 
-    submitReviewBtn.disabled = true;
-    submitReviewBtn.textContent = "Submitting...";
-    reviewFormMessage.classList.add("hidden");
-
-    try {
-      const reviewData = {
-        productId: productId,
-        productName: currentProduct.name,
-        userId: currentUserId,
-        userName: currentUserEmail, // Using email as name for now
-        rating: parseInt(reviewRatingEl.value),
-        text: reviewTextEl.value,
-        createdAt: Timestamp.now(),
-        approved: false, // All reviews must be approved by an admin
-      };
-
-      // Add to Firestore
-      const docRef = await addDoc(collection(db, "reviews"), reviewData);
-
-      reviewFormMessage.textContent =
-        "Review submitted successfully! It will appear once approved by an admin.";
-      reviewFormMessage.classList.add("text-green-600");
-      reviewFormMessage.classList.remove("text-red-600", "hidden");
-      addReviewForm.reset();
-    } catch (error)_ {
-      console.error("Error submitting review:", error);
-      reviewFormMessage.textContent = "Error submitting review. Please try again.";
-      reviewFormMessage.classList.add("text-red-600");
-      reviewFormMessage.classList.remove("text-green-600", "hidden");
-    } finally {
-      submitReviewBtn.disabled = false;
-      submitReviewBtn.textContent = "Submit Review";
+    function showContent() {
+        loader.classList.add('hidden');
+        errorEl.classList.add('hidden');
+        contentEl.classList.remove('hidden');
     }
-  });
+
+    function showError() {
+        loader.classList.add('hidden');
+        errorEl.classList.remove('hidden');
+        contentEl.classList.add('hidden');
+    }
+
+    // Load the product as soon as the DOM is ready
+    document.addEventListener('DOMContentLoaded', loadProduct);
+
 </script>

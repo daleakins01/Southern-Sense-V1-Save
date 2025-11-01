@@ -8,47 +8,58 @@
     <!-- 'title' and 'description' are set in each page's front matter -->
     <title>{{ title | default: site.defaultTitle }}</title>
     <meta name="description" content="{{ description | default: site.defaultDescription }}">
-    
-    <!-- Brand Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;700&family=Great+Vibes&display=swap" rel="stylesheet">
-    
-    <!-- Main Stylesheet (compiled by Tailwind) -->
-    <!-- This path is /css/style.css because .eleventy.js copies it there -->
-    <link rel="stylesheet" href="/css/style.css">
-    
-    <!-- FIX 5.3: Add favicon links -->
+
+    <!-- Favicon Links -->
+    <!-- FIX 6.1: Added favicon links to prevent 404. -->
     <link rel="icon" href="/logo.webp" type="image/webp">
     <link rel="apple-touch-icon" href="/logo.webp">
 
-    <!-- 
-      FIX 5.4: Correct JavaScript paths.
-      FIX 5.5: Added type="module" to firebase-loader.js because it uses
-               the ES6 'import' syntax. 'main.js' is a standard
-               script and does not get 'type="module"'.
-    -->
+    <!-- CSS Stylesheet -->
+    <!-- FIX 1.1: Corrected path from 'src/output.css' to '/css/style.css' -->
+    <link rel="stylesheet" href="/css/style.css">
 
-    <!-- Firebase SDKs (as a module) -->
-    <script src="/firebase-loader.js" type="module" defer></script>
-    
-    <!-- Main Site JavaScript (as a standard script) -->
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&family=Great+Vibes&display=swap" rel="stylesheet">
+
+    <!-- 
+      JavaScript Files
+      FIX 5.1 & 7.1: Corrected paths (removed /src/) and added type="module"
+      We use 'defer' to ensure scripts execute after the document is parsed.
+    -->
+    <script type(="module") src="/firebase-loader.js" defer></script>
     <script src="/main.js" defer></script>
-</head>
-<body class="bg-parchment text-charcoal font-roboto flex flex-col min-h-screen">
     
-    <!-- Header -->
-    <!-- This pulls in the header partial from src/_includes/header.html -->
+    <!-- 
+      NEW - FIX 10.1: Add cart.js as a module.
+      This makes cart functions available for import on other pages
+      (like product.html and cart.html).
+    -->
+    <script type="module" src="/cart.js" defer></script>
+
+</head>
+<body class="bg-parchment font-roboto text-charcoal flex flex-col min-h-screen">
+
+    <!-- 
+      Header 
+      The content for the header is pulled from the '_includes' folder.
+    -->
     {% include "header.html" %}
 
-    <!-- Main Content -->
-    <!-- 'content' is the content from the individual .html files (e.g., shop.html) -->
+    <!-- 
+      Main Content 
+      This is where the content from individual pages (index.html, about.html, etc.)
+      will be injected by Eleventy.
+    -->
     <main class="flex-grow">
         {{ content }}
     </main>
 
-    <!-- Footer -->
-    <!-- This pulls in the footer partial from src/_includes/footer.html -->
+    <!-- 
+      Footer
+      The content for the footer is pulled from the '_includes' folder.
+    -->
     {% include "footer.html" %}
 
 </body>

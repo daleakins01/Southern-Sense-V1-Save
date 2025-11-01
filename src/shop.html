@@ -1,13 +1,178 @@
 ---
 layout: layout.html
-title: "Shop All Products"
+title: "Shop All - Southern Sense"
+description: "Browse our complete collection of hand-poured soy wax candles, wax melts, and more."
 ---
 
 <!-- 
-  This is the new shop.html file, located in /src and given 
-  Eleventy front matter, just like index.html.
+  This page dynamically loads and displays all products from the 
+  'products' collection in Firestore.
 -->
-<main class="container mx-auto px-4 py-12">
-  <!-- Header -->
-  <header class="text-center mb-12">
-[Immersive content redacted for brevity.]
+
+<div class="bg-parchment py-12">
+    <div class="container mx-auto px-4">
+        
+        <!-- Page Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-playfair text-charcoal mb-4">Shop All Products</h1>
+            <p class="text-lg text-stone max-w-2xl mx-auto">
+                Explore our full collection of hand-poured soy wax candles and melts. Each scent is crafted to bring warmth, comfort, and a touch of southern elegance to your home.
+            </p>
+        </div>
+
+        <!-- Product Grid -->
+        <!-- This grid will be populated by JavaScript -->
+        <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+            
+            <!-- Loading Skeleton -->
+            <!-- Skeletons for a better loading experience -->
+            <div class="product-skeleton bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
+                <div class="w-full h-48 bg-stone/20"></div>
+                <div class="p-4">
+                    <div class="h-6 bg-stone/20 rounded w-3/4 mb-2"></div>
+                    <div class="h-4 bg-stone/20 rounded w-1/2 mb-4"></div>
+                    <div class="h-8 bg-stone/20 rounded w-1/4"></div>
+                </div>
+            </div>
+            <div class="product-skeleton bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
+                <div class="w-full h-48 bg-stone/20"></div>
+                <div class="p-4">
+                    <div class="h-6 bg-stone/20 rounded w-3/4 mb-2"></div>
+                    <div class="h-4 bg-stone/20 rounded w-1/2 mb-4"></div>
+                    <div class="h-8 bg-stone/20 rounded w-1/4"></div>
+                </div>
+            </div>
+            <div class="product-skeleton bg-white rounded-lg shadow-md overflow-hidden animate-pulse hidden md:block">
+                <div class="w-full h-48 bg-stone/20"></div>
+                <div class="p-4">
+                    <div class="h-6 bg-stone/20 rounded w-3/4 mb-2"></div>
+                    <div class="h-4 bg-stone/20 rounded w-1/2 mb-4"></div>
+                    <div class="h-8 bg-stone/20 rounded w-1/4"></div>
+                </div>
+            </div>
+            <div class="product-skeleton bg-white rounded-lg shadow-md overflow-hidden animate-pulse hidden lg:block">
+                <div class="w-full h-48 bg-stone/20"></div>
+                <div class="p-4">
+                    <div class="h-6 bg-stone/20 rounded w-3/4 mb-2"></div>
+                    <div class="h-4 bg-stone/20 rounded w-1/2 mb-4"></div>
+                    <div class="h-8 bg-stone/20 rounded w-1/4"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Error Message Container -->
+        <div id="error-message" class="text-center text-red-600 font-semibold text-lg hidden">
+            <p>We're sorry, but there was an error loading our products. Please try refreshing the page. If the problem persists, please contact us.</p>
+        </div>
+
+    </div>
+</div>
+
+<!-- 
+  JavaScript for this page.
+  It imports Firebase functions and then fetches and renders products.
+-->
+<script type="module">
+    // Import necessary functions from Firebase
+    import { db } from '/firebase-loader.js';
+    import { collection, getDocs, query } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    /**
+     * Creates an HTML card for a single product.
+     * @param {object} product - The product data from Firestore.
+     * @returns {string} - The HTML string for the product card.
+     */
+    function createProductCard(product) {
+        const { id, name, shortDescription, price, imageUrl, stock } = product;
+        
+        // Use a placeholder if imageUrl is missing
+        const placeholderImg = `https://placehold.co/400x400/FBF9F6/3D352E?text=${name.replace(' ', '+')}`;
+        const imgSrc = imageUrl ? `/${imageUrl}` : placeholderImg;
+
+        // Create the URL for the product page
+        // We use the product ID as the slug
+        const productUrl = `/product/?id=${id}`;
+
+        // Check stock status
+        const isOutOfStock = !stock || stock === 0;
+
+        return `
+            <div class="product-card bg-white rounded-lg shadow-md overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl">
+                <a href="${productUrl}" class="relative">
+                    <!-- Product Image -->
+                    <img 
+                        src="${imgSrc}" 
+                        alt="Photo of ${name}" 
+                        class="w-full h-48 object-cover"
+                        onerror="this.src='${placeholderImg}'; this.onerror=null;"
+                    >
+                    
+                    <!-- Out of Stock Badge -->
+                    ${isOutOfStock ? `
+                        <div class="absolute top-2 left-2 bg-charcoal/80 text-white text-xs font-semibold px-2 py-1 rounded">
+                            Out of Stock
+                        </div>
+                    ` : ''}
+                </a>
+
+                <!-- Product Info -->
+                <div class="p-4 flex flex-col flex-grow">
+                    <h3 class="text-lg font-playfair text-charcoal font-semibold mb-1">
+                        <a href="${productUrl}" class="hover:text-burnt-orange transition-colors">${name}</a>
+                    </h3>
+                    <p class="text-stone text-sm mb-4 flex-grow">${shortDescription}</p>
+                    
+                    <!-- Price -->
+                    <div class="flex justify-between items-center">
+                        <span class="text-xl font-roboto text-charcoal font-medium">$${price}</span>
+                        <a href="${productUrl}" class="text-sm font-semibold text-burnt-orange hover:text-charcoal transition-colors">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Fetches all products from Firestore and renders them to the page.
+     */
+    async function loadProducts() {
+        const grid = document.getElementById('product-grid');
+        const errorEl = document.getElementById('error-message');
+        
+        try {
+            // Get all documents from the 'products' collection
+            const productsRef = collection(db, 'products');
+            const q = query(productsRef);
+            const querySnapshot = await getDocs(q);
+
+            // Clear skeleton loaders
+            grid.innerHTML = '';
+
+            if (querySnapshot.empty) {
+                grid.innerHTML = '<p class="text-stone text-center col-span-full">No products found at this time. Please check back later!</p>';
+                return;
+            }
+
+            // Loop through each product and create a card
+            querySnapshot.forEach((doc) => {
+                const product = { id: doc.id, ...doc.data() };
+                const cardHtml = createProductCard(product);
+                grid.innerHTML += cardHtml;
+            });
+
+        } catch (error) {
+            console.error("Error loading products:", error);
+            // Hide the grid and show an error message
+            grid.style.display = 'none';
+            errorEl.classList.remove('hidden');
+        }
+    }
+
+    // Load products as soon as the DOM is ready
+    document.addEventListener('DOMContentLoaded', loadProducts);
+
+</script>
+

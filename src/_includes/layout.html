@@ -5,78 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- 
       (Pillar 2): Add dynamic meta tags for SEO 
-      - This should be populated from the page's front matter
-      - <title>{{ title }} - {{ site.name }}</title>
-      - <meta name="description" content="{{ description }}">
+      - The 'title' and 'description' variables are set in the 
+        front matter of individual pages (e.g., src/index.html).
     -->
-    <title>{{ title | default("Southern Sense") }}</title>
-    <!--
-      (FIX 8:57 PM): Corrected Nunjucks/Liquid syntax.
-      - Changed `default: '...'` to `default('...')`
-    -->
+    <!-- (FIX 12:06 PM): Corrected Liquid syntax, was `default("...")` -->
+    <title>{{ title | default: "Southern Sense" }}</title>
     <meta
       name="description"
-      content="{{ description | default('Hand-poured soy candles and wax melts, crafted with care in small batches. Discover your new favorite scent.') }}"
+      content="{{ description | default: 'Hand-poured soy wax candles and melts, crafted with unique, long-lasting fragrances in [Your Location]. Shop our elegant collections.' }}"
     />
 
-    <!--
-      (FIX 8:44 PM): Corrected favicon path.
-      Changed "/src/logo.webp" to "/logo.webp"
-    -->
-    <link rel="icon" type="image/webp" href="/logo.webp" />
+    <!-- Favicon (FIX 8:57 PM): Path corrected to root -->
+    <link rel="icon" href="/logo.webp" type="image/webp" />
 
-    <!--
-      (Pillar 2): Critical CSS should be inlined for performance.
-      - For now, we are linking the main compiled stylesheet.
-    -->
+    <!-- Main Stylesheet (FIX 10:18 PM): Path corrected to root -->
     <link rel="stylesheet" href="/output.css" />
 
-    <!-- Fonts -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;500;600;700&family=Roboto:wght@300;4_00;500;700&display=swap"
       rel="stylesheet"
     />
 
-    <!-- Eleventy Live Reload (development only) -->
-    {%- if site.env === "development" -%}
-    <script src="/eleventy-dev-server.js"></script>
+    <!-- Eleventy Live-Reload (dev only) -->
+    {%- if eleventy.serverless.path == "::" -%}
+    <script
+      defer
+      src="/eleventy-auto-reload-bundle.js"
+      async
+    ></script>
     {%- endif -%}
   </head>
-  <body
-    class="flex h-full flex-col bg-parchment font-roboto text-stone"
-    style="
-      background-image: url('/background-parchment.webp');
-      background-attachment: fixed;
-    "
-  >
-    <!-- Header -->
+  <body class="bg-parchment font-roboto text-charcoal flex flex-col min-h-full">
+    <!-- 
+      Header 
+      (FIX 12:14 PM): Corrected include path. `header.html` is in the
+      same directory (`_includes`) as this layout file.
+    -->
     {% include "header.html" %}
 
-    <!-- Main Content -->
-    <!-- 'content' is the magic Eleventy variable that holds all the 
-         page content from our .html files (e.g., src/index.html) -->
-    <main class="flex-grow">{{ content | safe }}</main>
+    <!-- 
+      Main Content 
+      - 'content' is the special Eleventy variable that holds all 
+        the HTML from the individual page (e.g., src/index.html).
+    -->
+    <main class="flex-grow">
+      {{ content | safe }}
+    </main>
 
-    <!-- Footer -->
+    <!-- 
+      Footer 
+      (FIX 12:14 PM): Corrected include path. `footer.html` is in the
+      same directory (`_includes`) as this layout file.
+    -->
     {% include "footer.html" %}
 
     <!-- 
-      Global JavaScript
-      (FIX 8:46 PM): Corrected all JS asset paths.
-      - Removed the "/src/" prefix from all script paths to match the
-        Eleventy passthrough copy destination (e.g., "/src/cart.js" -> "/cart.js").
-      - This fixes the 404 errors from the 8:14 PM console log.
+      Global Site Scripts
+      (FIX 8:46 PM): Corrected all script paths to root (e.g., /main.js)
+      to match the Eleventy build output.
     -->
-    <script
-      type="module"
-      src="/firebase-loader.js"
-    ></script>
+    <script type="module" src="/firebase-loader.js"></script>
     <script type="module" src="/auth.js"></script>
     <script type="module" src="/cart.js"></script>
     <script type="module" src="/main.js"></script>

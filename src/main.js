@@ -1,62 +1,118 @@
 /*
- * Main JavaScript (main.js)
- *
- * This file contains global site logic, primarily for UI interactions
- * like the mobile navigation menu.
- *
- * (FIX 10:14 PM): Removed obsolete V1.1 "Ghost Logic" (loadHTML).
- * (FIX 10:14 PM): Updated mobile menu button ID to match header.
- */
+  Southern Sense - main.js
+  --------------------------
+  Primary JavaScript file for site-wide functionality.
+  Includes:
+  1. Mobile Menu Toggle
+  2. Dynamic HTML Content Loading (for admin, product, etc. - DEPRECATED)
+  3. General utilities
+*/
 
 /**
- * Attaches listeners to the mobile menu buttons.
- * This is the only logic that should be in this file.
+ * Main function to initialize all site scripts.
+ * This runs after the DOM is fully loaded.
+ */
+function main() {
+  console.log('Southern Sense main.js loaded.');
+  attachMobileMenuListeners();
+  
+  // (DEPRECATED)
+  // The 'loadHTML' function was part of the old, broken build system.
+  // It is no longer needed as Eleventy now builds all pages.
+  // We are keeping it here but commented out for historical reference.
+  // loadHTML();
+}
+
+/**
+ * (DEPRECATED)
+ * Dynamically loads shared HTML content like headers and footers.
+ * This is no longer in use, as Eleventy's layout system handles this.
+ */
+/*
+function loadHTML() {
+  const elements = document.querySelectorAll('[include-html]');
+  console.log(`Found ${elements.length} elements to include HTML.`); // Debug log
+  
+  Array.prototype.forEach.call(elements, function(el) {
+    const file = el.getAttribute('include-html');
+    if (file) {
+      console.log(`Fetching ${file}`); // Debug log
+      fetch(file)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Failed to load ${file}: ${response.statusText}`);
+          }
+          return response.text();
+        })
+        .then(data => {
+          el.innerHTML = data;
+          el.removeAttribute('include-html');
+          
+          // After loading, re-attach listeners if it was the header
+          if (file.includes('header.html')) {
+            console.log('Header loaded, re-attaching mobile menu listeners.');
+            attachMobileMenuListeners();
+          }
+        })
+        .catch(err => {
+          console.error(`Error loading HTML from ${file}:`, err);
+          el.innerHTML = `<p class="text-red-500">Error: Could not load ${file}</p>`;
+        });
+    }
+  });
+}
+*/
+
+/**
+ * Attaches click event listeners for the mobile (hamburger) menu.
+ * Toggles visibility of the mobile menu panel.
  */
 function attachMobileMenuListeners() {
-  // Get buttons and the menu panel
-  // (FIX 10:14 PM): Updated ID from 'mobile-menu-button' to 'mobile-menu-open-btn'
-  const openBtn = document.getElementById("mobile-menu-open-btn");
-  const closeBtn = document.getElementById("mobile-menu-close-btn");
-  const mobileMenu = document.getElementById("mobile-menu");
+  // ---
+  // FIX (1:57 PM):
+  // Correcting the IDs to match the IDs in `_includes/header.html`
+  // This fixes the 'not found' error.
+  // ---
+  
+  // These IDs MUST match the IDs in `_includes/header.html`
+  const openButton = document.getElementById('mobile-menu-open-button');
+  const closeButton = document.getElementById('mobile-menu-close-button');
+  const menuPanel = document.getElementById('mobile-menu-panel');
 
-  // Check if all elements exist
-  if (openBtn && closeBtn && mobileMenu) {
-    // Add listener to OPEN button
-    openBtn.addEventListener("click", () => {
-      mobileMenu.classList.remove("hidden");
-      openBtn.setAttribute("aria-expanded", "true");
+  if (openButton && closeButton && menuPanel) {
+    // Show the panel when open button is clicked
+    openButton.addEventListener('click', () => {
+      menuPanel.classList.remove('hidden');
     });
 
-    // Add listener to CLOSE button
-    closeBtn.addEventListener("click", () => {
-      mobileMenu.classList.add("hidden");
-      openBtn.setAttribute("aria-expanded", "false");
+    // Hide the panel when close button is clicked
+    closeButton.addEventListener('click', () => {
+      menuPanel.classList.add('hidden');
     });
+    
+    // Optional: Hide the panel if clicking outside of it (on the overlay)
+    // The first child of the menuPanel is the overlay div
+    if (menuPanel.firstElementChild && menuPanel.firstElementChild.tagName === 'DIV') {
+      menuPanel.firstElementChild.addEventListener('click', () => {
+        menuPanel.classList.add('hidden');
+      });
+    }
+    
   } else {
-    // This warning helps debug if the IDs in the header are wrong.
-    console.warn("Mobile menu buttons or panel not found.");
+    // This error means the IDs in this file don't match the IDs in header.html
+    console.error('Mobile menu buttons or panel not found.');
   }
 }
 
-/**
- * Main function to run on page load.
- */
-function main() {
-  // (FIX 10:14 PM): All 'loadHTML' calls have been REMOVED.
-  // Eleventy now handles the header and footer.
-
-  // Attach the mobile menu listeners.
-  attachMobileMenuListeners();
-}
-
-// --- Run Main Function ---
-// Wait for the DOM to be fully loaded before running main.js
-if (
-  document.readyState === "complete" ||
-  document.readyState === "interactive"
-) {
-  main();
+// ---
+// Initializer
+// ---
+// We wrap the main() call in a DOMContentLoaded listener to ensure
+// the HTML is fully parsed before we try to find elements.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', main);
 } else {
-  document.addEventListener("DOMContentLoaded", main);
+  // DOM is already loaded
+  main();
 }
 

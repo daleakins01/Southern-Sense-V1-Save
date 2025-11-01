@@ -1,73 +1,65 @@
-// This is the main JavaScript file for the site.
-// It handles loading the header and footer, mobile menu,
-// and other global site functionality.
-
-/**
- * Loads HTML content from a file into a specified element.
- * @param {string} url The URL of the HTML file to fetch.
- * @param {string} elementId The ID of the element to load the content into.
+/*
+ * Main JavaScript (main.js)
+ *
+ * This file contains global site logic, primarily for UI interactions
+ * like the mobile navigation menu.
+ *
+ * V1.1 (Obsolete) Logic Removed:
+ * - Removed loadHTML() function. Header/Footer are now built by Eleventy.
  */
-async function loadHTML(url, elementId) {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to load ${url}: ${response.status} ${response.statusText}`);
-    }
-    const text = await response.text();
-    const element = document.getElementById(elementId);
-    if (element) {
-      element.innerHTML = text;
-
-      // After loading the header, re-attach mobile menu listeners
-      if (elementId === 'header-placeholder') {
-        attachMobileMenuListeners();
-      }
-    } else {
-      console.warn(`Element with ID '${elementId}' not found.`);
-    }
-  } catch (error) {
-    console.error(`Error loading HTML for ${elementId}:`, error);
-  }
-}
 
 /**
- * Attaches event listeners for the mobile menu button.
+ * Attaches event listeners for the mobile navigation menu.
  */
 function attachMobileMenuListeners() {
-  const menuButton = document.getElementById('mobile-menu-button');
-  const mobileMenu = document.getElementById('mobile-menu');
+  // (FIX 9:06 PM): Updated ID to match the new header.
+  // Old ID: "mobile-menu-button"
+  const openButton = document.getElementById("mobile-menu-open-btn");
+  const closeButton = document.getElementById("mobile-menu-close-btn");
+  const mobileMenu = document.getElementById("mobile-menu");
 
-  if (menuButton && mobileMenu) {
-    menuButton.addEventListener('click', () => {
-      const isExpanded = menuButton.getAttribute('aria-expanded') === 'true';
-      menuButton.setAttribute('aria-expanded', !isExpanded);
-      mobileMenu.classList.toggle('hidden');
+  if (openButton && closeButton && mobileMenu) {
+    // Open menu
+    openButton.addEventListener("click", () => {
+      mobileMenu.classList.remove("hidden");
+    });
+
+    // Close menu
+    closeButton.addEventListener("click", () => {
+      mobileMenu.classList.add("hidden");
     });
   } else {
-    // This might run before the header is fully loaded,
-    // so we check again after a short delay if elements aren't found.
-    // This is a defensive check.
-    if (!menuButton) console.warn("Mobile menu button not found.");
-    if (!mobileMenu) console.warn("Mobile menu not found.");
+    // Log an error if any element is missing
+    if (!openButton) console.error("Mobile menu open button not found.");
+    if (!closeButton) console.error("Mobile menu close button not found.");
+    if (!mobileMenu) console.error("Mobile menu element not found.");
   }
 }
 
 /**
- * Main function to run when the DOM is fully loaded.
+ * Initializes all global site scripts.
  */
 function main() {
-  // Load header and footer
-  loadHTML('header.html', 'header-placeholder');
-  loadHTML('footer.html', 'footer-placeholder');
+  // (FIX 9:06 PM): Removed obsolete V1.1 header/footer loading.
+  // loadHTML("/header.html", "header-placeholder");
+  // loadHTML("/footer.html", "footer-placeholder");
 
-  // Initial check for mobile menu listeners (in case header is cached)
+  // Attach listeners for the mobile menu
   attachMobileMenuListeners();
+
+  // (Pillar 1): Check auth state to update UI
+  // This logic is in auth.js, but we might add a global
+  // function here later to show/hide "Account" vs "Login"
 }
 
-// Run the main function when the DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', main);
-} else {
-  // DOM is already ready
+// --- Main Execution ---
+// Wait for the DOM to be fully loaded before running scripts
+if (
+  document.readyState === "complete" ||
+  document.readyState === "interactive"
+) {
   main();
+} else {
+  document.addEventListener("DOMContentLoaded", main);
 }
+

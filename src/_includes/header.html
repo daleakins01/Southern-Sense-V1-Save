@@ -7,109 +7,120 @@
     class="container mx-auto px-4 sm:px-6 lg:px-8"
     aria-label="Top"
   >
-    <div class="flex w-full items-center justify-between py-4">
-      <!-- Logo -->
+    <div
+      class="flex w-full items-center justify-between border-b border-stone/20 py-4"
+    >
       <div class="flex items-center">
-        <a href="/index.html">
+        <!-- Logo -->
+        <a href="/">
           <span class="sr-only">Southern Sense</span>
-          <!--
-            (FIX 8:44 PM): Corrected asset path.
-            Changed "/src/logo.webp" to "/logo.webp" to match the
-            Eleventy passthrough copy destination.
-          -->
           <img
             class="h-12 w-auto"
             src="/logo.webp"
             alt="Southern Sense Logo"
+            width="142"
+            height="48"
           />
         </a>
       </div>
 
-      <!-- Desktop Nav Links -->
-      <div class="hidden lg:flex lg:gap-x-8">
+      <!-- Desktop Navigation -->
+      <div class="hidden lg:flex lg:items-center lg:space-x-8">
+        <a
+          href="/"
+          class="font-roboto text-base font-medium text-charcoal hover:text-burnt-orange transition-colors"
+          >Home</a
+        >
         <a
           href="/shop.html"
-          class="font-playfair text-lg text-charcoal hover:text-burnt-orange transition-colors"
+          class="font-roboto text-base font-medium text-charcoal hover:text-burnt-orange transition-colors"
           >Shop</a
         >
         <a
           href="/about.html"
-          class="font-playfair text-lg text-charcoal hover:text-burnt-orange transition-colors"
+          class="font-roboto text-base font-medium text-charcoal hover:text-burnt-orange transition-colors"
           >About</a
         >
         <a
-          href="/scent-guide.html"
-          class="font-playfair text-lg text-charcoal hover:text-burnt-orange transition-colors"
-          >Scent Guide</a
-        >
-        <a
           href="/contact.html"
-          class="font-playfair text-lg text-charcoal hover:text-burnt-orange transition-colors"
+          class="font-roboto text-base font-medium text-charcoal hover:text-burnt-orange transition-colors"
           >Contact</a
         >
       </div>
 
-      <!-- Icons -->
-      <div class="flex items-center gap-x-4">
-        <!-- Account -->
-        <a
-          id="account-link"
-          href="/login.html"
-          class="text-charcoal hover:text-burnt-orange transition-colors"
-        >
-          <span class="sr-only">Account</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="h-7 w-7"
+      <!-- Desktop Right Side (Auth & Cart) -->
+      <div class="hidden lg:flex lg:items-center lg:space-x-6">
+        <!-- Auth Links -->
+        <div id="desktop-auth-links">
+          <a
+            href="/login.html"
+            class="font-roboto text-base font-medium text-charcoal hover:text-burnt-orange transition-colors"
+            >Sign in</a
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A1.5 1.5 0 0118 21.75H6.75a1.5 1.5 0 01-1.249-1.632z"
-            />
-          </svg>
-        </a>
+          <span class="text-stone/40 mx-2" aria-hidden="true">|</span>
+          <a
+            href="/register.html"
+            class="font-roboto text-base font-medium text-charcoal hover:text-burnt-orange transition-colors"
+            >Create account</a
+          >
+        </div>
+        <div id="desktop-account-links" class="hidden">
+          <a
+            href="/account.html"
+            id="desktop-user-name"
+            class="font-roboto text-base font-medium text-charcoal hover:text-burnt-orange transition-colors"
+            >My Account</a
+          >
+          <span class="text-stone/40 mx-2" aria-hidden="true">|</span>
+          <button
+            id="desktop-logout-btn"
+            type="button"
+            class="font-roboto text-base font-medium text-charcoal hover:text-burnt-orange transition-colors"
+          >
+            Log Out
+          </button>
+        </div>
 
         <!-- Cart -->
-        <a
-          href="/cart.html"
-          class="relative text-charcoal hover:text-burnt-orange transition-colors"
-        >
-          <span class="sr-only">Shopping Cart</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="h-7 w-7"
+        <div class="ml-4 flow-root">
+          <a
+            href="/cart.html"
+            class="group -m-2 flex items-center p-2"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-            />
-          </svg>
-          <span
-            id="cart-count-bubble"
-            class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-burnt-orange text-xs font-bold text-white"
-            >0</span
-          >
-        </a>
+            <svg
+              class="h-6 w-6 flex-shrink-0 text-charcoal/80 group-hover:text-burnt-orange transition-colors"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+              />
+            </svg>
+            <span
+              id="cart-item-count"
+              class="ml-2 text-sm font-medium text-charcoal group-hover:text-burnt-orange transition-colors"
+              >0</span
+            >
+            <span class="sr-only">items in cart, view bag</span>
+          </a>
+        </div>
+      </div>
 
-        <!-- Mobile Menu Button -->
+      <!-- Mobile Menu Button -->
+      <div class="flex lg:hidden">
         <button
-          type="button"
           id="mobile-menu-open-btn"
-          class="lg:hidden text-charcoal hover:text-burnt-orange"
+          type="button"
+          class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-charcoal/80"
         >
           <span class="sr-only">Open main menu</span>
           <svg
-            class="h-7 w-7"
+            class="h-6 w-6"
             fill="none"
             viewBox="0 0 24 24"
             stroke-width="1.5"
@@ -127,33 +138,31 @@
     </div>
   </nav>
 
-  <!-- 
-    Mobile Menu
-    Flyout menu, show/hide based on menu state.
-  -->
+  <!-- Mobile menu, show/hide based on menu state. -->
   <div
     id="mobile-menu"
-    class="hidden"
+    class="lg:hidden hidden"
     role="dialog"
     aria-modal="true"
   >
     <!-- Background backdrop, show/hide based on slide-over state. -->
+    <div class="fixed inset-0 z-50"></div>
     <div
-      id="mobile-menu-backdrop"
-      class="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm"
-    ></div>
-    <div
-      class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-parchment px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10"
+      class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-parchment px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-charcoal/10"
     >
       <div class="flex items-center justify-between">
-        <a href="/index.html" class="-m-1.5 p-1.5">
+        <a href="/" class="-m-1.5 p-1.5">
           <span class="sr-only">Southern Sense</span>
-          <img class="h-10 w-auto" src="/logo.webp" alt="Southern Sense Logo" />
+          <img
+            class="h-10 w-auto"
+            src="/logo.webp"
+            alt="Southern Sense Logo"
+          />
         </a>
         <button
-          type="button"
           id="mobile-menu-close-btn"
-          class="-m-2.5 rounded-md p-2.5 text-charcoal"
+          type="button"
+          class="-m-2.5 rounded-md p-2.5 text-charcoal/80"
         >
           <span class="sr-only">Close menu</span>
           <svg
@@ -176,33 +185,52 @@
         <div class="-my-6 divide-y divide-stone/20">
           <div class="space-y-2 py-6">
             <a
+              href="/"
+              class="-mx-3 block rounded-lg px-3 py-2 text-base font-roboto font-semibold leading-7 text-charcoal hover:bg-stone/5"
+              >Home</a
+            >
+            <a
               href="/shop.html"
-              class="-mx-3 block rounded-lg px-3 py-2 text-base font-playfair leading-7 text-charcoal hover:bg-stone/10"
+              class="-mx-3 block rounded-lg px-3 py-2 text-base font-roboto font-semibold leading-7 text-charcoal hover:bg-stone/5"
               >Shop</a
             >
             <a
               href="/about.html"
-              class="-mx-3 block rounded-lg px-3 py-2 text-base font-playfair leading-7 text-charcoal hover:bg-stone/10"
+              class="-mx-3 block rounded-lg px-3 py-2 text-base font-roboto font-semibold leading-7 text-charcoal hover:bg-stone/5"
               >About</a
             >
             <a
-              href="/scent-guide.html"
-              class="-mx-3 block rounded-lg px-3 py-2 text-base font-playfair leading-7 text-charcoal hover:bg-stone/10"
-              >Scent Guide</a
-            >
-            <a
               href="/contact.html"
-              class="-mx-3 block rounded-lg px-3 py-2 text-base font-playfair leading-7 text-charcoal hover:bg-stone/10"
+              class="-mx-3 block rounded-lg px-3 py-2 text-base font-roboto font-semibold leading-7 text-charcoal hover:bg-stone/5"
               >Contact</a
             >
           </div>
-          <div class="py-6">
+          <div class="py-6" id="mobile-auth-links">
             <a
-              id="mobile-account-link"
               href="/login.html"
-              class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-playfair leading-7 text-charcoal hover:bg-stone/10"
-              >Account</a
+              class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-roboto font-semibold leading-7 text-charcoal hover:bg-stone/5"
+              >Sign in</a
             >
+            <a
+              href="/register.html"
+              class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-roboto font-semibold leading-7 text-charcoal hover:bg-stone/5"
+              >Create account</a
+            >
+          </div>
+          <div class="py-6 hidden" id="mobile-account-links">
+            <a
+              href="/account.html"
+              id="mobile-user-name"
+              class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-roboto font-semibold leading-7 text-charcoal hover:bg-stone/5"
+              >My Account</a
+            >
+            <button
+              id="mobile-logout-btn"
+              type="button"
+              class="-mx-3 block w-full rounded-lg px-3 py-2.5 text-left text-base font-roboto font-semibold leading-7 text-charcoal hover:bg-stone/5"
+            >
+              Log Out
+            </button>
           </div>
         </div>
       </div>

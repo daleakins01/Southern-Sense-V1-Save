@@ -1,88 +1,76 @@
-<!-- 
-  This is the header partial.
-  It is included by layout.html on every page.
-  FIX 2.2: Uncommented the mobile menu button and panel.
-  FIX 3.1: Updated all nav links to use trailing slashes.
-  FIX 5.2: Corrected logo path (removed /src/).
--->
-<header class="bg-parchment text-charcoal shadow-md sticky top-0 z-50">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        
-        <!-- Logo -->
-        <a href="/" class="flex items-center space-x-2" aria-label="Southern Sense Home">
-            <!-- 
-                FIX 5.2: The path is now /logo.webp
-                The Eleventy config copies 'src/logo.webp' to '_site/logo.webp'.
-                Therefore, the correct path is '/logo.webp'.
-            -->
-            <img src="/logo.webp" alt="Southern Sense Logo" class="h-14 md:h-16 w-auto" onerror="this.onerror=null; this.src='https.placehold.co/200x60/FBF9F6/3D352E?text=Southern+Sense';">
-        </a>
+<!-- src/_includes/header.html -->
+<header class="site-header">
+  <div class="brand">
+    <h1>Southern Sense</h1>
+    <p class="muted">Candles, Refills &amp; Southern Comforts</p>
+  </div>
 
-        <!-- Mobile Menu Button (FIX 2.2: This section is uncommented) -->
-        <div class="md:hidden">
-            <button id="mobile-menu-button" class="text-charcoal focus:outline-none" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu-panel">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-8 6h8"></path>
-                </svg>
-            </button>
-        </div>
-
-        <!-- Desktop Navigation -->
-        <nav class="hidden md:flex items-center space-x-6">
-            <a href="/" class="font-playfair text-lg hover:text-burnt-orange transition duration-300">Home</a>
-            <!-- FIX 3.1: Added trailing slash -->
-            <a href="/shop/" class="font-playfair text-lg hover:text-burnt-orange transition duration-300">Shop</a>
-            <!-- FIX 3.1: Added trailing slash -->
-            <a href="/about/" class="font-playfair text-lg hover:text-burnt-orange transition duration-300">About</a>
-            
-            <!-- More Links Dropdown -->
-            <div class="relative group">
-                <button class="font-playfair text-lg hover:text-burnt-orange transition duration-300 flex items-center">
-                    <span>More</span>
-                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <div class="absolute right-0 mt-2 w-48 bg-parchment rounded-md shadow-lg py-1 z-20 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all duration-300">
-                    <!-- FIX 3.1: Added trailing slashes -->
-                    <a href="/scent-guide/" class="block px-4 py-2 text-charcoal hover:bg-stone/20">Scent Guide</a>
-                    <a href="/candle-care/" class="block px-4 py-2 text-charcoal hover:bg-stone/20">Candle Care</a>
-                    <a href="/refill-program/" class="block px-4 py-2 text-charcoal hover:bg-stone/20">Refill Program</a>
-                    <a href="/contact/" class="block px-4 py-2 text-charcoal hover:bg-stone/20">Contact Us</a>
-                </div>
-            </div>
-
-            <!-- FIX 3.1: Added trailing slash -->
-            <a href="/account/" id="account-link" class="hover:text-burnt-orange transition duration-300" aria-label="My Account">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-            </a>
-            <!-- FIX 3.1: Added trailing slash -->
-            <a href="/cart/" class="relative hover:text-burnt-orange transition duration-300" aria-label="View Cart">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                <span id="cart-count-bubble" class="absolute -top-2 -right-2 bg-burnt-orange text-parchment text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
-            </a>
-        </nav>
-    </div>
-
-    <!-- Mobile Menu Panel (FIX 2.2: This section is uncommented) -->
-    <div id="mobile-menu-panel" class="md:hidden hidden bg-parchment/95 backdrop-blur-sm" aria-hidden="true">
-        <nav class="px-4 pt-2 pb-4 space-y-2 flex flex-col items-center">
-            <a href="/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">Home</a>
-            <!-- FIX 3.1: Added trailing slashes -->
-            <a href="/shop/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">Shop</a>
-            <a href="/about/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">About</a>
-            
-            <a href="/scent-guide/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">Scent Guide</a>
-            <a href="/candle-care/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">Candle Care</a>
-            <a href="/refill-program/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">Refill Program</a>
-            <a href="/contact/" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">Contact Us</a>
-
-            <hr class="w-3/4 border-stone/30 my-2">
-
-            <a href="/account/" id="mobile-account-link" class="block font-playfair text-lg hover:text-burnt-orange transition duration-300">My Account</a>
-            <a href="/cart/" class="relative block font-playfair text-lg hover:text-burnt-orange transition duration-300">
-                <span>Cart</span>
-                <span id="mobile-cart-count-bubble" class="absolute -top-1 -right-4 bg-burnt-orange text-parchment text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
-            </a>
-        </nav>
-    </div>
+  <nav class="main-nav" aria-label="Main Navigation">
+    <a href="/">Home</a>
+    <a href="/shop/">Shop</a>
+    <a href="/refill-program/">Refill Program</a>
+    <a href="/about/">About</a>
+    <a href="/account/">Account</a>
+    <a id="admin-link" href="/admin/" style="display:none;">Admin Panel</a>
+  </nav>
 </header>
 
+<style>
+  header.site-header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 0 16px 0;
+    border-bottom:2px solid rgba(164,123,91,0.15);
+  }
+  .brand h1 {
+    font-family:"Cormorant Garamond",serif;
+    font-weight:700;
+    color:#6a4a38;
+    font-size:30px;
+    margin:0;
+    letter-spacing:0.6px;
+  }
+  .brand p {
+    font-size:13px;
+    color:#7a6b60;
+    margin:2px 0 0 0;
+  }
+  nav.main-nav a {
+    text-decoration:none;
+    color:#6a4a38;
+    font-weight:600;
+    padding:8px 12px;
+    border-radius:8px;
+    transition:background 0.2s;
+  }
+  nav.main-nav a:hover {
+    background:rgba(164,123,91,0.08);
+  }
+</style>
+
+<script type="module">
+  import { getFirestore, doc, getDoc } from '/firebase-loader.js';
+  import { getAuth, onAuthStateChanged } from '/firebase-loader.js';
+
+  const auth = window.firebaseAuth || getAuth();
+  const db = window.firebaseDB || getFirestore();
+  const adminLink = document.getElementById('admin-link');
+
+  async function showAdminLink(user) {
+    try {
+      if (!user) return;
+      const uid = user.uid;
+      const adminRef = doc(db, 'admins', uid);
+      const adminSnap = await getDoc(adminRef);
+      if (adminSnap.exists()) adminLink.style.display = 'inline-block';
+    } catch (err) {
+      console.warn('[Header] Admin check failed', err);
+    }
+  }
+
+  onAuthStateChanged(auth, (user) => showAdminLink(user));
+  window.addEventListener('firebase-ready', () => {
+    if (auth.currentUser) showAdminLink(auth.currentUser);
+  });
+</script>

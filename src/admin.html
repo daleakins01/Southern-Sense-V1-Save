@@ -1,0 +1,253 @@
+---
+layout: layout.html
+title: Admin Panel
+---
+
+<section>
+  <h2>Admin Dashboard</h2>
+  <p class="muted">
+    Manage products, orders, reviews, and site content. All tools restored from the classic admin panel.
+  </p>
+
+  <div class="three-col" style="margin-top:20px;">
+    <!-- Left Column: Products / Orders / Reviews -->
+    <div>
+      <!-- === PRODUCTS === -->
+      <div class="card" style="margin-bottom:24px;">
+        <h3>Products</h3>
+        <div style="display:flex;gap:10px;margin-bottom:10px;">
+          <button id="new-product-btn" class="primary">New Product</button>
+          <button id="import-csv-btn" class="ghost">Import CSV</button>
+          <button id="export-csv-btn" class="ghost">Export CSV</button>
+        </div>
+
+        <div id="product-form" style="display:none;margin-bottom:12px;">
+          <label>Title</label>
+          <input id="p-title" type="text">
+          <label>Price</label>
+          <input id="p-price" type="number" step="0.01">
+          <label>Description</label>
+          <textarea id="p-desc" rows="3"></textarea>
+          <label>Stock</label>
+          <input id="p-stock" type="number">
+          <div style="margin-top:8px;">
+            <button id="save-product" class="primary">Save</button>
+            <button id="cancel-product" class="ghost">Cancel</button>
+          </div>
+        </div>
+
+        <div id="products-list" class="list"></div>
+      </div>
+
+      <!-- === ORDERS === -->
+      <div class="card" style="margin-bottom:24px;">
+        <h3>Orders</h3>
+        <div id="orders-admin" class="list"></div>
+      </div>
+
+      <!-- === REVIEWS === -->
+      <div class="card">
+        <h3>Reviews</h3>
+        <div id="reviews-admin" class="list"></div>
+      </div>
+    </div>
+
+    <!-- Right Column: Site Content / Quick Tools -->
+    <aside>
+      <div class="card" style="margin-bottom:24px;">
+        <h3>Site Content</h3>
+        <label>Page</label>
+        <select id="content-select">
+          <option value="homepage">Homepage</option>
+          <option value="about">About</option>
+          <option value="refillProgram">Refill Program</option>
+        </select>
+        <label>Content (HTML)</label>
+        <textarea id="content-body" rows="8"></textarea>
+        <div style="margin-top:8px;">
+          <button id="save-content" class="primary">Save</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Quick Actions</h3>
+        <button id="clear-cache" class="ghost" style="margin-bottom:8px;">Clear Local Cache</button>
+        <button id="export-json" class="ghost">Export Firestore JSON</button>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<script type="module">
+import {
+  getFirestore, collection, getDocs, addDoc, setDoc, doc,
+  updateDoc, deleteDoc, getDoc, Timestamp
+} from '/firebase-loader.js';
+import { getAuth, onAuthStateChanged } from '/firebase-loader.js';
+
+const db = window.firebaseDB || getFirestore();
+const auth = window.firebaseAuth || getAuth();
+
+// Helpers
+const $ = (s)=>document.querySelector(s);
+const $all=(s)=>Array.from(document.querySelectorAll(s));
+function el(tag, cls){ const d=document.createElement(tag); if(cls) d.className=cls; return d; }
+
+// --- ADMIN GUARD ---
+async function ensureAdmin(user){
+  if(!user) return false;
+  const udoc = await getDoc(doc(db,'users',user.uid));
+  if(udoc.exists() && udoc.data().isAdmin) return true;
+  const adm = await getDoc(doc(db,'admins',user.uid));
+  return adm.exists();
+}
+
+// --- PRODUCTS ---
+const productsList = $('#products-list');
+const newBtn = $('#new-product-btn');
+const impBtn = $('#import-csv-btn');
+const expBtn = $('#export-csv-btn');
+const form = $('#product-form');
+const pTitle=$('#p-title'),pPrice=$('#p-price'),pDesc=$('#p-desc'),pStock=$('#p-stock');
+const saveBtn=$('#save-product'),cancelBtn=$('#cancel-product');
+let editId=null;
+
+async function loadProducts(){
+  productsList.innerHTML='Loading products...';
+  try{
+    const snap=await getDocs(collection(db,'products'));
+    productsList.innerHTML='';
+    snap.forEach(d=>{
+      const p=d.data();
+      const row=el('div','border-b p-3');
+      row.innerHTML=`<strong>${p.title||'Untitled'}</strong>
+      <div class="muted">Price: $${(p.price||0).toFixed(2)} • Stock: ${p.stock||0}</div>
+      <div style="margin-top:6px;">
+        <button class="ghost edit" data-id="${d.id}">Edit</button>
+        <button class="ghost delete" data-id="${d.id}">Delete</button>
+      </div>`;
+      productsList.appendChild(row);
+    });
+    attachProductActions();
+  }catch(e){productsList.innerHTML='Failed to load products';console.error(e);}
+}
+
+function attachProductActions(){
+  $all('.edit').forEach(btn=>{
+    btn.onclick=async()=>{
+      const id=btn.dataset.id;
+      const snap=await getDoc(doc(db,'products',id));
+      if(!snap.exists())return;
+      const p=snap.data();
+      editId=id;
+      pTitle.value=p.title||'';pPrice.value=p.price||0;pDesc.value=p.description||'';pStock.value=p.stock||0;
+      form.style.display='block';
+    };
+  });
+  $all('.delete').forEach(btn=>{
+    btn.onclick=async()=>{if(!confirm('Delete?'))return;await deleteDoc(doc(db,'products',btn.dataset.id));loadProducts();};
+  });
+}
+
+newBtn.onclick=()=>{editId=null;pTitle.value='';pPrice.value='';pDesc.value='';pStock.value=0;form.style.display='block';};
+cancelBtn.onclick=()=>form.style.display='none';
+saveBtn.onclick=async()=>{
+  const data={title:pTitle.value,price:parseFloat(pPrice.value)||0,description:pDesc.value,stock:parseInt(pStock.value)||0,updatedAt:Timestamp.now()};
+  if(editId) await updateDoc(doc(db,'products',editId),data); else await addDoc(collection(db,'products'),data);
+  form.style.display='none'; loadProducts();
+};
+expBtn.onclick=async()=>{
+  const snap=await getDocs(collection(db,'products'));const rows=[];
+  snap.forEach(d=>{const p=d.data();rows.push({id:d.id,...p});});
+  const csv=[Object.keys(rows[0]||{}).join(','),...rows.map(r=>Object.values(r).join(','))].join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='products.csv';a.click();
+};
+impBtn.onclick=()=>{
+  const inp=document.createElement('input');inp.type='file';inp.accept='.csv';
+  inp.onchange=async e=>{
+    const t=await e.target.files[0].text();
+    const lines=t.split(/\r?\n/);lines.shift();
+    for(const line of lines){if(!line.trim())continue;
+      const [title,price,stock,description]=line.split(',');
+      await addDoc(collection(db,'products'),{title,price:parseFloat(price)||0,stock:parseInt(stock)||0,description});
+    }
+    loadProducts();
+  };
+  inp.click();
+};
+
+// --- ORDERS ---
+const ordersAdmin=$('#orders-admin');
+async function loadOrders(){
+  ordersAdmin.innerHTML='Loading...';
+  const snap=await getDocs(collection(db,'orders'));
+  ordersAdmin.innerHTML='';
+  snap.forEach(d=>{
+    const o=d.data();
+    const row=el('div','border-b p-3');
+    row.innerHTML=`<strong>Order ${d.id}</strong>
+    <div class="muted">User: ${o.userId||'Guest'} • Total: $${o.total||0}</div>
+    <select data-id="${d.id}" class="status">
+      <option ${o.status==='Processing'?'selected':''}>Processing</option>
+      <option ${o.status==='Shipped'?'selected':''}>Shipped</option>
+      <option ${o.status==='Completed'?'selected':''}>Completed</option>
+      <option ${o.status==='Cancelled'?'selected':''}>Cancelled</option>
+    </select>`;
+    ordersAdmin.appendChild(row);
+  });
+  $all('.status').forEach(sel=>{
+    sel.onchange=async()=>{await updateDoc(doc(db,'orders',sel.dataset.id),{status:sel.value,updatedAt:Timestamp.now()});};
+  });
+}
+
+// --- REVIEWS ---
+const reviewsAdmin=$('#reviews-admin');
+async function loadReviews(){
+  reviewsAdmin.innerHTML='Loading...';
+  const snap=await getDocs(collection(db,'reviews'));
+  reviewsAdmin.innerHTML='';
+  snap.forEach(d=>{
+    const r=d.data();
+    const row=el('div','border-b p-3');
+    row.innerHTML=`<strong>${r.name||'Anonymous'}</strong>
+    <div class="muted">${r.rating||''} stars</div>
+    <p>${r.body||''}</p>
+    <button class="ghost approve" data-id="${d.id}">Approve</button>
+    <button class="ghost del" data-id="${d.id}">Delete</button>`;
+    reviewsAdmin.appendChild(row);
+  });
+  $all('.approve').forEach(b=>b.onclick=async()=>{await updateDoc(doc(db,'reviews',b.dataset.id),{approved:true});loadReviews();});
+  $all('.del').forEach(b=>b.onclick=async()=>{if(confirm('Delete?'))await deleteDoc(doc(db,'reviews',b.dataset.id));loadReviews();});
+}
+
+// --- SITE CONTENT ---
+const contentSelect=$('#content-select'),contentBody=$('#content-body'),saveContent=$('#save-content');
+contentSelect.onchange=loadSiteContent;
+async function loadSiteContent(){
+  const key=contentSelect.value;
+  const snap=await getDoc(doc(db,'siteContent',key));
+  contentBody.value=snap.exists()?(snap.data().html||''):'';
+}
+saveContent.onclick=async()=>{
+  const key=contentSelect.value;
+  await setDoc(doc(db,'siteContent',key),{html:contentBody.value,updatedAt:Timestamp.now()},{merge:true});
+  alert('Saved.');
+};
+
+// --- QUICK ACTIONS ---
+$('#clear-cache').onclick=()=>{localStorage.clear();alert('Cache cleared.');};
+$('#export-json').onclick=async()=>{
+  const out={};const cols=['products','orders','reviews','siteContent'];
+  for(const c of cols){out[c]={};const snap=await getDocs(collection(db,c));snap.forEach(d=>out[c][d.id]=d.data());}
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='firestore-export.json';a.click();
+};
+
+// --- INIT ---
+onAuthStateChanged(auth,async(user)=>{
+  if(!user){alert('Please log in');window.location.href='/account/';return;}
+  const ok=await ensureAdmin(user);
+  if(!ok){alert('Access denied');window.location.href='/account/';return;}
+  await loadProducts();await loadOrders();await loadReviews();await loadSiteContent();
+});
+</script>

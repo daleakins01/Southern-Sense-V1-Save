@@ -1,45 +1,32 @@
-/*
- * Firebase Loader (firebase-loader.js)
- *
- * This module is responsible for initializing the Firebase app and exporting
- * all necessary Firebase services. This ensures that Firebase is only
- * initialized once and provides a central point for all database/auth imports.
- */
+// firebase-loader.js
+// Southern Sense – Unified Firebase loader (modular SDK, 2025-11-01)
 
-// Import all the functions we need from the SDKs
-import {
-  initializeApp
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail,
-  updateProfile,
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+// --- Firebase Core Imports ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import {
   getFirestore,
+  collection,
+  getDocs,
   doc,
   getDoc,
-  getDocs,
-  setDoc,
   addDoc,
   updateDoc,
   deleteDoc,
-  collection,
+  setLogLevel,
+  Timestamp,
   query,
-  where,
-  limit,
-  onSnapshot,
-  Timestamp, // Added Timestamp
-  increment, // Added increment
-  deleteField // Added deleteField
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  where       // ✅ Added for Firestore queries
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
-// --- Firebase Config ---
-// This configuration is now correctly populated with your project's credentials.
+// --- Configuration (Real Firebase Project) ---
 const firebaseConfig = {
   apiKey: "AIzaSyCo2HoDVWjcrGs0frHhG3crlnVterhCRxc",
   authDomain: "southernsense-store.firebaseapp.com",
@@ -50,50 +37,48 @@ const firebaseConfig = {
   measurementId: "G-3KHQ2T7RVZ"
 };
 
-// --- Initialize ---
-// Initialize Firebase and export the core services.
-// These are immediately available for any script that imports them.
+// --- Initialize Firebase ---
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-// --- Exports ---
-// Export all the services and functions for other modules to use.
-export {
-  app,
-  auth,
-  db,
-  onAuthStateChanged,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail,
-  updateProfile,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  collection,
-  query,
-  where,
-  limit,
-  onSnapshot,
-  Timestamp,
-  increment,
-  deleteField
-};
+// Optional: enable Firestore debug logs if needed
+// setLogLevel("debug");
 
-// --- THIS IS THE FIX ---
-// Dispatch a custom 'firebase-ready' event on the document.
-// Other scripts (like shop.html, product.html) can listen for this
-// to know that 'db' and 'auth' are initialized and ready.
-// We wrap this in a DOMContentLoaded listener to ensure the 'document' exists.
-document.addEventListener('DOMContentLoaded', () => {
-  const event = new CustomEvent('firebase-ready');
-  document.dispatchEvent(event);
+// --- Global exposure for other scripts ---
+window.firebaseApp = app;
+window.firebaseDB = db;
+window.firebaseAuth = auth;
+
+// Helpful global flag
+window._southernsense_firebase_init = false;
+
+// --- Dispatch firebase-ready event globally ---
+document.addEventListener("DOMContentLoaded", () => {
+  window._southernsense_firebase_init = true;
+  const event = new CustomEvent("firebase-ready");
+  window.dispatchEvent(event);
   console.log("Firebase is ready, 'firebase-ready' signal sent.");
 });
 
+// --- Export for other modules ---
+export { app, db, auth };
+export {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  getAuth,
+  onAuthStateChanged,
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  Timestamp,
+  query,   // ✅ Added
+  where    // ✅ Added
+};

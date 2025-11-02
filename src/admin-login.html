@@ -1,0 +1,95 @@
+---
+layout: layout.html
+title: Admin Login
+---
+
+<section class="admin-login">
+  <div class="card" style="max-width:420px;margin:0 auto;text-align:center;">
+    <h2>Admin Login</h2>
+    <p class="muted">Authorized personnel only</p>
+
+    <form id="adminLoginForm" style="margin-top:18px;text-align:left;">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="admin@example.com" required>
+      <label>Password</label>
+      <input id="password" type="password" placeholder="••••••••" required>
+      <div style="margin-top:12px;text-align:center;">
+        <button id="loginBtn" type="submit" class="primary">Sign In</button>
+      </div>
+    </form>
+
+    <p id="status" class="muted" style="margin-top:16px;"></p>
+  </div>
+</section>
+
+<style>
+  .admin-login h2 {
+    font-family:"Cormorant Garamond",serif;
+    color:#6a4a38;
+    margin-bottom:4px;
+  }
+  .admin-login label {
+    display:block;
+    margin-top:8px;
+    font-size:14px;
+    color:#a47b5b;
+  }
+  .admin-login input[type="email"],
+  .admin-login input[type="password"] {
+    width:100%;
+    padding:8px;
+    border:1px solid rgba(106,74,56,0.15);
+    border-radius:6px;
+    margin-top:4px;
+    background:#fff;
+  }
+  .admin-login .primary {
+    margin-top:10px;
+    width:100%;
+  }
+</style>
+
+<script type="module">
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from '/firebase-loader.js';
+  import { getFirestore, doc, getDoc } from '/firebase-loader.js';
+
+  const auth = getAuth();
+  const db = getFirestore();
+  const form = document.getElementById('adminLoginForm');
+  const status = document.getElementById('status');
+
+  async function isAdmin(uid) {
+    try {
+      const adminSnap = await getDoc(doc(db, 'admins', uid));
+      return adminSnap.exists();
+    } catch {
+      return false;
+    }
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    status.textContent = 'Signing in...';
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const ok = await isAdmin(cred.user.uid);
+      if (ok) {
+        status.textContent = 'Access granted. Redirecting...';
+        setTimeout(() => (window.location.href = '/admin/'), 1000);
+      } else {
+        status.textContent = 'You are not authorized to access the Admin Panel.';
+      }
+    } catch (err) {
+      status.textContent = 'Login failed: ' + (err.message || 'Unknown error');
+    }
+  });
+
+  // If already logged in and admin, skip login screen
+  onAuthStateChanged(auth, async (user) => {
+    if (user && (await isAdmin(user.uid))) {
+      window.location.href = '/admin/';
+    }
+  });
+</script>

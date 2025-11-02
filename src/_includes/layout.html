@@ -1,67 +1,72 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- Page Title and Meta Description -->
-    <!-- 'title' and 'description' are set in each page's front matter -->
-    <title>{{ title | default: site.defaultTitle }}</title>
-    <meta name="description" content="{{ description | default: site.defaultDescription }}">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{{ title | default: "Southern Sense" }}</title>
 
-    <!-- Favicon Links -->
-    <!-- FIX 6.1: Added favicon links to prevent 404. -->
-    <link rel="icon" href="/logo.webp" type="image/webp">
-    <link rel="apple-touch-icon" href="/logo.webp">
+  <!-- Old Southern Sense fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- CSS Stylesheet -->
-    <!-- FIX 1.1: Corrected path from 'src/output.css' to '/css/style.css' -->
-    <link rel="stylesheet" href="/css/style.css">
+  <!-- Force parchment styles to override any other CSS -->
+  <style id="southernsense-theme">
+    :root{
+      --parchment:#fbf6ee;
+      --paper:#f6efe3;
+      --accent:#6a4a38;
+      --accent-2:#a47b5b;
+      --muted:#7a6b60;
+      --card:#fffaf4;
+      --maxw:1100px;
+    }
+    html,body{height:100%;margin:0;padding:0;}
+    body{
+      background: radial-gradient(circle at 10% 10%, rgba(250,245,238,1) 0%, rgba(247,240,231,1) 30%, rgba(239,232,222,1) 100%), var(--parchment) !important;
+      color:#3b2f2a !important;
+      font-family:"Lora",serif !important;
+      -webkit-font-smoothing:antialiased;
+      line-height:1.6;
+    }
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    .site-wrap{
+      max-width:var(--maxw);
+      margin:32px auto;
+      background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(251,247,239,0.98)) !important;
+      border:6px solid rgba(106,74,56,0.12);
+      box-shadow:0 10px 30px rgba(45,38,33,0.15);
+      padding:28px;
+      border-radius:12px;
+    }
 
-    <!-- 
-      JavaScript Files
-      FIX 11.1: Corrected typo from type(="module") to type="module"
-      We use 'defer' to ensure scripts execute after the document is parsed.
-    -->
-    <script type="module" src="/firebase-loader.js" defer></script>
-    <script src="/main.js" defer></script>
-    
-    <!-- 
-      NEW - FIX 10.1: Add cart.js as a module.
-      This makes cart functions available for import on other pages
-      (like product.html and cart.html).
-    -->
-    <script type="module" src="/cart.js" defer></script>
+    header.site-header{
+      display:flex;align-items:center;gap:20px;
+      border-bottom:2px solid rgba(164,123,91,0.15);
+      padding-bottom:14px;margin-bottom:18px;
+    }
+    .brand h1{font-family:"Cormorant Garamond",serif;margin:0;color:var(--accent);font-size:28px;}
+    .brand p{margin:0;font-size:12px;color:var(--muted);}
+    nav.main-nav{margin-left:auto;display:flex;gap:12px;}
+    nav.main-nav a{text-decoration:none;color:var(--accent);font-weight:600;padding:8px 10px;border-radius:8px;}
+    nav.main-nav a:hover{background:rgba(164,123,91,0.08);}
 
+    main.content{padding:12px 4px 24px 4px;}
+    .card{background:var(--card);border:1px solid rgba(106,74,56,0.1);padding:14px;border-radius:8px;margin-bottom:24px;}
+    h2,h3,h4{font-family:"Cormorant Garamond",serif;color:var(--accent);}
+    .muted{color:var(--muted);font-size:14px;}
+    button.primary{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;}
+    button.ghost{background:transparent;border:1px solid rgba(106,74,56,0.2);padding:6px 10px;border-radius:6px;cursor:pointer;}
+    footer.site-footer{margin-top:24px;border-top:2px dotted rgba(106,74,56,0.1);padding-top:14px;text-align:center;color:var(--muted);font-size:13px;}
+
+    @media(max-width:900px){.site-wrap{margin:14px;}}
+  </style>
 </head>
-<body class="bg-parchment font-roboto text-charcoal flex flex-col min-h-screen">
-
-    <!-- 
-      Header 
-      The content for the header is pulled from the '_includes' folder.
-    -->
+<body>
+  <div class="site-wrap">
     {% include "header.html" %}
-
-    <!-- 
-      Main Content 
-      This is where the content from individual pages (index.html, about.html, etc.)
-      will be injected by Eleventy.
-    -->
-    <main class="flex-grow">
-        {{ content }}
+    <main class="content">
+      {{ content | safe }}
     </main>
-
-    <!-- 
-      Footer
-      The content for the footer is pulled from the '_includes' folder.
-    -->
     {% include "footer.html" %}
-
+  </div>
 </body>
 </html>
-

@@ -1,264 +1,805 @@
 ---
-layout: layout.html
+layout: layout
 title: Admin Panel
 ---
 
-<div class="container mx-auto p-4 lg:p-8">
-    
-    <div id="loading-spinner" class="text-center py-20">
-        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-burnt-orange mx-auto"></div>
-        <p class="mt-4 text-lg font-roboto text-stone">Verifying Admin Privileges...</p>
-    </div>
-
-    <div id="access-denied" class="hidden text-center py-20 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-lg mx-auto" role="alert">
-        <strong class="font-bold block">Access Denied</strong>
-        <span class="block sm:inline">You must be logged in as an administrator to view this page.</span>
-        <a href="/admin-login/" class="block mt-4 text-sm underline text-red-700 hover:text-red-900">Go to Admin Login</a>
-    </div>
-
-    <div id="admin-panel" class="hidden">
-        <h1 class="font-playfair text-4xl font-extrabold text-charcoal mb-6 border-b pb-2">Admin Dashboard</h1>
-
-        <nav class="flex space-x-2 border-b border-stone/20 mb-6">
-            <button class="tab-button py-2 px-4 font-roboto font-semibold text-charcoal border-b-2 border-transparent hover:border-burnt-orange transition-colors duration-150" 
-                    data-target="products-section" id="products-tab">Products</button>
-            <button class="tab-button py-2 px-4 font-roboto font-semibold text-charcoal border-b-2 border-transparent hover:border-burnt-orange transition-colors duration-150" 
-                    data-target="orders-section" id="orders-tab">Orders</button>
-            <button class="tab-button py-2 px-4 font-roboto font-semibold text-charcoal border-b-2 border-transparent hover:border-burnt-orange transition-colors duration-150" 
-                    data-target="reviews-section" id="reviews-tab">Reviews</button>
-            <button class="tab-button py-2 px-4 font-roboto font-semibold text-charcoal border-b-2 border-transparent hover:border-burnt-orange transition-colors duration-150" 
-                    data-target="site-content-section" id="site-content-tab">Site Content</button>
-            <button class="tab-button py-2 px-4 font-roboto font-semibold text-charcoal border-b-2 border-transparent hover:border-burnt-orange transition-colors duration-150" 
-                    data-target="stock-alerts-section" id="stock-alerts-tab">Stock Alerts</button>
-            <button class="tab-button py-2 px-4 font-roboto font-semibold text-charcoal border-b-2 border-transparent hover:border-burnt-orange transition-colors duration-150" 
-                    data-target="tools-section" id="tools-tab">Tools</button> </nav>
-
-        <div id="tab-content">
-            
-            <div id="products-section" class="tab-content-item space-y-6">
-                <h2 class="font-playfair text-3xl font-bold text-charcoal">Product Management</h2>
-                <p>... Product management UI elements and JS logic here ...</p>
-            </div>
-
-            <div id="orders-section" class="tab-content-item hidden space-y-6">
-                <h2 class="font-playfair text-3xl font-bold text-charcoal">Order Management</h2>
-                <p>... Order management UI elements and JS logic here ...</p>
-            </div>
-
-            <div id="reviews-section" class="tab-content-item hidden space-y-6">
-                <h2 class="font-playfair text-3xl font-bold text-charcoal">Review Moderation</h2>
-                <p>... Review moderation UI elements and JS logic here ...</p>
-            </div>
-
-            <div id="site-content-section" class="tab-content-item hidden space-y-6">
-                <h2 class="font-playfair text-3xl font-bold text-charcoal">Site Content Editor</h2>
-                <p>... Site Content editor UI elements and JS logic here ...</p>
-            </div>
-
-            <div id="stock-alerts-section" class="tab-content-item hidden space-y-6">
-                <h2 class="font-playfair text-3xl font-bold text-charcoal">Back-in-Stock Requests</h2>
-                <p>... Stock Alerts UI elements and JS logic here ...</p>
-            </div>
-            
-            <div id="tools-section" class="tab-content-item hidden space-y-6">
-                <h2 class="font-playfair text-3xl font-bold text-charcoal">Admin Tools & Utilities</h2>
-                
-                <div class="p-6 bg-parchment rounded-xl shadow-2xl border border-burnt-orange/30">
-                    <h3 class="font-playfair text-2xl font-bold text-charcoal mb-4">Database Importer</h3>
-                    <p class="font-roboto text-sm text-red-700 font-bold mb-4">
-                        WARNING: This tool overwrites data. Only proceed if you have a validated `firestore-export.json`.
-                    </p>
-
-                    <div id="admin-firebase-config-warning" class="p-4 bg-red-100 text-red-700 rounded-lg hidden">
-                        <p class="font-bold">Initialization Warning:</p>
-                        <p>Firebase not connected. Check console and try restarting server.</p>
-                    </div>
-
-                    <div>
-                        <label for="admin-json-data" class="block font-roboto text-sm font-bold text-charcoal mb-2">Paste Firestore JSON Export:</label>
-                        <textarea id="admin-json-data" rows="10" placeholder="Paste the content of your firestore-export.json here..." 
-                                  class="w-full p-2 border border-stone/30 rounded-lg font-mono text-sm text-charcoal focus:ring-burnt-orange focus:border-burnt-orange"></textarea>
-                    </div>
-
-                    <button id="admin-import-button" class="mt-4 w-full py-3 px-4 bg-red-600 text-parchment font-playfair text-lg font-bold rounded-lg shadow-md hover:bg-red-700 transition duration-150">
-                        Start Overwrite Import
-                    </button>
-                    
-                    <div id="admin-import-status" class="hidden p-4 mt-4 rounded-lg font-roboto text-sm space-y-2"></div>
-                </div>
-            </div>
-
-        </div> </div> </div>
-
 <script type="module">
-    import { db, auth } from '/firebase-loader.js';
     import { 
-        getAuth, 
-        onAuthStateChanged 
-    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-    import { 
+        auth, 
+        db, 
+        onAuthStateChanged, 
+        collection, 
+        query, 
+        getDocs, 
+        where, 
         doc, 
+        updateDoc,
         getDoc, 
-        setDoc, // For importer
-        Timestamp // For importer
-    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+        deleteDoc, // NEW: Added for deleting reviews
+    } from '/firebase-loader.js';
+    import { logout } from '/src/auth.js';
+    
+    // --- State and Handlers ---
+    let currentUser = null;
+    let isAdmin = false;
+    let currentOrders = [];
+    let currentProducts = [];
+    let currentReviews = []; // NEW: To store fetched reviews
 
     // --- DOM Elements ---
-    const loadingSpinner = document.getElementById('loading-spinner');
-    const accessDenied = document.getElementById('access-denied');
-    const adminPanel = document.getElementById('admin-panel');
+    const adminLoader = document.getElementById('admin-loader');
+    const adminContent = document.getElementById('admin-content');
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    // Orders Tab Elements
+    const ordersTableBody = document.getElementById('orders-table-body');
+    const ordersMessage = document.getElementById('orders-message');
     
-    // Importer Elements (Prefixed to avoid conflicts)
-    const adminImportButton = document.getElementById('admin-import-button');
-    const adminJsonDataArea = document.getElementById('admin-json-data');
-    const adminImportStatus = document.getElementById('admin-import-status');
-    const adminConfigWarning = document.getElementById('admin-firebase-config-warning');
+    // Products Tab Elements
+    const productsTableBody = document.getElementById('products-table-body');
+    const productsMessage = document.getElementById('products-message');
+    const productEditModal = document.getElementById('product-edit-modal');
+    const closeModalButton = document.getElementById('close-modal-button');
+    const productEditForm = document.getElementById('product-edit-form');
+    
+    // NEW: Reviews Tab Elements
+    const reviewsContainer = document.getElementById('reviews-container');
+    const reviewsMessage = document.getElementById('reviews-message');
+    const pendingReviewsCount = document.getElementById('pending-reviews-count');
 
-    // --- Admin Guard Logic (CRITICAL FIX: Ensure non-admins are routed away) ---
-    async function isAdminUser(uid) {
-        if (!uid) return false;
-        try {
-            const adminRef = doc(db, 'admins', uid);
-            const docSnap = await getDoc(adminRef);
-            return docSnap.exists();
-        } catch (e) {
-            console.error("Error checking admin status:", e);
-            return false;
-        }
-    }
 
-    function setupAuthObserver() {
-        onAuthStateChanged(getAuth(), async (user) => {
-            // State 1: User is logged in.
-            if (user) {
-                const isAdmin = await isAdminUser(user.uid);
-                
-                if (isAdmin) {
-                    // Admin: Grant access
-                    loadingSpinner.classList.add('hidden');
-                    adminPanel.classList.remove('hidden');
-                    initializeAdminPanel(); 
-                } else {
-                    // CRITICAL FIX: Non-Admin users MUST be immediately redirected to their own account page.
-                    // This resolves the conflict where the global observer sends them to a standard page,
-                    // and then the standard page sends them *back* to the login page.
-                    window.location.href = '/account/'; 
-                }
-            } else {
-                // State 2: User is NOT logged in.
-                // Redirect to the dedicated Admin Login page.
-                window.location.href = '/admin-login/';
-            }
+    // --- Utility Functions ---
+    
+    /**
+     * Formats a Firebase Timestamp object into a readable date string.
+     */
+    function formatDate(timestamp) {
+        if (!timestamp || !timestamp.toDate) return 'N/A';
+        return timestamp.toDate().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
         });
     }
 
-    // --- DATABASE IMPORTER LOGIC (Removed for brevity, but functionally present) ---
-    
-    function convertTimestamps(value) {
-        if (value && typeof value === 'object') {
-            if (value._seconds !== undefined && value._nanoseconds !== undefined) {
-                return new Timestamp(value._seconds, value._nanoseconds);
-            }
-            if (Array.isArray(value)) {
-                return value.map(convertTimestamps);
-            }
-            for (const key in value) {
-                if (Object.prototype.hasOwnProperty.call(value, key)) {
-                    value[key] = convertTimestamps(value[key]);
-                }
-            }
+    /**
+     * Returns a string of star icons based on rating.
+     */
+    function renderStars(rating) {
+        let stars = '';
+        for (let i = 0; i < 5; i++) {
+            stars += `<span class="${i < rating ? 'text-burnt-orange' : 'text-stone/40'} text-xl">&starf;</span>`;
         }
-        return value;
+        return stars;
     }
 
-    function updateImportStatus(message, type = 'info') {
-        const classMap = { info: 'bg-yellow-100 text-yellow-800', success: 'bg-green-100 text-green-800', error: 'bg-red-100 text-red-800' };
-        adminImportStatus.className = `p-4 mt-4 rounded-lg font-roboto text-sm space-y-2 ${classMap[type]}`;
-        adminImportStatus.innerHTML = `<p class="font-bold">${type.toUpperCase()}:</p><p>${message}</p>`;
-        adminImportStatus.classList.remove('hidden');
+    /**
+     * Determines the Tailwind CSS classes for an order status.
+     */
+    function getStatusClasses(status) {
+        switch (status) {
+            case 'Paid':
+                return 'bg-green-100 text-green-800';
+            case 'Shipped':
+                return 'bg-blue-100 text-blue-800';
+            case 'Pending':
+                return 'bg-yellow-100 text-yellow-800';
+            case 'Cancelled':
+                return 'bg-red-100 text-red-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
     }
 
-    async function startImport() {
-        adminImportButton.disabled = true;
-        adminImportButton.textContent = 'Importing... Do not navigate away.';
-        updateImportStatus('Parsing JSON data...', 'info');
+    // --- Core Admin Logic: Orders Tab (Existing) ---
+
+    async function fetchAllOrders() {
+        ordersMessage.textContent = 'Loading all customer orders...';
+        ordersMessage.classList.remove('hidden', 'text-red-600');
+        ordersTableBody.innerHTML = '';
+        currentOrders = [];
 
         try {
-            if (!db) { adminConfigWarning.classList.remove('hidden'); throw new Error("Firebase not initialized. Cannot connect to database."); }
-            
-            const jsonText = adminJsonDataArea.value.trim();
-            if (!jsonText) throw new Error("No JSON data provided.");
+            const ordersRef = collection(db, 'orders');
+            const q = query(ordersRef); 
+            const querySnapshot = await getDocs(q);
 
-            const data = JSON.parse(jsonText);
-            let totalCollections = 0;
-            let totalDocuments = 0;
-
-            for (const collectionName in data) {
-                if (Object.prototype.hasOwnProperty.call(data, collectionName)) {
-                    totalCollections++;
-                    const collectionData = data[collectionName];
-
-                    for (const docId in collectionData) {
-                        if (Object.prototype.hasOwnProperty.call(collectionData, docId)) {
-                            totalDocuments++;
-                            const docData = collectionData[docId];
-                            
-                            const processedData = convertTimestamps(docData);
-                            updateImportStatus(`Importing: <strong>${collectionName}</strong> / ${docId} (${totalDocuments} processed...)`, 'info');
-                            
-                            await setDoc(doc(db, collectionName, docId), processedData, { merge: true });
-                        }
-                    }
-                }
+            if (querySnapshot.empty) {
+                ordersMessage.textContent = 'No orders found in the database.';
+                ordersMessage.classList.remove('hidden');
+                return;
             }
 
-            updateImportStatus(`Import Complete! Imported ${totalDocuments} documents across ${totalCollections} collections.`, 'success');
+            querySnapshot.forEach(doc => {
+                const order = doc.data();
+                order.id = doc.id;
+                currentOrders.push(order);
+            });
+
+            currentOrders.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+            
+            renderOrdersTable();
+            ordersMessage.classList.add('hidden');
 
         } catch (error) {
-            console.error("Import Error:", error);
-            updateImportStatus(`Import Failed: ${error.message}. Check the console for details.`, 'error');
-        } finally {
-            adminImportButton.disabled = false;
-            adminImportButton.textContent = 'Start Overwrite Import';
+            console.error("Error fetching all orders:", error);
+            ordersMessage.textContent = 'Error fetching orders. Check console for details.';
+            ordersMessage.classList.remove('hidden');
+            ordersTableBody.innerHTML = '';
         }
     }
     
-    // --- Main Initialization ---
-
-    function initializeTabs() {
-        const tabs = document.querySelectorAll('.tab-button');
-        const contents = document.querySelectorAll('.tab-content-item');
+    function renderOrdersTable() {
+        ordersTableBody.innerHTML = '';
         
-        const defaultTab = document.getElementById('products-tab');
-        document.getElementById('products-section').classList.remove('hidden');
-        defaultTab.classList.add('border-burnt-orange');
-        defaultTab.classList.remove('border-transparent');
+        currentOrders.forEach(order => {
+            const orderIdDisplay = order.id.slice(-6);
+            const statusClasses = getStatusClasses(order.status);
+            const formattedDate = formatDate(order.createdAt);
+            const total = order.totals.total.toFixed(2);
+            
+            const customerName = order.customer?.firstName ? 
+                                 `${order.customer.firstName} ${order.customer.lastName}` : 
+                                 'Guest Checkout';
+            const customerEmail = order.email || order.customer?.email || 'N/A';
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const targetId = tab.getAttribute('data-target');
-                tabs.forEach(t => {
-                    t.classList.remove('border-burnt-orange');
-                    t.classList.add('border-transparent');
-                });
-                contents.forEach(c => c.classList.add('hidden'));
-                tab.classList.add('border-burnt-orange');
-                tab.classList.remove('border-transparent');
-                document.getElementById(targetId).classList.remove('hidden');
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-parchment/50 transition duration-150';
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-charcoal">
+                    <a href="/order-confirmation/?orderId=${order.id}" target="_blank" class="hover:text-burnt-orange transition">...${orderIdDisplay}</a>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-stone">
+                    ${formattedDate}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-charcoal">
+                    $${total}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClasses}">
+                        ${order.status}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-charcoal">
+                    ${customerName}<br>
+                    <span class="text-xs text-stone">${customerEmail}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button data-id="${order.id}" data-status="${order.status}" class="view-order-details text-burnt-orange hover:text-stone transition duration-150">
+                        Details
+                    </button>
+                </td>
+            `;
+            ordersTableBody.appendChild(row);
+        });
+        
+        document.querySelectorAll('.view-order-details').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const orderId = e.target.dataset.id;
+                viewOrderDetailsModal(orderId);
             });
+        });
+        
+        const totalOrdersCount = document.getElementById('total-orders-count');
+        if(totalOrdersCount) {
+            totalOrdersCount.textContent = currentOrders.length;
+        }
+    }
+    
+    function viewOrderDetailsModal(orderId) {
+        const order = currentOrders.find(o => o.id === orderId);
+        if (!order) {
+            alert("Order details not found!");
+            return;
+        }
+        
+        const details = `
+            Order ID: ${order.id}\n
+            Date: ${formatDate(order.createdAt)}\n
+            Status: ${order.status}\n
+            Customer: ${order.customer?.firstName || 'Guest'} ${order.customer?.lastName || ''}\n
+            Email: ${order.email}\n
+            Total: $${order.totals.total.toFixed(2)}\n
+            \n--- Items ---\n
+            ${order.items.map(item => `${item.quantity}x ${item.name} ($${parseFloat(item.price).toFixed(2)})`).join('\n')}
+            \n--- Shipping ---\n
+            ${order.customer?.address || 'N/A'}\n
+            ${order.customer?.city || ''}, ${order.customer?.state || ''} ${order.customer?.zip || ''}
+        `;
+        alert(details); 
+    }
+
+
+    // --- Core Admin Logic: Products Tab (Existing) ---
+
+    async function fetchAllProducts() {
+        productsMessage.textContent = 'Loading product catalog...';
+        productsMessage.classList.remove('hidden', 'text-red-600');
+        productsTableBody.innerHTML = '';
+        currentProducts = [];
+        
+        try {
+            const productsRef = collection(db, 'products');
+            const querySnapshot = await getDocs(productsRef);
+
+            if (querySnapshot.empty) {
+                productsMessage.textContent = 'No products found in the database.';
+                return;
+            }
+
+            querySnapshot.forEach(doc => {
+                const product = doc.data();
+                product.price = parseFloat(product.price); 
+                currentProducts.push(product);
+            });
+
+            currentProducts.sort((a, b) => a.name.localeCompare(b.name));
+            
+            renderProductsTable();
+            productsMessage.classList.add('hidden'); 
+
+        } catch (error) {
+            console.error("Error fetching all products:", error);
+            productsMessage.textContent = 'Error fetching products. Check console for details.';
+            productsMessage.classList.remove('hidden');
+        }
+    }
+
+    function renderProductsTable() {
+        productsTableBody.innerHTML = '';
+        
+        currentProducts.forEach(product => {
+            const stockColor = product.stock > 10 ? 'text-green-600' : 
+                               product.stock > 0 ? 'text-burnt-orange' : 'text-red-600';
+            const featuredTag = product.featured ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Featured</span>' : '';
+
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-parchment/50 transition duration-150';
+            row.innerHTML = `
+                <td class="px-6 py-4 text-sm font-medium text-charcoal">
+                    <a href="/product/?id=${product.id}" target="_blank" class="hover:text-burnt-orange transition">${product.name}</a>
+                </td>
+                <td class="px-6 py-4 text-sm text-stone">${product.scentFamily}</td>
+                <td class="px-6 py-4 text-sm font-medium text-charcoal">$${product.price.toFixed(2)}</td>
+                <td class="px-6 py-4 text-sm font-medium ${stockColor}">
+                    ${product.stock}
+                </td>
+                <td class="px-6 py-4 text-sm">
+                    ${featuredTag}
+                </td>
+                <td class="px-6 py-4 text-right text-sm font-medium">
+                    <button data-id="${product.id}" class="edit-product text-burnt-orange hover:text-stone transition duration-150">
+                        Edit
+                    </button>
+                </td>
+            `;
+            productsTableBody.appendChild(row);
+        });
+        
+        document.querySelectorAll('.edit-product').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const productId = e.target.dataset.id;
+                openProductEditModal(productId);
+            });
+        });
+        
+        const lowStockCount = currentProducts.filter(p => p.stock > 0 && p.stock <= 10).length;
+        const lowStockEl = document.getElementById('low-stock-count');
+        if(lowStockEl) {
+            lowStockEl.textContent = lowStockCount;
+        }
+    }
+
+    async function openProductEditModal(productId) {
+        const product = currentProducts.find(p => p.id === productId);
+        if (!product) {
+            alert("Product not found!");
+            return;
+        }
+
+        document.getElementById('edit-product-id').value = productId;
+        document.getElementById('edit-product-name').value = product.name;
+        document.getElementById('edit-price').value = product.price.toFixed(2);
+        document.getElementById('edit-stock').value = product.stock;
+        document.getElementById('edit-featured').checked = product.featured;
+        document.getElementById('edit-scent-family').value = product.scentFamily;
+        document.getElementById('edit-category').value = product.category;
+        
+        productEditModal.classList.remove('hidden');
+    }
+
+    async function handleProductUpdate(e) {
+        e.preventDefault();
+        
+        const productId = document.getElementById('edit-product-id').value;
+        const updateButton = e.submitter;
+        updateButton.disabled = true;
+        updateButton.textContent = 'Saving...';
+        
+        try {
+            const formData = new FormData(productEditForm);
+            
+            const updateData = {
+                name: formData.get('name'),
+                price: parseFloat(formData.get('price')).toFixed(2), 
+                stock: parseInt(formData.get('stock'), 10),
+                scentFamily: formData.get('scentFamily'),
+                category: formData.get('category'),
+                featured: formData.get('featured') === 'on' 
+            };
+
+            const productRef = doc(db, 'products', productId);
+            await updateDoc(productRef, updateData);
+
+            alert(`${updateData.name} updated successfully!`);
+            productEditModal.classList.add('hidden');
+            
+            await fetchAllProducts();
+
+        } catch (error) {
+            console.error("Error updating product:", error);
+            alert("Error updating product. Please check the console.");
+        } finally {
+            updateButton.disabled = false;
+            updateButton.textContent = 'Save Changes';
+        }
+    }
+    
+    // --- NEW CORE ADMIN LOGIC: Reviews Tab ---
+
+    /**
+     * Fetches all reviews, with pending (approved: false) reviews first.
+     */
+    async function fetchAllReviews() {
+        reviewsMessage.textContent = 'Loading reviews...';
+        reviewsMessage.classList.remove('hidden', 'text-red-600');
+        reviewsContainer.innerHTML = '';
+        currentReviews = [];
+
+        try {
+            const reviewsRef = collection(db, 'reviews');
+            // Admins can read all reviews
+            const querySnapshot = await getDocs(query(reviewsRef));
+
+            if (querySnapshot.empty) {
+                reviewsMessage.textContent = 'No reviews found in the database.';
+                pendingReviewsCount.textContent = 0;
+                return;
+            }
+
+            querySnapshot.forEach(doc => {
+                const review = doc.data();
+                review.id = doc.id;
+                currentReviews.push(review);
+            });
+            
+            // Sort: Pending first, then by date (newest first)
+            currentReviews.sort((a, b) => {
+                if (a.approved !== b.approved) {
+                    return a.approved ? 1 : -1; // false comes before true
+                }
+                return b.createdAt.toDate() - a.createdAt.toDate();
+            });
+
+            renderReviewsList();
+            reviewsMessage.classList.add('hidden'); 
+
+        } catch (error) {
+            console.error("Error fetching all reviews:", error);
+            reviewsMessage.textContent = 'Error fetching reviews. Check console for details.';
+            reviewsMessage.classList.remove('hidden');
+        }
+    }
+    
+    /**
+     * Renders the list of reviews for the Admin interface.
+     */
+    function renderReviewsList() {
+        reviewsContainer.innerHTML = ''; // Clear existing reviews
+        const pendingCount = currentReviews.filter(r => r.approved === false).length;
+        pendingReviewsCount.textContent = pendingCount;
+        
+        currentReviews.forEach(review => {
+            const isPending = review.approved === false;
+            
+            const cardClass = isPending ? 'border-burnt-orange border-l-4 bg-parchment/70' : 'border-stone/20 border bg-white';
+            const actionButton = isPending 
+                ? `<button data-id="${review.id}" class="approve-review px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">Approve</button>`
+                : `<button data-id="${review.id}" class="unapprove-review px-4 py-2 bg-stone text-parchment rounded-lg font-semibold hover:bg-stone/80 transition">Unapprove</button>`;
+
+            const reviewHtml = `
+                <div class="p-6 rounded-lg shadow-md ${cardClass} mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-lg font-bold text-charcoal">${review.reviewerName || 'Anonymous'}</span>
+                            <span class="text-sm text-stone">| ${formatDate(review.createdAt)}</span>
+                            <span class="text-sm text-stone font-semibold">| Product: ${review.productName}</span>
+                        </div>
+                        <div class="text-lg">
+                            ${renderStars(review.rating)}
+                        </div>
+                    </div>
+                    <p class="text-xl font-playfair text-charcoal mb-3">${review.title}</p>
+                    <p class="text-stone mb-4">${review.body}</p>
+                    
+                    <div class="flex justify-between items-center border-t pt-4">
+                        <div>
+                            ${actionButton}
+                        </div>
+                        <button data-id="${review.id}" class="delete-review text-red-600 hover:text-red-800 transition">Delete Permanently</button>
+                    </div>
+                </div>
+            `;
+            reviewsContainer.innerHTML += reviewHtml;
+        });
+        
+        attachReviewListeners();
+    }
+    
+    /**
+     * Attaches event listeners to the new review action buttons.
+     */
+    function attachReviewListeners() {
+        document.querySelectorAll('.approve-review').forEach(button => {
+            button.addEventListener('click', (e) => updateReviewStatus(e.target.dataset.id, true));
+        });
+        document.querySelectorAll('.unapprove-review').forEach(button => {
+            button.addEventListener('click', (e) => updateReviewStatus(e.target.dataset.id, false));
+        });
+        document.querySelectorAll('.delete-review').forEach(button => {
+            button.addEventListener('click', (e) => deleteReview(e.target.dataset.id));
         });
     }
 
-    function initializeAdminPanel() {
-        initializeTabs();
-        adminImportButton.addEventListener('click', startImport);
-
-        if (db) {
-            adminConfigWarning.classList.add('hidden');
-        } else {
-            adminConfigWarning.classList.remove('hidden');
+    /**
+     * Updates the 'approved' status of a review in Firestore.
+     */
+    async function updateReviewStatus(reviewId, approvedStatus) {
+        const reviewRef = doc(db, 'reviews', reviewId);
+        
+        try {
+            await updateDoc(reviewRef, { approved: approvedStatus });
+            
+            const statusText = approvedStatus ? 'Approved' : 'Unapproved';
+            alert(`Review ${reviewId.slice(-6)} successfully ${statusText.toLowerCase()}.`);
+            
+            // Re-fetch and re-render the list to update the display
+            await fetchAllReviews();
+            
+        } catch (error) {
+            console.error(`Error updating review status to ${approvedStatus}:`, error);
+            alert("Failed to update review status. Check console.");
         }
     }
     
-    document.addEventListener('firebase-ready', setupAuthObserver);
+    /**
+     * Deletes a review from Firestore.
+     */
+    async function deleteReview(reviewId) {
+        if (!confirm("Are you sure you want to permanently delete this review? This action cannot be undone.")) {
+            return;
+        }
+        
+        const reviewRef = doc(db, 'reviews', reviewId);
+        
+        try {
+            await deleteDoc(reviewRef);
+            alert(`Review ${reviewId.slice(-6)} deleted successfully.`);
+            await fetchAllReviews();
+        } catch (error) {
+            console.error("Error deleting review:", error);
+            alert("Failed to delete review. Check console.");
+        }
+    }
+
+
+    // --- Core Initialization ---
+
+    /**
+     * Handles tab switching logic.
+     */
+    function switchTab(targetId) {
+        tabContents.forEach(content => content.classList.add('hidden'));
+        tabButtons.forEach(button => {
+            button.classList.remove('bg-stone', 'text-parchment');
+            button.classList.add('text-charcoal', 'hover:bg-parchment/70');
+        });
+
+        document.getElementById(targetId).classList.remove('hidden');
+        document.querySelector(`.tab-button[data-tab="${targetId}"]`).classList.add('bg-stone', 'text-parchment');
+        document.querySelector(`.tab-button[data-tab="${targetId}"]`).classList.remove('text-charcoal', 'hover:bg-parchment/70');
+
+        // Execute function on tab switch
+        if (targetId === 'tab-orders') {
+            fetchAllOrders();
+        } else if (targetId === 'tab-products') {
+            fetchAllProducts();
+        } else if (targetId === 'tab-reviews') {
+            fetchAllReviews(); // NEW: Fetch reviews on tab switch
+        }
+    }
+
+    /**
+     * Initializes the admin page after authentication and admin check.
+     */
+    async function initializeAdmin(user) {
+        currentUser = user;
+
+        const adminDoc = await getDocs(query(collection(db, 'admins'), where('__name__', '==', user.uid)));
+        isAdmin = !adminDoc.empty;
+
+        if (!isAdmin) {
+            alert("Access Denied: You must be an administrator to view this page.");
+            window.location.href = '/account/'; 
+            return;
+        }
+        
+        // Fetch all data initially for dashboard metrics
+        await Promise.all([
+            fetchAllOrders(),
+            fetchAllProducts(),
+            fetchAllReviews() // NEW: Fetch reviews for dashboard count
+        ]);
+
+        adminLoader.classList.add('hidden');
+        adminContent.classList.remove('hidden');
+
+        // Start with the default tab (Dashboard)
+        switchTab('tab-dashboard');
+    }
+
+    // --- Event Listeners and Initializers ---
+
+    document.addEventListener('DOMContentLoaded', () => {
+        tabButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const targetId = e.target.getAttribute('data-tab');
+                switchTab(targetId);
+            });
+        });
+        
+        const logoutButton = document.getElementById('logout-button');
+        if (logoutButton) {
+            logoutButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                logout().then(() => {
+                    window.location.href = '/admin-login.html';
+                }).catch(error => {
+                    console.error("Logout failed:", error);
+                    alert("Logout failed. Please try again.");
+                });
+            });
+        }
+        
+        if(closeModalButton) {
+            closeModalButton.addEventListener('click', () => {
+                productEditModal.classList.add('hidden');
+            });
+        }
+        
+        if(productEditForm) {
+            productEditForm.addEventListener('submit', handleProductUpdate);
+        }
+
+        // Authentication State Listener (Security Guard)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                initializeAdmin(user);
+            } else {
+                window.location.href = '/admin-login.html';
+            }
+        });
+    });
+
 </script>
+
+<main class="container mx-auto px-4 py-12 min-h-screen">
+    <div id="admin-loader" class="flex justify-center items-center h-64">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-stone"></div>
+    </div>
+
+    <div id="admin-content" class="hidden">
+        <h1 class="text-4xl font-playfair text-charcoal mb-8 border-b pb-4">Southern Sense Admin Panel</h1>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <div class="lg:w-1/4">
+                <nav class="bg-parchment p-4 rounded-lg shadow-md sticky top-6">
+                    <p class="text-sm font-bold text-stone uppercase tracking-wider mb-2">Operations</p>
+                    <button data-tab="tab-dashboard" class="tab-button w-full text-left p-3 rounded-lg font-medium transition duration-150 ease-in-out bg-stone text-parchment">
+                        Dashboard
+                    </button>
+                    <button data-tab="tab-orders" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
+                        Orders
+                    </button>
+                    <button data-tab="tab-products" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
+                        Products
+                    </button>
+                    <button data-tab="tab-reviews" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
+                        Reviews
+                    </button>
+                    <button data-tab="tab-stock-alerts" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
+                        Stock Alerts
+                    </button>
+                    
+                    <p class="text-sm font-bold text-stone uppercase tracking-wider mt-6 mb-2 border-t pt-4">Configuration</p>
+                    <button data-tab="tab-content" class="tab-button w-full text-left p-3 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
+                        Site Content
+                    </button>
+                    <button data-tab="tab-tools" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
+                        Tools / Utility
+                    </button>
+
+                    <button id="logout-button" class="w-full text-left p-3 mt-6 rounded-lg font-medium text-red-600 hover:bg-red-50/50 transition duration-150 ease-in-out">
+                        Log Out
+                    </button>
+                </nav>
+            </div>
+
+            <div class="lg:w-3/4">
+                
+                <div id="tab-dashboard" class="tab-content bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-3xl font-playfair text-charcoal mb-4 border-b pb-2">Admin Dashboard</h2>
+                    <p class="text-stone mb-6">Welcome to the control center. Use the sidebar to navigate management tasks.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                            <h3 class="text-xl font-medium text-charcoal">Total Orders</h3>
+                            <p id="total-orders-count" class="text-4xl font-bold text-burnt-orange mt-2">--</p>
+                            <p class="text-sm text-stone mt-1">Orders recorded to date.</p>
+                        </div>
+                        
+                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                            <h3 class="text-xl font-medium text-charcoal">Pending Reviews</h3>
+                            <p id="pending-reviews-count" class="text-4xl font-bold text-stone mt-2">--</p>
+                            <a data-tab="tab-reviews" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Approve Reviews &rarr;</a>
+                        </div>
+
+                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                            <h3 class="text-xl font-medium text-charcoal">Low Stock Items</h3>
+                            <p id="low-stock-count" class="text-4xl font-bold text-stone mt-2">--</p>
+                            <a data-tab="tab-products" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Manage Stock &rarr;</a>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 p-6 bg-parchment rounded-lg border-l-4 border-burnt-orange">
+                        <h3 class="text-xl font-playfair text-charcoal mb-3">System Health Summary:</h3>
+                        <p class="text-stone">E-commerce flow **STABLE** (Authenticated checkout fixed). Inventory tracking is **LIVE**. Next priority: **Stock Alerts**.</p>
+                    </div>
+                </div>
+
+                <div id="tab-orders" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Order Management</h2>
+                    
+                    <p id="orders-message" class="text-stone mb-4"></p>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-stone/30">
+                            <thead>
+                                <tr class="text-left text-sm font-medium text-charcoal uppercase tracking-wider bg-parchment">
+                                    <th class="px-6 py-3">Order #</th>
+                                    <th class="px-6 py-3">Date</th>
+                                    <th class="px-6 py-3">Total</th>
+                                    <th class="px-6 py-3">Status</th>
+                                    <th class="px-6 py-3">Customer</th>
+                                    <th class="px-6 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body" class="bg-white divide-y divide-stone/20">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="tab-products" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+                    <div class="flex justify-between items-center mb-6 border-b pb-2">
+                        <h2 class="text-3xl font-playfair text-charcoal">Product Catalog Management</h2>
+                        <button class="px-4 py-2 bg-burnt-orange text-parchment font-semibold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
+                            + Add New Product
+                        </button>
+                    </div>
+                    
+                    <p id="products-message" class="text-stone mb-4"></p>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-stone/30">
+                            <thead>
+                                <tr class="text-left text-sm font-medium text-charcoal uppercase tracking-wider bg-parchment">
+                                    <th class="px-6 py-3">Product Name</th>
+                                    <th class="px-6 py-3">Scent Family</th>
+                                    <th class="px-6 py-3">Price</th>
+                                    <th class="px-6 py-3">Stock</th>
+                                    <th class="px-6 py-3">Featured</th>
+                                    <th class="px-6 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="products-table-body" class="bg-white divide-y divide-stone/20">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="tab-reviews" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Review Moderation</h2>
+                    <p id="reviews-message" class="text-stone mb-4"></p>
+                    <div id="reviews-container">
+                        </div>
+                </div>
+                
+                <div id="tab-stock-alerts" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Back-in-Stock Requests</h2>
+                    <p class="text-stone">This tab will list all customer requests for out-of-stock products, allowing the Admin to contact customers when stock is replenished and clear the request.</p>
+                </div>
+
+                <div id="tab-content" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Site Content & Pages</h2>
+                    <p class="text-stone">This tab will provide a simple WYSIWYG or Markdown editor interface for updating static pages like **About**, **Candle Care**, and **Refill Program** which are stored in the `/siteContent` collection.</p>
+                </div>
+
+                <div id="tab-tools" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Utility Tools</h2>
+                    <p class="text-stone">This tab is for one-off or advanced tasks, such as bulk data import/export (already partially functional with the existing scripts) or rebuilding site-wide caches.</p>
+                    <div class="mt-4 p-4 bg-gray-50 border rounded-lg">
+                        <h3 class="font-semibold text-charcoal">Firebase Import/Export Scripts</h3>
+                        <p class="text-sm text-stone">The utility scripts (`import-firestore.mjs` and `export-firestore.mjs`) are available locally for backup and bootstrap purposes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="product-edit-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-charcoal bg-opacity-75 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg mx-4 p-6 relative">
+            
+            <div class="flex justify-between items-start border-b pb-3 mb-4">
+                <h3 class="text-2xl font-playfair text-charcoal">Edit Product Details</h3>
+                <button id="close-modal-button" class="text-stone hover:text-charcoal transition text-3xl leading-none">&times;</button>
+            </div>
+
+            <form id="product-edit-form" class="space-y-4">
+                <input type="hidden" id="edit-product-id" name="id">
+
+                <div>
+                    <label for="edit-product-name" class="block text-sm font-medium text-stone mb-1">Product Name</label>
+                    <input type="text" id="edit-product-name" name="name" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="edit-price" class="block text-sm font-medium text-stone mb-1">Price ($)</label>
+                        <input type="number" step="0.01" id="edit-price" name="price" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
+                    </div>
+                    <div>
+                        <label for="edit-stock" class="block text-sm font-medium text-stone mb-1">Stock Level</label>
+                        <input type="number" id="edit-stock" name="stock" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="edit-scent-family" class="block text-sm font-medium text-stone mb-1">Scent Family</label>
+                        <input type="text" id="edit-scent-family" name="scentFamily" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
+                    </div>
+                    <div>
+                        <label for="edit-category" class="block text-sm font-medium text-stone mb-1">Category</label>
+                        <select id="edit-category" name="category" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
+                            <option value="candle">Candle</option>
+                            <option value="melt">Wax Melt</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center pt-2">
+                    <input type="checkbox" id="edit-featured" name="featured" class="h-4 w-4 text-burnt-orange border-stone/30 rounded focus:ring-burnt-orange">
+                    <label for="edit-featured" class="ml-2 block text-sm font-medium text-charcoal">Featured on Homepage</label>
+                </div>
+
+                <div class="pt-4 border-t mt-4">
+                    <button type="submit" class="w-full px-4 py-3 bg-burnt-orange text-parchment font-bold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>

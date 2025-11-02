@@ -16,7 +16,9 @@ import {
     auth, 
     addDoc, 
     collection, 
-    Timestamp 
+    Timestamp,
+    doc, // <-- FIX: Added missing import
+    updateDoc // <-- FIX: Added missing import
 } from '/firebase-loader.js';
 
 // --- Constants ---
@@ -364,15 +366,32 @@ export function initPayPal(formErrorElement) {
                 }
             }];
 
+            // --- CRITICAL FIX START: Check for authenticated user and add userId ---
+            const currentUser = auth.currentUser;
+            const currentUserId = currentUser ? currentUser.uid : null; // Get UID if logged in
+
             // 4. Create the full order object for our Firestore database
             const orderData = {
-                customer: customerData,
+                // IMPORTANT: Promote email to top level for guest lookups/emails
+                email: customerData.email, 
+                customer: {
+                    ...customerData,
+                    // Link the customer info to the user ID (redundant but clean)
+                    userId: currentUserId 
+                },
                 items: cart,
                 totals: { subtotal, shipping, total },
                 status: 'Pending', // Will be 'Paid' after approval
                 createdAt: Timestamp.now(),
                 paypalOrderId: null // Will be set on approval
             };
+            
+            // CRITICAL FIX: Add top-level userId ONLY if authenticated.
+            // This satisfies the Firestore security rule for authenticated orders.
+            if (currentUserId) {
+                orderData.userId = currentUserId; 
+            }
+            // --- CRITICAL FIX END ---
 
             // 5. Save the 'Pending' order to Firestore
             try {
@@ -418,10 +437,10 @@ export function initPayPal(formErrorElement) {
                 });
                 console.log("Firestore order updated to 'Paid'.");
                 
-                // 2. THIS IS THE FIX: Clear the cart
+                // 2. Clear the cart
                 clearCart();
                 
-                // 3. THIS IS THE FIX: Redirect to the confirmation page
+                // 3. Redirect to the confirmation page
                 // We pass the Firestore Order ID so the page can look it up
                 window.location.href = `/order-confirmation/?orderId=${firestoreOrderId}`;
 

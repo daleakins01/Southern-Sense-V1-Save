@@ -1805,3 +1805,99 @@ video {
     line-height: 1;
   }
 }
+/* === Southern Sense Global Parchment Theme Overrides === */
+
+/* Global page background and typography */
+html, body {
+  background: radial-gradient(circle at 20% 20%, #fbf6ee 0%, #f7f0e7 40%, #efe8de 100%) !important;
+  color: #3b2f2a !important;
+  font-family: "Lora", serif !important;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+}
+
+/* Base containers / cards */
+main, section, article, .container, .card, .content {
+  background-color: #fffaf4 !important;
+  border: 1px solid rgba(106, 74, 56, 0.15) !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 18px rgba(45, 38, 33, 0.08);
+}
+
+/* Headings */
+h1, h2, h3, h4, h5 {
+  font-family: "Cormorant Garamond", serif !important;
+  color: #6a4a38 !important;
+  font-weight: 600;
+}
+
+/* Navigation */
+header, nav {
+  background: rgba(251, 246, 238, 0.9);
+  border-bottom: 2px solid rgba(164, 123, 91, 0.2);
+}
+
+nav a {
+  color: #6a4a38 !important;
+  font-weight: 600;
+}
+nav a:hover {
+  background: rgba(164, 123, 91, 0.1);
+  color: #4c2e1d !important;
+}
+
+/* Buttons */
+button, .btn, .primary, .ghost {
+  font-family: "Cormorant Garamond", serif !important;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+button, .btn, .primary {
+  background-color: #6a4a38 !important;
+  color: #fff !important;
+  border: 1px solid #6a4a38 !important;
+}
+button:hover, .btn:hover, .primary:hover {
+  background-color: #8d6248 !important;
+}
+.ghost {
+  background: transparent !important;
+  color: #6a4a38 !important;
+  border: 1px solid rgba(106, 74, 56, 0.3) !important;
+}
+.ghost:hover {
+  background: rgba(106, 74, 56, 0.05) !important;
+}
+
+/* Footer */
+footer {
+  background: rgba(250, 243, 234, 0.95);
+  border-top: 2px dotted rgba(106, 74, 56, 0.15);
+  color: #7a6b60 !important;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px 10px;
+}
+
+/* Cards and sections with Tailwind white backgrounds */
+.bg-white, .bg-gray-50, .bg-stone-50 {
+  background-color: #fbf6ee !important;
+}
+.text-gray-600, .text-stone-600 {
+  color: #3b2f2a !important;
+}
+
+/* Links */
+a {
+  color: #6a4a38 !important;
+}
+a:hover {
+  color: #8d6248 !important;
+}
+
+/* Shadows and highlights */
+.shadow, .shadow-lg, .shadow-md {
+  box-shadow: 0 10px 30px rgba(45, 38, 33, 0.15) !important;
+}
+
+/* === End Parchment Theme Overrides === */

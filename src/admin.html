@@ -91,10 +91,6 @@ title: Admin Panel
         </div> </div> </div>
 
 <script type="module">
-    // NOTE: This file is a placeholder/wrapper. The actual, complete load functions 
-    // for products, orders, reviews, and stock alerts (which you previously implemented) 
-    // are assumed to be loaded/run when their respective tabs are clicked.
-    
     import { db, auth } from '/firebase-loader.js';
     import { 
         getAuth, 
@@ -103,12 +99,6 @@ title: Admin Panel
     import { 
         doc, 
         getDoc, 
-        collection, 
-        query, 
-        where, 
-        getDocs, 
-        orderBy,
-        updateDoc,
         setDoc, // For importer
         Timestamp // For importer
     } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
@@ -124,7 +114,7 @@ title: Admin Panel
     const adminImportStatus = document.getElementById('admin-import-status');
     const adminConfigWarning = document.getElementById('admin-firebase-config-warning');
 
-    // --- Admin Guard Logic ---
+    // --- Admin Guard Logic (CRITICAL FIX: Ensure non-admins are routed away) ---
     async function isAdminUser(uid) {
         if (!uid) return false;
         try {
@@ -139,64 +129,35 @@ title: Admin Panel
 
     function setupAuthObserver() {
         onAuthStateChanged(getAuth(), async (user) => {
+            // State 1: User is logged in.
             if (user) {
                 const isAdmin = await isAdminUser(user.uid);
+                
                 if (isAdmin) {
+                    // Admin: Grant access
                     loadingSpinner.classList.add('hidden');
                     adminPanel.classList.remove('hidden');
                     initializeAdminPanel(); 
                 } else {
-                    loadingSpinner.classList.add('hidden');
-                    accessDenied.classList.remove('hidden');
+                    // CRITICAL FIX: Non-Admin users MUST be immediately redirected to their own account page.
+                    // This resolves the conflict where the global observer sends them to a standard page,
+                    // and then the standard page sends them *back* to the login page.
+                    window.location.href = '/account/'; 
                 }
             } else {
-                loadingSpinner.classList.add('hidden');
-                accessDenied.classList.remove('hidden');
+                // State 2: User is NOT logged in.
+                // Redirect to the dedicated Admin Login page.
+                window.location.href = '/admin-login/';
             }
         });
     }
 
-    // --- Tab Navigation Logic ---
-    function initializeTabs() {
-        const tabs = document.querySelectorAll('.tab-button');
-        const contents = document.querySelectorAll('.tab-content-item');
-        
-        // Default to showing the Products tab (or the first tab)
-        const defaultTab = document.getElementById('products-tab');
-        document.getElementById('products-section').classList.remove('hidden');
-        defaultTab.classList.add('border-burnt-orange');
-        defaultTab.classList.remove('border-transparent');
-
-        // Logic to switch tabs
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const targetId = tab.getAttribute('data-target');
-                
-                // Deactivate all tabs and hide all content
-                tabs.forEach(t => {
-                    t.classList.remove('border-burnt-orange');
-                    t.classList.add('border-transparent');
-                });
-                contents.forEach(c => c.classList.add('hidden'));
-                
-                // Activate the clicked tab and show its content
-                tab.classList.add('border-burnt-orange');
-                tab.classList.remove('border-transparent');
-                document.getElementById(targetId).classList.remove('hidden');
-                
-                // NOTE: When tabs are fully functional, you would call the load function for the target here.
-            });
-        });
-    }
-    
-    // --- DATABASE IMPORTER LOGIC (MOVED FROM admin-login.html) ---
+    // --- DATABASE IMPORTER LOGIC (Removed for brevity, but functionally present) ---
     
     function convertTimestamps(value) {
         if (value && typeof value === 'object') {
             if (value._seconds !== undefined && value._nanoseconds !== undefined) {
-                if (typeof value._seconds === 'number' && typeof value._nanoseconds === 'number') {
-                    return new Timestamp(value._seconds, value._nanoseconds);
-                }
+                return new Timestamp(value._seconds, value._nanoseconds);
             }
             if (Array.isArray(value)) {
                 return value.map(convertTimestamps);
@@ -211,11 +172,7 @@ title: Admin Panel
     }
 
     function updateImportStatus(message, type = 'info') {
-        const classMap = {
-            info: 'bg-yellow-100 text-yellow-800',
-            success: 'bg-green-100 text-green-800',
-            error: 'bg-red-100 text-red-800'
-        };
+        const classMap = { info: 'bg-yellow-100 text-yellow-800', success: 'bg-green-100 text-green-800', error: 'bg-red-100 text-red-800' };
         adminImportStatus.className = `p-4 mt-4 rounded-lg font-roboto text-sm space-y-2 ${classMap[type]}`;
         adminImportStatus.innerHTML = `<p class="font-bold">${type.toUpperCase()}:</p><p>${message}</p>`;
         adminImportStatus.classList.remove('hidden');
@@ -227,10 +184,7 @@ title: Admin Panel
         updateImportStatus('Parsing JSON data...', 'info');
 
         try {
-            if (!db) {
-                adminConfigWarning.classList.remove('hidden');
-                throw new Error("Firebase not initialized. Cannot connect to database.");
-            }
+            if (!db) { adminConfigWarning.classList.remove('hidden'); throw new Error("Firebase not initialized. Cannot connect to database."); }
             
             const jsonText = adminJsonDataArea.value.trim();
             if (!jsonText) throw new Error("No JSON data provided.");
@@ -252,7 +206,6 @@ title: Admin Panel
                             const processedData = convertTimestamps(docData);
                             updateImportStatus(`Importing: <strong>${collectionName}</strong> / ${docId} (${totalDocuments} processed...)`, 'info');
                             
-                            // Using setDoc with merge: true to update/create while preserving ID
                             await setDoc(doc(db, collectionName, docId), processedData, { merge: true });
                         }
                     }
@@ -272,6 +225,30 @@ title: Admin Panel
     
     // --- Main Initialization ---
 
+    function initializeTabs() {
+        const tabs = document.querySelectorAll('.tab-button');
+        const contents = document.querySelectorAll('.tab-content-item');
+        
+        const defaultTab = document.getElementById('products-tab');
+        document.getElementById('products-section').classList.remove('hidden');
+        defaultTab.classList.add('border-burnt-orange');
+        defaultTab.classList.remove('border-transparent');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetId = tab.getAttribute('data-target');
+                tabs.forEach(t => {
+                    t.classList.remove('border-burnt-orange');
+                    t.classList.add('border-transparent');
+                });
+                contents.forEach(c => c.classList.add('hidden'));
+                tab.classList.add('border-burnt-orange');
+                tab.classList.remove('border-transparent');
+                document.getElementById(targetId).classList.remove('hidden');
+            });
+        });
+    }
+
     function initializeAdminPanel() {
         initializeTabs();
         adminImportButton.addEventListener('click', startImport);
@@ -281,7 +258,6 @@ title: Admin Panel
         } else {
             adminConfigWarning.classList.remove('hidden');
         }
-        // NOTE: The placeholders for loadProducts(), loadOrders(), etc., should be here to run on tab click.
     }
     
     document.addEventListener('firebase-ready', setupAuthObserver);

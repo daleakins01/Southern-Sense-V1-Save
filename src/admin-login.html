@@ -42,6 +42,7 @@ title: Admin Login
     import { 
         doc, 
         getDoc, 
+        signOut
     } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
     // --- DOM Elements ---
@@ -64,39 +65,68 @@ title: Admin Login
         }
     }
 
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        loginButton.disabled = true;
-        loginButton.textContent = 'Authenticating...';
-        loginStatus.classList.add('hidden');
-
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-
-        try {
-            const userCredential = await signInWithEmailAndPassword(getAuth(), email, password);
+    /**
+     * Sets up the login form submission handler.
+     */
+    function initializeLogin() {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            // Check if user is an admin
-            const isAdmin = await isAdminUser(userCredential.user.uid);
+            // Set initial state for button and status
+            loginButton.disabled = true;
+            loginButton.textContent = 'Authenticating...';
+            loginStatus.classList.add('hidden');
 
-            if (isAdmin) {
-                loginStatus.textContent = 'Success! Redirecting to Dashboard...';
-                loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-green-100 text-green-700';
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(getAuth(), email, password);
+                
+                // Check if user is an admin
+                const isAdmin = await isAdminUser(userCredential.user.uid);
+
+                if (isAdmin) {
+                    loginStatus.textContent = 'Success! Redirecting to Dashboard...';
+                    loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-green-100 text-green-700';
+                    loginStatus.classList.remove('hidden');
+                    
+                    // CRITICAL FIX: The successful login triggers the global onAuthStateChanged listener, 
+                    // which is now correctly implemented in the Admin Guard on /admin.html.
+                    // We only need a slight pause to show the message.
+                    setTimeout(() => { 
+                        // Forcing a standard redirect to a guaranteed admin-guarded page.
+                        window.location.href = '/admin.html';
+                    }, 500); 
+                    
+                } else {
+                    // If successfully logged in but NOT an admin, sign out immediately
+                    await signOut(getAuth());
+                    throw new Error("Invalid access: User is not an administrator.");
+                }
+
+            } catch (error) {
+                // Authentication Failed (e.g., wrong password, user not found)
+                let message = error.message;
+                if (message.includes('auth/invalid-credential') || message.includes('auth/wrong-password') || message.includes('auth/user-not-found')) {
+                    message = 'Invalid email or password.';
+                } else if (message.includes('Invalid access')) {
+                    message = error.message.replace('Invalid access: ', ''); // Display the custom error
+                } else {
+                    message = `Login Failed: ${error.message.replace('Firebase: ', '')}`;
+                }
+
+                loginStatus.textContent = message;
+                loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-red-100 text-red-700';
                 loginStatus.classList.remove('hidden');
-                // Redirect to the general admin panel
-                setTimeout(() => { window.location.href = '/admin/'; }, 1000);
-            } else {
-                // If not an admin, sign out and show error
-                getAuth().signOut();
-                throw new Error("Login successful, but user is not registered as an administrator.");
+                
+                // Reset button state
+                loginButton.disabled = false;
+                loginButton.textContent = 'Login';
             }
+        });
+    }
 
-        } catch (error) {
-            loginStatus.textContent = `Login Failed: ${error.message.replace('Firebase: ', '')}`;
-            loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-red-100 text-red-700';
-            loginStatus.classList.remove('hidden');
-            loginButton.disabled = false;
-            loginButton.textContent = 'Login';
-        }
-    });
+    // CRITICAL FIX: Ensure the login function only initializes after Firebase is ready.
+    document.addEventListener('firebase-ready', initializeLogin);
 </script>

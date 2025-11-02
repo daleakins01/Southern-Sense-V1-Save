@@ -5,7 +5,6 @@ title: "Contact Us"
 
 <main class="container mx-auto px-4 py-16">
   <div class="max-w-4xl mx-auto">
-    <!-- Header Section -->
     <section class="text-center">
       <h1 class="font-playfair text-5xl font-bold text-charcoal">
         Get in Touch
@@ -16,21 +15,12 @@ title: "Contact Us"
       </p>
     </section>
 
-    <!-- (Pillar 2): This form is insecure.
-         - It uses a 'mailto:' link, which is unreliable and exposes the user's email client.
-         - We need to replace this with a proper backend function (e.g., Firebase Function)
-         - that takes the form data and sends an email via a service like SendGrid or Resend.
-         - For now, we'll link it to a simple "Message Sent" confirmation page.
-    -->
-
-    <!-- Contact Form -->
     <section class="mt-16">
       <form
         action="/message-sent.html"
         method="GET"
         class="grid grid-cols-1 md:grid-cols-2 gap-8"
       >
-        <!-- Form Fields -->
         <div class="space-y-6">
           <div>
             <label
@@ -78,7 +68,6 @@ title: "Contact Us"
           </div>
         </div>
 
-        <!-- Message -->
         <div class="space-y-6">
           <div>
             <label
@@ -107,7 +96,6 @@ title: "Contact Us"
       </form>
     </section>
 
-    <!-- Social Media Links -->
     <section class="mt-24 text-center">
       <h2 class="font-playfair text-3xl font-semibold text-charcoal">
         Find Us on Social
@@ -120,7 +108,7 @@ title: "Contact Us"
           class="opacity-70 hover:opacity-100 transition-opacity"
         >
           <img
-            src="/src/facebook-icon.webp"
+            src="/facebook-icon.webp"
             alt="Facebook"
             class="w-10 h-10"
           />
@@ -132,7 +120,7 @@ title: "Contact Us"
           class="opacity-70 hover:opacity-100 transition-opacity"
         >
           <img
-            src="/src/tiktok-icon.webp"
+            src="/tiktok-icon.webp"
             alt="TikTok"
             class="w-10 h-10"
           />

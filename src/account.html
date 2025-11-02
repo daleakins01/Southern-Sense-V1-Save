@@ -102,11 +102,6 @@ title: My Account
 
     // --- Utility Functions ---
 
-    /**
-     * Helper to render the appropriate color badge for order status.
-     * @param {string} status - The order status string.
-     * @returns {string} HTML for a styled badge.
-     */
     function renderStatusBadge(status) {
         let colorClass;
         let iconClass;
@@ -134,50 +129,35 @@ title: My Account
         return `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${colorClass}"><i class="fas ${iconClass} mr-1"></i>${status}</span>`;
     }
 
-    /**
-     * Initializes the tabbed navigation functionality.
-     */
     function initializeTabs() {
         const tabs = document.querySelectorAll('.tab-button');
         const contents = document.querySelectorAll('.tab-content-item');
         
-        // Initial setup for the default active tab
         profileTab.classList.add('border-burnt-orange');
         profileTab.classList.remove('border-transparent');
         
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 const targetId = tab.getAttribute('data-target');
-                
-                // Deactivate all tabs and hide all content
                 tabs.forEach(t => {
                     t.classList.remove('border-burnt-orange');
                     t.classList.add('border-transparent');
                 });
                 contents.forEach(c => c.classList.add('hidden'));
-                
-                // Activate the clicked tab and show its content
                 tab.classList.add('border-burnt-orange');
                 tab.classList.remove('border-transparent');
                 document.getElementById(targetId).classList.remove('hidden');
 
-                // Special: If Order History tab is clicked, ensure data is loaded
                 if (targetId === 'orders-section' && currentUserId) {
                     loadOrderHistory(currentUserId);
                 }
             });
         });
-        
-        // Ensure profile section is visible by default
         document.getElementById('profile-section').classList.remove('hidden');
     }
 
-    // --- Profile Logic (CRITICAL FIX: Ensure robust data fetching) ---
+    // --- Profile Logic (CRITICAL FIX: Ensure spinner hides on failure/completion) ---
     
-    /**
-     * Loads user profile data (name, role) from the /users collection.
-     * @param {Object} user - The Firebase Auth user object.
-     */
     async function loadUserProfile(user) {
         const uid = user.uid;
         const defaultName = user.displayName || 'Customer';
@@ -189,55 +169,47 @@ title: My Account
         document.getElementById('profile-name').textContent = defaultName;
         document.getElementById('profile-email').textContent = defaultEmail;
         document.getElementById('profile-role').textContent = 'Customer';
-        document.getElementById('admin-link-placeholder').innerHTML = ''; // Clear previous admin link
+        document.getElementById('admin-link-placeholder').innerHTML = '';
 
         try {
-            // 1. Check /users collection for custom profile data
+            // 1. Fetch user profile and admin status (must be done in parallel for speed)
             const userRef = doc(db, 'users', uid);
-            const userSnap = await getDoc(userRef);
+            const adminRef = doc(db, 'admins', uid);
+
+            const [userSnap, adminSnap] = await Promise.all([
+                getDoc(userRef), 
+                getDoc(adminRef)
+            ]);
 
             if (userSnap.exists()) {
                 const userData = userSnap.data();
                 const firestoreName = userData.name || defaultName; 
                 document.getElementById('user-name-display').textContent = firestoreName;
                 document.getElementById('profile-name').textContent = firestoreName;
+            }
 
-                // 2. Check /admins collection for role
-                const adminRef = doc(db, 'admins', uid);
-                const adminSnap = await getDoc(adminRef);
-
-                if (adminSnap.exists()) {
-                    document.getElementById('profile-role').textContent = 'Administrator';
-                    document.getElementById('profile-role').classList.add('text-burnt-orange', 'font-extrabold');
-                    document.getElementById('admin-link-placeholder').innerHTML = 
-                        `<a href="/admin.html" class="block text-sm font-roboto underline text-burnt-orange hover:text-charcoal mt-1">Go to Admin Panel</a>`;
-                }
-            } else {
-                 console.warn("User document not found in /users collection.");
+            if (adminSnap.exists()) {
+                document.getElementById('profile-role').textContent = 'Administrator';
+                document.getElementById('profile-role').classList.add('text-burnt-orange', 'font-extrabold');
+                document.getElementById('admin-link-placeholder').innerHTML = 
+                    `<a href="/admin.html" class="block text-sm font-roboto underline text-burnt-orange hover:text-charcoal mt-1">Go to Admin Panel</a>`;
             }
             
-            // Show the dashboard once all data attempts are complete
-            loadingSpinner.classList.add('hidden');
-            dashboard.classList.remove('hidden');
-
         } catch (error) {
-            console.error("Error loading user profile or admin status:", error);
-            
-            // CRITICAL: Handle the failure gracefully by showing defaults and hiding the spinner
-            document.getElementById('profile-role').textContent = 'Customer (Data Error)';
-            loadingSpinner.classList.add('hidden');
-            dashboard.classList.remove('hidden');
+            console.error("CRITICAL: Error fetching user data. This indicates Firestore Rules or setup may be blocking the read.", error);
+            document.getElementById('profile-role').textContent = 'Customer (Data Failed)';
+            // Fall through to show the dashboard with whatever data we have
+        } finally {
+             // CRITICAL: Ensure the spinner hides regardless of data fetch success/failure
+             loadingSpinner.classList.add('hidden');
+             dashboard.classList.remove('hidden');
         }
     }
 
-    /**
-     * Attaches the logout listener.
-     */
     function initializeLogout() {
         document.getElementById('logout-button').addEventListener('click', async () => {
             try {
                 await signOut(getAuth());
-                // After sign out, the onAuthStateChanged observer will redirect to /login/
             } catch (error) {
                 console.error("Logout error:", error);
             }
@@ -245,10 +217,6 @@ title: My Account
     }
 
     // --- Order History Logic ---
-
-    /**
-     * Loads the authenticated user's order history from the /orders collection.
-     */
     async function loadOrderHistory(userId) {
         document.getElementById('orders-loading').classList.remove('hidden');
         ordersList.innerHTML = '';
@@ -280,7 +248,6 @@ title: My Account
 
             let ordersHtml = '';
             orders.forEach(order => {
-                // Ensure date conversion is safe
                 const date = order.date && order.date.seconds ? new Date(order.date.seconds * 1000).toLocaleDateString() : 'N/A';
                 const total = order.total ? parseFloat(order.total).toFixed(2) : 'N/A';
                 const statusBadge = renderStatusBadge(order.status || 'Pending');
@@ -309,14 +276,9 @@ title: My Account
         }
     }
 
-
     // --- Main Initialization ---
 
-    /**
-     * Initializes the page after Firebase is ready and authentication state is resolved.
-     */
     function initializeAccountPage() {
-        // Ensure tabs are initialized before observer runs
         initializeTabs();
         initializeLogout();
         
@@ -326,12 +288,11 @@ title: My Account
                 currentUserId = user.uid;
                 notLoggedIn.classList.add('hidden');
                 
-                // Load profile data (and handle spinner removal there)
+                // Load profile data (CRITICAL: this handles showing/hiding the dashboard)
                 loadUserProfile(user);
                 
             } else {
-                // If not logged in, ensure we redirect to the login page immediately.
-                // NOTE: A general app-wide guard may already handle this, but for robustness:
+                // If not logged in, show the login message.
                 loadingSpinner.classList.add('hidden');
                 dashboard.classList.add('hidden');
                 notLoggedIn.classList.remove('hidden');
@@ -339,6 +300,5 @@ title: My Account
         });
     }
 
-    // CRITICAL: We rely on the firebase-ready event to ensure imports are safe.
     document.addEventListener('firebase-ready', initializeAccountPage);
 </script>

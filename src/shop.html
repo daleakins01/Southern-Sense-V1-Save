@@ -14,7 +14,7 @@ title: Shop All Candles
     
     <div id="loading-spinner" class="text-center py-20">
         <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-burnt-orange mx-auto"></div>
-        <p class="mt-4 text-lg font-roboto text-stone">Loading products...</p>
+        <p class="mt-4 text-lg font-roboto text-stone" id="loading-status-message">Loading products...</p>
     </div>
 
     <div id="no-results" class="hidden text-center py-20 bg-parchment border border-stone/20 text-charcoal px-4 py-3 rounded relative max-w-lg mx-auto" role="alert">
@@ -28,7 +28,7 @@ title: Shop All Candles
 </div>
 
 <script type="module">
-    // --- Firestore Imports ---
+    // --- Firebase Imports ---
     import { db } from '/firebase-loader.js';
     import { 
         collection, 
@@ -43,34 +43,22 @@ title: Shop All Candles
     const productGrid = document.getElementById('product-grid');
     const noResults = document.getElementById('no-results');
     const shopTitle = document.getElementById('shop-title');
+    const loadingMessage = document.getElementById('loading-status-message');
 
-    /**
-     * Extracts query parameters (like 'family') from the URL.
-     * @returns {Object} An object containing the URL parameters.
-     */
     function getUrlParameters() {
         const params = new URLSearchParams(window.location.search);
         return {
-            family: params.get('family') // e.g., 'fruity-sweet'
+            family: params.get('family')
         };
     }
 
-    /**
-     * Formats a slug (e.g., 'fruity-sweet') to a display name (e.g., 'Fruity Sweet').
-     * @param {string} slug - The scentFamily slug.
-     * @returns {string} The formatted name.
-     */
     function formatScentFamilyName(slug) {
         if (!slug) return '';
         return slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     }
 
-    /**
-     * Renders a single product card.
-     * @param {Object} product - The product data object.
-     * @returns {string} The HTML string for the product card.
-     */
     function renderProductCard(product) {
+        // ... (render logic remains the same) ...
         const isOutOfStock = product.stock <= 0;
         const stockBadge = isOutOfStock 
             ? `<div class="absolute top-4 left-4 bg-stone text-parchment px-3 py-1 text-xs font-bold rounded-full shadow-md">Sold Out</div>`
@@ -101,6 +89,7 @@ title: Shop All Candles
         loadingSpinner.classList.remove('hidden');
         productGrid.classList.add('hidden');
         noResults.classList.add('hidden');
+        loadingMessage.textContent = "Loading products...";
         
         const params = getUrlParameters();
 
@@ -108,28 +97,35 @@ title: Shop All Candles
             const productsCol = collection(db, 'products');
             let q = query(productsCol, orderBy('name', 'asc'));
 
-            // === FILTER LOGIC (NEW) ===
+            // === FILTER LOGIC ===
             if (params.family) {
-                // If a scent family filter is present, apply it
                 q = query(q, where('scentFamily', '==', params.family));
-                
-                // Update the page title to reflect the filter
                 shopTitle.textContent = `${formatScentFamilyName(params.family)} Collection`;
                 shopTitle.classList.add('text-burnt-orange', 'border-b-4', 'border-burnt-orange/50', 'inline-block', 'px-4', 'pb-1');
             } else {
-                 // Reset title if no filter is active
                 shopTitle.textContent = 'Our Full Collection';
                 shopTitle.classList.remove('text-burnt-orange', 'border-b-4', 'border-burnt-orange/50', 'inline-block', 'px-4', 'pb-1');
             }
-            // ==========================
-
+            
+            // --- CRITICAL DEBUG POINT ---
+            loadingMessage.textContent = "Querying database...";
+            console.log("DEBUG: Attempting Firestore query for /products...");
+            
             const querySnapshot = await getDocs(q);
+            
+            console.log(`DEBUG: Query successful. Found ${querySnapshot.size} documents.`);
+            loadingMessage.textContent = `Found ${querySnapshot.size} products. Rendering...`;
+
             const products = [];
             querySnapshot.forEach(doc => {
                 const productData = doc.data();
+                // Ensure price is converted to a string format for safe display
+                productData.price = parseFloat(productData.price).toFixed(2);
                 productData.id = doc.id;
                 products.push(productData);
             });
+
+            // --- END CRITICAL DEBUG POINT ---
 
             loadingSpinner.classList.add('hidden');
             
@@ -137,7 +133,6 @@ title: Shop All Candles
                 productGrid.innerHTML = products.map(renderProductCard).join('');
                 productGrid.classList.remove('hidden');
             } else {
-                // Show a clear message if no products match the filter
                 if (params.family) {
                     document.getElementById('no-results-text').textContent = `We couldn't find any products in the "${formatScentFamilyName(params.family)}" family. Try a different one!`;
                 }
@@ -145,16 +140,17 @@ title: Shop All Candles
             }
 
         } catch (error) {
-            console.error("Error loading products:", error);
-            loadingSpinner.classList.add('hidden');
-            document.getElementById('no-results-text').textContent = `An error occurred while loading the products: ${error.message}`;
-            noResults.classList.remove('hidden');
+            // --- CRITICAL ERROR LOGGING ---
+            console.error("CRITICAL ERROR: Failed to load products from Firestore.", error);
+            loadingMessage.textContent = `ERROR: Data retrieval failed. Check console.`;
+            loadingSpinner.classList.remove('hidden'); // Keep spinner/message visible for debug
+            // Ensure content remains hidden
         }
     }
 
     // --- Main Initialization ---
     
-    // FIX (Race Condition): Wait for firebase-loader.js to dispatch its signal
+    // CRITICAL: We need to ensure the DB object is fully initialized before use.
     document.addEventListener('firebase-ready', loadProducts);
 
 </script>

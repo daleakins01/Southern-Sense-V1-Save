@@ -38,6 +38,7 @@ title: Admin Login
     import { 
         getAuth, 
         signInWithEmailAndPassword,
+        onAuthStateChanged,
         signOut
     } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
     import { 
@@ -50,7 +51,7 @@ title: Admin Login
     const loginButton = document.getElementById('login-button');
     const loginStatus = document.getElementById('login-status');
     
-    let redirectSuccess = false; // Flag to control final state
+    let redirectSuccess = false; 
 
     async function isAdminUser(uid) {
         if (!uid) return false;
@@ -65,6 +66,20 @@ title: Admin Login
     }
 
     function initializeLogin() {
+        // Defensive check: If user is already logged in (due to a previous successful login) 
+        // and is on this page, immediately route them to the correct dashboard.
+        onAuthStateChanged(getAuth(), async (user) => {
+            if (user && (window.location.pathname.endsWith('/admin-login/') || window.location.pathname.endsWith('/admin-login.html'))) {
+                const isAdmin = await isAdminUser(user.uid);
+                if (isAdmin) {
+                    window.location.href = '/admin.html';
+                } else {
+                    // Route non-admins to their account page
+                    window.location.href = '/account/';
+                }
+            }
+        });
+
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -78,15 +93,16 @@ title: Admin Login
             const password = document.getElementById('password').value;
 
             try {
+                // Core authentication
                 await signInWithEmailAndPassword(getAuth(), email, password);
                 
                 const isAdmin = await isAdminUser(getAuth().currentUser.uid);
 
                 if (isAdmin) {
-                    loginStatus.textContent = 'Success! Redirecting to Dashboard...';
+                    loginStatus.textContent = 'Success! Routing to Dashboard...';
                     loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-green-100 text-green-700';
                     loginStatus.classList.remove('hidden');
-                    redirectSuccess = true; // Set success flag
+                    redirectSuccess = true; // Flag success
                 } else {
                     // Log out non-admin users immediately
                     await signOut(getAuth());
@@ -110,8 +126,8 @@ title: Admin Login
                 
             } finally {
                 if (redirectSuccess) {
-                    // SUCCESS PATH: Force redirect to the admin page
-                    window.location.href = '/admin.html';
+                    // SUCCESS PATH: Trigger the routing check
+                    window.location.href = '/admin.html'; 
                 } else {
                     // FAILURE PATH: Reset button state
                     loginButton.disabled = false;

@@ -11,7 +11,7 @@ title: My Account
             <p class="mt-4 text-lg font-roboto text-stone">Loading Account Data...</p>
         </div>
 
-        <div id="not-logged-in" class="hidden text-center py-20 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <div id="not-logged-in" class="hidden text-center py-20 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-lg mx-auto" role="alert">
             <strong class="font-bold block">Access Denied</strong>
             <span class="block sm:inline">You must be logged in to view your account dashboard.</span>
             <div class="mt-4 flex justify-center space-x-4">
@@ -26,7 +26,7 @@ title: My Account
             <p class="font-roboto text-lg text-stone mb-6" id="user-email-display"></p>
             
             <nav class="flex space-x-2 border-b border-stone/20 mb-8">
-                <button class="tab-button py-2 px-4 font-roboto font-semibold text-charcoal border-b-2 border-transparent hover:border-burnt-orange transition-colors duration-150 active-tab" 
+                <button class="tab-button py-2 px-4 font-roboto font-semibold text-charcoal border-b-2 border-transparent hover:border-burnt-orange transition-colors duration-150" 
                         data-target="profile-section" id="profile-tab">Profile</button>
                 <button class="tab-button py-2 px-4 font-roboto font-semibold text-charcoal border-b-2 border-transparent hover:border-burnt-orange transition-colors duration-150" 
                         data-target="orders-section" id="orders-tab">Order History</button>
@@ -50,6 +50,7 @@ title: My Account
                             <div>
                                 <p class="font-roboto text-sm uppercase tracking-wider text-stone">Account Role</p>
                                 <p class="font-playfair text-xl font-bold text-charcoal" id="profile-role">Customer</p>
+                                <div id="admin-link-placeholder"></div>
                             </div>
                         </div>
                     </div>
@@ -95,6 +96,7 @@ title: My Account
     const notLoggedIn = document.getElementById('not-logged-in');
     const dashboard = document.getElementById('account-dashboard');
     const ordersList = document.getElementById('orders-list');
+    const profileTab = document.getElementById('profile-tab');
     
     let currentUserId = null;
 
@@ -140,8 +142,8 @@ title: My Account
         const contents = document.querySelectorAll('.tab-content-item');
         
         // Initial setup for the default active tab
-        document.getElementById('profile-tab').classList.add('border-burnt-orange');
-        document.getElementById('profile-tab').classList.remove('border-transparent');
+        profileTab.classList.add('border-burnt-orange');
+        profileTab.classList.remove('border-transparent');
         
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -160,14 +162,17 @@ title: My Account
                 document.getElementById(targetId).classList.remove('hidden');
 
                 // Special: If Order History tab is clicked, ensure data is loaded
-                if (targetId === 'orders-section') {
+                if (targetId === 'orders-section' && currentUserId) {
                     loadOrderHistory(currentUserId);
                 }
             });
         });
+        
+        // Ensure profile section is visible by default
+        document.getElementById('profile-section').classList.remove('hidden');
     }
 
-    // --- Profile Logic ---
+    // --- Profile Logic (CRITICAL FIX: Ensure robust data fetching) ---
     
     /**
      * Loads user profile data (name, role) from the /users collection.
@@ -178,11 +183,14 @@ title: My Account
         const defaultName = user.displayName || 'Customer';
         const defaultEmail = user.email || 'N/A';
         
+        // Set defaults immediately
         document.getElementById('user-name-display').textContent = defaultName;
         document.getElementById('user-email-display').textContent = defaultEmail;
         document.getElementById('profile-name').textContent = defaultName;
         document.getElementById('profile-email').textContent = defaultEmail;
-        
+        document.getElementById('profile-role').textContent = 'Customer';
+        document.getElementById('admin-link-placeholder').innerHTML = ''; // Clear previous admin link
+
         try {
             // 1. Check /users collection for custom profile data
             const userRef = doc(db, 'users', uid);
@@ -190,7 +198,6 @@ title: My Account
 
             if (userSnap.exists()) {
                 const userData = userSnap.data();
-                // Override with Firestore name if available
                 const firestoreName = userData.name || defaultName; 
                 document.getElementById('user-name-display').textContent = firestoreName;
                 document.getElementById('profile-name').textContent = firestoreName;
@@ -202,15 +209,24 @@ title: My Account
                 if (adminSnap.exists()) {
                     document.getElementById('profile-role').textContent = 'Administrator';
                     document.getElementById('profile-role').classList.add('text-burnt-orange', 'font-extrabold');
-                    // Add link to admin panel
-                    document.getElementById('profile-role').insertAdjacentHTML('afterend', 
-                        `<a href="/admin.html" class="block text-sm font-roboto underline text-burnt-orange hover:text-charcoal mt-1">Go to Admin Panel</a>`
-                    );
+                    document.getElementById('admin-link-placeholder').innerHTML = 
+                        `<a href="/admin.html" class="block text-sm font-roboto underline text-burnt-orange hover:text-charcoal mt-1">Go to Admin Panel</a>`;
                 }
+            } else {
+                 console.warn("User document not found in /users collection.");
             }
+            
+            // Show the dashboard once all data attempts are complete
+            loadingSpinner.classList.add('hidden');
+            dashboard.classList.remove('hidden');
+
         } catch (error) {
-            console.error("Error loading user profile:", error);
-            // Continue with default values if Firestore fails
+            console.error("Error loading user profile or admin status:", error);
+            
+            // CRITICAL: Handle the failure gracefully by showing defaults and hiding the spinner
+            document.getElementById('profile-role').textContent = 'Customer (Data Error)';
+            loadingSpinner.classList.add('hidden');
+            dashboard.classList.remove('hidden');
         }
     }
 
@@ -221,10 +237,9 @@ title: My Account
         document.getElementById('logout-button').addEventListener('click', async () => {
             try {
                 await signOut(getAuth());
-                // Will redirect via onAuthStateChanged observer
+                // After sign out, the onAuthStateChanged observer will redirect to /login/
             } catch (error) {
                 console.error("Logout error:", error);
-                alert("Error logging out. Please try again.");
             }
         });
     }
@@ -233,7 +248,6 @@ title: My Account
 
     /**
      * Loads the authenticated user's order history from the /orders collection.
-     * @param {string} userId - The UID of the authenticated user.
      */
     async function loadOrderHistory(userId) {
         document.getElementById('orders-loading').classList.remove('hidden');
@@ -242,11 +256,10 @@ title: My Account
 
         try {
             const ordersRef = collection(db, 'orders');
-            // Query for orders where the 'userId' matches the current user's UID
             const q = query(
                 ordersRef,
                 where('userId', '==', userId),
-                orderBy('date', 'desc') // Show newest orders first
+                orderBy('date', 'desc')
             );
             
             const querySnapshot = await getDocs(q);
@@ -267,7 +280,8 @@ title: My Account
 
             let ordersHtml = '';
             orders.forEach(order => {
-                const date = order.date ? new Date(order.date.seconds * 1000).toLocaleDateString() : 'Unknown Date';
+                // Ensure date conversion is safe
+                const date = order.date && order.date.seconds ? new Date(order.date.seconds * 1000).toLocaleDateString() : 'N/A';
                 const total = order.total ? parseFloat(order.total).toFixed(2) : 'N/A';
                 const statusBadge = renderStatusBadge(order.status || 'Pending');
 
@@ -280,7 +294,7 @@ title: My Account
                         <div class="font-roboto text-sm text-stone space-y-1">
                             <p>Date Placed: <span class="text-charcoal">${date}</span></p>
                             <p>Order Total: <span class="font-bold text-burnt-orange">$${total}</span></p>
-                            <p>Items: ${order.items.length}</p>
+                            <p>Items: ${order.items ? order.items.length : 0}</p>
                         </div>
                         <a href="/order-confirmation/?id=${order.id}" class="mt-3 inline-block text-burnt-orange hover:underline font-semibold text-sm">View Details &rarr;</a>
                     </div>
@@ -302,30 +316,29 @@ title: My Account
      * Initializes the page after Firebase is ready and authentication state is resolved.
      */
     function initializeAccountPage() {
+        // Ensure tabs are initialized before observer runs
+        initializeTabs();
+        initializeLogout();
+        
         onAuthStateChanged(getAuth(), (user) => {
-            loadingSpinner.classList.add('hidden');
-
+            
             if (user) {
                 currentUserId = user.uid;
-                dashboard.classList.remove('hidden');
                 notLoggedIn.classList.add('hidden');
                 
-                // 1. Initialize UI elements
-                initializeTabs();
-                initializeLogout();
-                
-                // 2. Load data
+                // Load profile data (and handle spinner removal there)
                 loadUserProfile(user);
-                // Orders are loaded when the Orders tab is clicked for the first time
                 
             } else {
+                // If not logged in, ensure we redirect to the login page immediately.
+                // NOTE: A general app-wide guard may already handle this, but for robustness:
+                loadingSpinner.classList.add('hidden');
                 dashboard.classList.add('hidden');
                 notLoggedIn.classList.remove('hidden');
-                // Redirect to login page is a better UX, but keeping the message here for a soft fail.
             }
         });
     }
 
-    // FIX (Race Condition): Wait for firebase-loader.js to dispatch its signal
+    // CRITICAL: We rely on the firebase-ready event to ensure imports are safe.
     document.addEventListener('firebase-ready', initializeAccountPage);
 </script>

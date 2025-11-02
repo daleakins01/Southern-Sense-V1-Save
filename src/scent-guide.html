@@ -1,153 +1,27 @@
 ---
 layout: layout.html
+title: Redirecting to Scent Glossary
 ---
 
-<main class="container mx-auto px-4 py-12">
-  <div class="max-w-4xl mx-auto">
-    <h1
-      class="font-playfair text-4xl font-bold text-charcoal text-center mb-8"
-    >
-      Southern Sense Scent Guide
-    </h1>
-
-    <!-- (Pillar 2): This page should be dynamic, pulling from Firestore -->
-    <p class="text-lg text-stone text-center mb-12">
-      Discover your new favorite fragrance. Our scents are grouped by family
-      to help you find the perfect match for your mood and home.
-    </p>
-
-    <!-- 
-      This is a static representation. The 'Epic Plan' envisions this
-      being dynamically generated from the 'products' collection in Firestore.
-    -->
-
-    <!-- Fresh & Clean -->
-    <div class="mb-12">
-      <h2
-        class="font-playfair text-3xl font-semibold text-charcoal mb-6 border-b-2 border-burnt-orange/30 pb-2"
-      >
-        🌿 Fresh & Clean
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Static Card Example -->
-        <div class="border border-stone/20 rounded-lg shadow-lg p-4">
-          <h3 class="font-playfair text-xl text-charcoal font-semibold">
-            Coastal Oasis (Melt)
-          </h3>
-          <p class="text-stone mt-2">
-            A refreshing blend of sea salt, crisp air, and light floral
-            notes.
-          </p>
-          <p class="font-medium text-burnt-orange mt-2">
-            Notes: Sea Salt, Jasmine, Green Leaves
-          </p>
-        </div>
-        <!-- More cards would go here -->
-      </div>
+<div class="container mx-auto p-4 lg:p-8 py-20 text-center">
+    <div class="max-w-xl mx-auto">
+        <h1 class="font-playfair text-4xl font-extrabold text-charcoal mb-4">Redirecting...</h1>
+        <p class="font-roboto text-lg text-stone">
+            The Scent Guide has moved to the new, dynamic 
+            <a href="/scent-glossary/" class="text-burnt-orange hover:underline font-bold">Scent Glossary</a>.
+            You will be redirected automatically.
+        </p>
+        
+        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-burnt-orange mx-auto mt-8"></div>
     </div>
+</div>
 
-    <!-- Floral -->
-    <div class="mb-12">
-      <h2
-        class="font-playfair text-3xl font-semibold text-charcoal mb-6 border-b-2 border-burnt-orange/30 pb-2"
-      >
-        🌸 Floral
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Static Card Example -->
-        <div class="border border-stone/20 rounded-lg shadow-lg p-4">
-          <h3 class="font-playfair text-xl text-charcoal font-semibold">
-            Enchanted Kiss (Candle)
-          </h3>
-          <p class="text-stone mt-2">
-            A magical blend of peach nectar, gardenia, and a hint of musk.
-          </p>
-          <p class="font-medium text-burnt-orange mt-2">
-            Notes: Peach, Gardenia, Musk
-          </p>
-        </div>
-        <div class="border border-stone/20 rounded-lg shadow-lg p-4">
-          <h3 class="font-playfair text-xl text-charcoal font-semibold">
-            Southern Charm (Candle)
-          </h3>
-          <p class="text-stone mt-2">
-            The classic scent of the South: sweet magnolia blossoms and ripe
-            peaches.
-          </p>
-          <p class="font-medium text-burnt-orange mt-2">
-            Notes: Magnolia, Peach, Freesia
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Fruity & Sweet -->
-    <div class="mb-12">
-      <h2
-        class="font-playfair text-3xl font-semibold text-charcoal mb-6 border-b-2 border-burnt-orange/30 pb-2"
-      >
-        🍓 Fruity & Sweet
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Static Card Example -->
-        <div class="border border-stone/20 rounded-lg shadow-lg p-4">
-          <h3 class="font-playfair text-xl text-charcoal font-semibold">
-            Aloha Luxe (Candle)
-          </h3>
-          <p class="text-stone mt-2">
-            An exotic escape with notes of fresh coconut and tropical blooms.
-          </p>
-          <p class="font-medium text-burnt-orange mt-2">
-            Notes: Coconut, Jasmine, Vanilla
-          </p>
-        </div>
-        <div class="border border-stone/20 rounded-lg shadow-lg p-4">
-          <h3 class="font-playfair text-xl text-charcoal font-semibold">
-            Strawberry Rosé (Candle & Melt)
-          </h3>
-          <p class="text-stone mt-2">
-            A delightful blend of sweet strawberries and crisp rosé wine.
-          </p>
-          <p class="font-medium text-burnt-orange mt-2">
-            Notes: Strawberry, Rosé Wine, Hint of Musk
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Earthy & Woody -->
-    <div class="mb-12">
-      <h2
-        class="font-playfair text-3xl font-semibold text-charcoal mb-6 border-b-2 border-burnt-orange/30 pb-2"
-      >
-        🌲 Earthy & Woody
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Static Card Example -->
-        <div class="border border-stone/20 rounded-lg shadow-lg p-4">
-          <h3 class="font-playfair text-xl text-charcoal font-semibold">
-            Autumn Velvet (Melt)
-          </h3>
-          <p class="text-stone mt-2">
-            A cozy embrace of warm spices, pumpkin, and soft woods.
-          </p>
-          <p class="font-medium text-burnt-orange mt-2">
-            Notes: Cinnamon, Clove, Pumpkin, Sandalwood
-          </p>
-        </div>
-        <div class="border border-stone/20 rounded-lg shadow-lg p-4">
-          <h3 class="font-playfair text-xl text-charcoal font-semibold">
-            Bleu Crème (Candle)
-          </h3>
-          <p class="text-stone mt-2">
-            A sophisticated and alluring fragrance of citrus, sea air, and
-            deep woods.
-          </p>
-          <p class="font-medium text-burnt-orange mt-2">
-            Notes: Bergamot, Sea Salt, Amber, Dark Musk
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</main>
+<script>
+    // Client-side redirection using JavaScript for immediate user experience.
+    window.onload = function() {
+        // Set a slight delay to allow the user to see the redirect message
+        setTimeout(function() {
+            window.location.replace("/scent-glossary/");
+        }, 500); // 500ms delay
+    };
+</script>

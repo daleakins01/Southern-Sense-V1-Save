@@ -1,3 +1,4 @@
+// .eleventy.js
 // This is the configuration file for Eleventy.
 // It tells Eleventy how to build the site.
 
@@ -11,15 +12,22 @@ module.exports = function(eleventyConfig) {
     // 1. CSS: Copy 'src/output.css' to '_site/css/style.css'
     eleventyConfig.addPassthroughCopy({ "src/output.css": "css/style.css" });
 
-    // 2. JavaScript: Copy all '.js' files from 'src' to '_site/'
-    // This rule is working.
-    eleventyConfig.addPassthroughCopy("src/**/*.js");
+    // 2. Critical JavaScript Modules: CRITICAL FIX
+    // These must be copied directly to the site root (e.g., /firebase-loader.js)
+    // to match the ES module import paths used in your HTML files.
+    eleventyConfig.addPassthroughCopy({ "src/firebase-loader.js": "firebase-loader.js" });
+    eleventyConfig.addPassthroughCopy({ "src/main.js": "main.js" });
+    eleventyConfig.addPassthroughCopy({ "src/cart.js": "cart.js" });
+    eleventyConfig.addPassthroughCopy({ "src/auth.js": "auth.js" });
 
-    // 3. WebP Images: FIX 4.1
-    // The "src/**/*.webp" glob was failing for root images.
-    // This new, more explicit rule copies all .webp files from the 'src'
-    // folder to '_site/src/'. This will fix all image 404s.
-    eleventyConfig.addPassthroughCopy("src/*.webp");
+    // 3. WebP Images: FIX 4.1 & Image Routing
+    // Copy images from 'src/' directly to '_site/' (the site root) so links 
+    // like <img src="/aloha-luxe-candle.webp"> resolve correctly.
+    eleventyConfig.addPassthroughCopy({ "src/*.webp": "/" });
+    
+    // 4. Generic JS Passthrough (for files in subfolders, like src/js/index.js)
+    // This rule remains to catch all other JS files that may live in subdirectories.
+    eleventyConfig.addPassthroughCopy("src/**/*.js");
     
     // --- Filters ---
     // This adds the 'safe' filter, which is CRITICAL for rendering
@@ -74,4 +82,3 @@ module.exports = function(eleventyConfig) {
         passthroughFileCopy: true
     };
 };
-

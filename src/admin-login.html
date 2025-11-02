@@ -3,93 +3,265 @@ layout: layout.html
 title: Admin Login
 ---
 
-<section class="admin-login">
-  <div class="card" style="max-width:420px;margin:0 auto;text-align:center;">
-    <h2>Admin Login</h2>
-    <p class="muted">Authorized personnel only</p>
+<div class="container mx-auto p-4 lg:p-8 py-16">
+    <div class="max-w-md mx-auto">
+        
+        <nav class="flex space-x-2 border-b border-stone/20 mb-8">
+            <button class="tab-button py-2 px-4 font-roboto font-semibold text-charcoal border-b-2 border-burnt-orange active-tab" 
+                    data-target="login-form-container" id="login-tab">Administrator Login</button>
+            <button class="tab-button py-2 px-4 font-roboto font-semibold text-charcoal border-b-2 border-transparent hover:border-burnt-orange transition-colors duration-150" 
+                    data-target="importer-container" id="importer-tab">Data Importer</button>
+        </nav>
 
-    <form id="adminLoginForm" style="margin-top:18px;text-align:left;">
-      <label>Email</label>
-      <input id="email" type="email" placeholder="admin@example.com" required>
-      <label>Password</label>
-      <input id="password" type="password" placeholder="••••••••" required>
-      <div style="margin-top:12px;text-align:center;">
-        <button id="loginBtn" type="submit" class="primary">Sign In</button>
-      </div>
-    </form>
+        <div id="login-form-container" class="space-y-6">
+            <h1 class="font-playfair text-3xl font-extrabold text-charcoal">Sign In</h1>
+            <p id="login-status" class="hidden font-roboto text-sm p-3 rounded-lg"></p>
 
-    <p id="status" class="muted" style="margin-top:16px;"></p>
-  </div>
-</section>
+            <form id="admin-login-form" class="space-y-4">
+                <div>
+                    <label for="email" class="block font-roboto text-sm font-medium text-charcoal">Email</label>
+                    <input type="email" id="email" name="email" required class="w-full p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
+                </div>
+                <div>
+                    <label for="password" class="block font-roboto text-sm font-medium text-charcoal">Password</label>
+                    <input type="password" id="password" name="password" required class="w-full p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
+                </div>
+                
+                <button type="submit" id="login-button" class="w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg shadow-md hover:bg-opacity-90 transition duration-150">
+                    Login
+                </button>
+            </form>
+            
+            <p class="font-roboto text-sm text-stone/80 text-center">
+                Need an account? <a href="/register/" class="text-burnt-orange hover:underline">Register Here</a>
+            </p>
+        </div>
 
-<style>
-  .admin-login h2 {
-    font-family:"Cormorant Garamond",serif;
-    color:#6a4a38;
-    margin-bottom:4px;
-  }
-  .admin-login label {
-    display:block;
-    margin-top:8px;
-    font-size:14px;
-    color:#a47b5b;
-  }
-  .admin-login input[type="email"],
-  .admin-login input[type="password"] {
-    width:100%;
-    padding:8px;
-    border:1px solid rgba(106,74,56,0.15);
-    border-radius:6px;
-    margin-top:4px;
-    background:#fff;
-  }
-  .admin-login .primary {
-    margin-top:10px;
-    width:100%;
-  }
-</style>
+
+        <div id="importer-container" class="hidden space-y-6 bg-parchment p-6 rounded-xl shadow-inner border border-stone/10">
+            <h1 class="font-playfair text-3xl font-extrabold text-charcoal">Database Importer Tool</h1>
+            <p class="font-roboto text-sm text-red-700 font-bold">
+                WARNING: This tool overwrites data. Only proceed if you have a validated `firestore-export.json`.
+            </p>
+
+            <div id="firebase-config-warning" class="p-4 bg-red-100 text-red-700 rounded-lg hidden">
+                <p class="font-bold">Initialization Warning:</p>
+                <p>Firebase not connected. Check console and try restarting server.</p>
+            </div>
+
+            <div>
+                <label for="json-data" class="block font-roboto text-sm font-bold text-charcoal mb-2">Paste Firestore JSON Export:</label>
+                <textarea id="json-data" rows="15" placeholder="Paste the content of your firestore-export.json here..." 
+                          class="w-full p-3 border border-stone/30 rounded-lg font-mono text-sm text-charcoal focus:ring-burnt-orange focus:border-burnt-orange"></textarea>
+            </div>
+
+            <button id="import-button" class="w-full py-3 px-4 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg shadow-md hover:bg-opacity-90 transition duration-150">
+                Start Import
+            </button>
+            
+            <div id="import-status" class="hidden p-4 rounded-lg font-roboto text-sm space-y-2"></div>
+        </div>
+        
+    </div>
+</div>
 
 <script type="module">
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from '/firebase-loader.js';
-  import { getFirestore, doc, getDoc } from '/firebase-loader.js';
+    // --- Firebase Imports ---
+    import { db, auth } from '/firebase-loader.js';
+    import { 
+        getAuth, 
+        signInWithEmailAndPassword 
+    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    import { 
+        doc, 
+        getDoc, 
+        Timestamp, 
+        setDoc
+    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-  const auth = getAuth();
-  const db = getFirestore();
-  const form = document.getElementById('adminLoginForm');
-  const status = document.getElementById('status');
+    // --- DOM Elements ---
+    const loginForm = document.getElementById('admin-login-form');
+    const loginButton = document.getElementById('login-button');
+    const loginStatus = document.getElementById('login-status');
+    const loginTab = document.getElementById('login-tab');
+    const importerTab = document.getElementById('importer-tab');
 
-  async function isAdmin(uid) {
-    try {
-      const adminSnap = await getDoc(doc(db, 'admins', uid));
-      return adminSnap.exists();
-    } catch {
-      return false;
+    // Importer Elements
+    const importButton = document.getElementById('import-button');
+    const jsonDataArea = document.getElementById('json-data');
+    const importStatus = document.getElementById('import-status');
+    const configWarning = document.getElementById('firebase-config-warning');
+
+    // --- Tab Switching Logic ---
+
+    function initializeTabs() {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContainers = document.querySelectorAll('[id$="-container"]');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.getAttribute('data-target');
+
+                tabButtons.forEach(t => {
+                    t.classList.remove('border-burnt-orange');
+                    t.classList.add('border-transparent');
+                });
+                tabContainers.forEach(c => c.classList.add('hidden'));
+
+                button.classList.add('border-burnt-orange');
+                button.classList.remove('border-transparent');
+                document.getElementById(targetId).classList.remove('hidden');
+            });
+        });
+
+        // Ensure Login is the default view
+        loginTab.click(); 
     }
-  }
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    status.textContent = 'Signing in...';
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    try {
-      const cred = await signInWithEmailAndPassword(auth, email, password);
-      const ok = await isAdmin(cred.user.uid);
-      if (ok) {
-        status.textContent = 'Access granted. Redirecting...';
-        setTimeout(() => (window.location.href = '/admin/'), 1000);
-      } else {
-        status.textContent = 'You are not authorized to access the Admin Panel.';
-      }
-    } catch (err) {
-      status.textContent = 'Login failed: ' + (err.message || 'Unknown error');
-    }
-  });
 
-  // If already logged in and admin, skip login screen
-  onAuthStateChanged(auth, async (user) => {
-    if (user && (await isAdmin(user.uid))) {
-      window.location.href = '/admin/';
+    // --- 1. LOGIN LOGIC (Existing) ---
+    
+    /**
+     * Checks if the user is an admin after successful login.
+     */
+    async function isAdminUser(uid) {
+        if (!uid) return false;
+        try {
+            const adminRef = doc(db, 'admins', uid);
+            const docSnap = await getDoc(adminRef);
+            return docSnap.exists();
+        } catch (e) {
+            console.error("Error checking admin status:", e);
+            return false;
+        }
     }
-  });
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        loginButton.disabled = true;
+        loginButton.textContent = 'Authenticating...';
+        loginStatus.classList.add('hidden');
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const userCredential = await signInWithEmailAndPassword(getAuth(), email, password);
+            
+            // Check if user is an admin
+            const isAdmin = await isAdminUser(userCredential.user.uid);
+
+            if (isAdmin) {
+                loginStatus.textContent = 'Success! Redirecting to Dashboard...';
+                loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-green-100 text-green-700';
+                loginStatus.classList.remove('hidden');
+                // Redirect to the general admin panel
+                setTimeout(() => { window.location.href = '/admin/'; }, 1000);
+            } else {
+                // If not an admin, sign out and show error
+                getAuth().signOut();
+                throw new Error("Login successful, but user is not registered as an administrator.");
+            }
+
+        } catch (error) {
+            loginStatus.textContent = `Login Failed: ${error.message.replace('Firebase: ', '')}`;
+            loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-red-100 text-red-700';
+            loginStatus.classList.remove('hidden');
+            loginButton.disabled = false;
+            loginButton.textContent = 'Login';
+        }
+    });
+
+
+    // --- 2. IMPORTER LOGIC (New) ---
+    
+    function convertTimestamps(value) {
+        if (value && typeof value === 'object') {
+            if (value._seconds !== undefined && value._nanoseconds !== undefined) {
+                if (typeof value._seconds === 'number' && typeof value._nanoseconds === 'number') {
+                    return new Timestamp(value._seconds, value._nanoseconds);
+                }
+            }
+            if (Array.isArray(value)) {
+                return value.map(convertTimestamps);
+            }
+            for (const key in value) {
+                if (Object.prototype.hasOwnProperty.call(value, key)) {
+                    value[key] = convertTimestamps(value[key]);
+                }
+            }
+        }
+        return value;
+    }
+
+    function updateImportStatus(message, type = 'info') {
+        const classMap = {
+            info: 'bg-yellow-100 text-yellow-800',
+            success: 'bg-green-100 text-green-800',
+            error: 'bg-red-100 text-red-800'
+        };
+        importStatus.className = `p-4 rounded-lg font-roboto text-sm space-y-2 ${classMap[type]}`;
+        importStatus.innerHTML = `<p class="font-bold">${type.toUpperCase()}:</p><p>${message}</p>`;
+        importStatus.classList.remove('hidden');
+    }
+
+    async function startImport() {
+        importButton.disabled = true;
+        importButton.textContent = 'Importing... Do not close this page.';
+        updateImportStatus('Parsing JSON data...', 'info');
+
+        try {
+            if (!db) {
+                configWarning.classList.remove('hidden');
+                throw new Error("Firebase not initialized. Check console.");
+            }
+            
+            const jsonText = jsonDataArea.value.trim();
+            if (!jsonText) throw new Error("No JSON data provided.");
+
+            const data = JSON.parse(jsonText);
+            let totalCollections = 0;
+            let totalDocuments = 0;
+
+            for (const collectionName in data) {
+                if (Object.prototype.hasOwnProperty.call(data, collectionName)) {
+                    totalCollections++;
+                    const collectionData = data[collectionName];
+
+                    for (const docId in collectionData) {
+                        if (Object.prototype.hasOwnProperty.call(collectionData, docId)) {
+                            totalDocuments++;
+                            const docData = collectionData[docId];
+                            
+                            const processedData = convertTimestamps(docData);
+                            updateImportStatus(`Importing: <strong>${collectionName}</strong> / ${docId} (${totalDocuments} processed...)`, 'info');
+                            
+                            // IMPORTANT: Using setDoc with merge: true to update/create while preserving ID
+                            await setDoc(doc(db, collectionName, docId), processedData, { merge: true });
+                        }
+                    }
+                }
+            }
+
+            updateImportStatus(`Import Complete! Imported ${totalDocuments} documents across ${totalCollections} collections.`, 'success');
+
+        } catch (error) {
+            console.error("Import Error:", error);
+            updateImportStatus(`Import Failed: ${error.message}. Check the console for details.`, 'error');
+        } finally {
+            importButton.disabled = false;
+            importButton.textContent = 'Start Import';
+        }
+    }
+    
+    // --- Main Initialization ---
+    
+    document.addEventListener('firebase-ready', () => {
+        initializeTabs();
+        importButton.addEventListener('click', startImport);
+        // Check if Firebase DB object exists to hide the warning
+        if (db) {
+            configWarning.classList.add('hidden');
+        }
+    });
 </script>

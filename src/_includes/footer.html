@@ -1,114 +1,65 @@
-<!-- src/_includes/footer.html -->
-<footer class="site-footer">
-  <div class="footer-wrap">
-    <div class="footer-top">
-      <div class="footer-section">
-        <h3>Southern Sense</h3>
-        <p>Hand-poured candles and southern comfort — crafted with love in the South.</p>
-        <p class="muted">Refills • Candles • Custom Blends</p>
-      </div>
+<footer class="bg-charcoal text-parchment pt-12 pb-8 mt-16">
+    <div class="container mx-auto p-4">
+        
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-8 border-b border-stone/50 pb-10">
+            
+            <div class="col-span-2 md:col-span-1 space-y-4 pr-8">
+                <a href="/" class="flex items-center space-x-2">
+                    <img src="/logo.webp" alt="Southern Sense Logo" class="h-10 w-auto filter invert">
+                    <span class="font-playfair text-2xl font-bold">Southern Sense</span>
+                </a>
+                <p class="font-roboto text-sm text-stone">
+                    Hand-poured luxury, inspired by the warmth and charm of the South.
+                </p>
+                <div class="flex space-x-4">
+                    <a href="https://facebook.com/southernsense" aria-label="Follow us on Facebook" class="text-stone hover:text-burnt-orange transition-colors duration-150">
+                        <i class="fab fa-facebook-f text-lg"></i>
+                    </a>
+                    <a href="https://instagram.com/southernsense" aria-label="Follow us on Instagram" class="text-stone hover:text-burnt-orange transition-colors duration-150">
+                        <i class="fab fa-instagram text-lg"></i>
+                    </a>
+                    <a href="https://tiktok.com/@southernsense" aria-label="Follow us on TikTok" class="text-stone hover:text-burnt-orange transition-colors duration-150">
+                        <i class="fab fa-tiktok text-lg"></i>
+                    </a>
+                </div>
+            </div>
 
-      <div class="footer-section">
-        <h4>Explore</h4>
-        <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/shop/">Shop</a></li>
-          <li><a href="/refill-program/">Refill Program</a></li>
-          <li><a href="/about/">About</a></li>
-          <li><a href="/account/">Account</a></li>
-        </ul>
-      </div>
+            <div class="space-y-3">
+                <h4 class="font-playfair text-lg font-bold text-parchment mb-3">Shop & Discover</h4>
+                <a href="/shop/" class="footer-link">All Products</a>
+                <a href="/scent-quiz/" class="footer-link">Scent Quiz</a>
+                <a href="/gifting/" class="footer-link">Gifting</a>
+                <a href="/scent-glossary/" class="footer-link">Scent Glossary</a>
+            </div>
 
-      <div class="footer-section">
-        <h4>Customer Care</h4>
-        <ul>
-          <li><a href="/faq/">FAQ</a></li>
-          <li><a href="/shipping/">Shipping &amp; Returns</a></li>
-          <li><a href="/privacy/">Privacy Policy</a></li>
-          <li><a href="/contact/">Contact Us</a></li>
-        </ul>
-      </div>
+            <div class="space-y-3">
+                <h4 class="font-playfair text-lg font-bold text-parchment mb-3">Service & Care</h4>
+                <a href="/subscriptions/" class="footer-link">Subscriptions</a>
+                <a href="/refill-program/" class="footer-link">Refill Program</a>
+                <a href="/candle-care/" class="footer-link">Candle Care Guide</a>
+                <a href="/contact/" class="footer-link">Contact Us</a>
+            </div>
 
-      <div class="footer-section">
-        <h4>Connect</h4>
-        <p class="muted">Follow us on social media for updates and promotions:</p>
-        <div class="social">
-          <a href="https://facebook.com" target="_blank" aria-label="Facebook">Facebook</a> •
-          <a href="https://instagram.com" target="_blank" aria-label="Instagram">Instagram</a>
+            <div class="space-y-3">
+                <h4 class="font-playfair text-lg font-bold text-parchment mb-3">Account & Company</h4>
+                <a href="/account/" class="footer-link">My Account</a>
+                <a href="/about/" class="footer-link">Our Story</a>
+                <a href="/admin-login/" class="footer-link">Admin Login</a>
+                <a href="#" class="footer-link">Privacy Policy</a>
+            </div>
+            
         </div>
-      </div>
-    </div>
 
-    <div class="footer-bottom">
-      <p>© <span id="year"></span> Southern Sense. All Rights Reserved.</p>
-      <p class="muted">Designed with southern charm &nbsp;•&nbsp; v1.2</p>
+        <div class="pt-6 text-center md:text-left">
+            <p class="font-roboto text-xs text-stone">
+                &copy; 2025 Southern Sense. All rights reserved. | Site by Paula Bryan.
+            </p>
+        </div>
     </div>
-  </div>
 </footer>
 
 <style>
-  .site-footer {
-    margin-top:40px;
-    border-top:3px double rgba(106,74,56,0.15);
-    padding-top:28px;
-    color:#3b2f2a;
-    font-family:"Lora", serif;
-    background:linear-gradient(180deg, rgba(251,246,238,0.8), rgba(245,238,226,0.9));
-    border-radius:0 0 12px 12px;
-  }
-
-  .footer-wrap {
-    max-width:1100px;
-    margin:0 auto;
-    padding:0 16px;
-  }
-
-  .footer-top {
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-    gap:20px;
-    margin-bottom:24px;
-  }
-
-  .footer-section h3 {
-    font-family:"Cormorant Garamond",serif;
-    font-size:24px;
-    color:#6a4a38;
-    margin:0 0 8px 0;
-  }
-
-  .footer-section h4 {
-    font-family:"Cormorant Garamond",serif;
-    font-size:18px;
-    margin:0 0 8px 0;
-    color:#6a4a38;
-  }
-
-  .footer-section p {margin:0 0 8px 0; line-height:1.5;}
-  .footer-section ul {list-style:none; margin:0; padding:0;}
-  .footer-section li {margin:4px 0;}
-  .footer-section a {
-    color:#6a4a38;
-    text-decoration:none;
-    transition:color 0.2s;
-  }
-  .footer-section a:hover {
-    color:#a47b5b;
-    text-decoration:underline;
-  }
-
-  .footer-bottom {
-    border-top:1px solid rgba(106,74,56,0.1);
-    padding-top:12px;
-    text-align:center;
-    font-size:14px;
-    color:#7a6b60;
-  }
-
-  .muted {color:#7a6b60;}
-  @media (max-width:700px){ .footer-top{grid-template-columns:1fr;} }
+    .footer-link {
+        @apply block font-roboto text-sm text-stone hover:text-parchment transition-colors duration-150;
+    }
 </style>
-
-<script>
-  document.getElementById("year").textContent = new Date().getFullYear();
-</script>

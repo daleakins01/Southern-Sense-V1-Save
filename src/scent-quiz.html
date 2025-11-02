@@ -1,0 +1,406 @@
+---
+layout: layout.html
+title: Find Your Perfect Scent
+---
+
+<div class="container mx-auto p-4 lg:p-8 py-16">
+    
+    <div class="text-center pt-10 pb-12 max-w-3xl mx-auto">
+        <h1 class="font-playfair text-5xl font-extrabold text-charcoal mb-4">Find Your Perfect Scent</h1>
+        <p class="font-roboto text-xl text-stone">
+            Not sure where to start? Answer a few quick questions about your mood and lifestyle, and we'll recommend a candle just for you.
+        </p>
+    </div>
+
+    <div class="max-w-xl mx-auto bg-parchment p-6 md:p-10 rounded-xl shadow-2xl border border-stone/10">
+        
+        <div class="mb-8">
+            <div class="h-2 bg-stone/20 rounded-full">
+                <div id="quiz-progress-bar" class="h-2 bg-burnt-orange rounded-full transition-all duration-300" style="width: 0%;"></div>
+            </div>
+            <p id="quiz-status" class="text-sm font-roboto text-stone mt-2 text-right">0 of 4 Questions</p>
+        </div>
+
+        <div id="quiz-container">
+            <div id="quiz-loading" class="text-center py-10">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-burnt-orange mx-auto"></div>
+                <p class="mt-2 text-md font-roboto text-stone">Loading quiz...</p>
+            </div>
+        </div>
+
+        <div id="quiz-navigation" class="flex justify-between mt-8 hidden">
+            <button id="prev-button" class="py-2 px-6 border border-stone text-stone font-roboto rounded-lg hover:bg-stone hover:text-parchment transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                &larr; Previous
+            </button>
+            <button id="next-button" class="py-2 px-6 bg-burnt-orange text-parchment font-playfair font-bold rounded-lg shadow-md hover:bg-opacity-90 transition duration-150 disabled:bg-stone disabled:cursor-not-allowed">
+                Next &rarr;
+            </button>
+        </div>
+        
+        <div id="recommendation-result" class="hidden text-center py-12">
+            <h2 class="font-playfair text-3xl font-extrabold text-charcoal mb-4">Your Perfect Match!</h2>
+            <p class="font-roboto text-lg text-stone mb-6">Based on your answers, we recommend:</p>
+            
+            <div id="recommended-product-card" class="bg-white p-6 rounded-lg shadow-xl inline-block max-w-sm">
+                <div id="result-loading" class="text-center py-4">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
+                </div>
+            </div>
+            
+            <a href="/shop/" class="mt-8 inline-block py-2 px-6 border border-burnt-orange text-burnt-orange font-roboto rounded-lg hover:bg-burnt-orange hover:text-parchment transition duration-150">
+                Back to Shop
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<script type="module">
+    // --- Firestore Imports ---
+    import { db } from '/firebase-loader.js';
+    import { 
+        collection, 
+        getDocs, 
+        query, 
+        where, 
+        limit,
+        doc,
+        getDoc
+    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+    
+    // --- QUIZ DATA DEFINITION ---
+    // The quiz defines a scoring system that maps user choices to preferred scent families and strength.
+    const quizQuestions = [
+        {
+            id: 'mood',
+            question: 'What mood are you trying to set?',
+            options: [
+                { text: 'Cozy & Relaxed', value: { family: 'warm-spice', strength: 2 } },
+                { text: 'Uplifted & Energetic', value: { family: 'citrus-fresh', strength: 1 } },
+                { text: 'Luxurious & Romantic', value: { family: 'floral-amber', strength: 3 } },
+                { text: 'Clean & Serene', value: { family: 'clean-aquatic', strength: 1 } },
+            ]
+        },
+        {
+            id: 'setting',
+            question: 'Where will you primarily burn your candle?',
+            options: [
+                { text: 'Small Bedroom / Bathroom', value: { strength: -1 } }, // Prefer lower strength
+                { text: 'Open Living Room / Kitchen', value: { strength: 1 } }, // Prefer higher strength
+                { text: 'Home Office / Study', value: { family: 'wood-earth', strength: 0 } },
+                { text: 'Dining Room / Entertaining Area', value: { family: 'fruity-sweet', strength: 0 } },
+            ]
+        },
+        {
+            id: 'season',
+            question: 'What time of year is your favorite?',
+            options: [
+                { text: 'Fall / Winter', value: { family: 'warm-spice', strength: 1 } },
+                { text: 'Spring / Summer', value: { family: 'citrus-fresh', strength: 0 } },
+                { text: 'All Year Round', value: { family: 'clean-aquatic', strength: 0 } },
+            ]
+        },
+        {
+            id: 'olfactory',
+            question: 'What natural aroma do you prefer?',
+            options: [
+                { text: 'The freshness of rain and linen', value: { family: 'clean-aquatic', strength: -1 } },
+                { text: 'Sweet fruits and baked goods', value: { family: 'fruity-sweet', strength: 1 } },
+                { text: 'Wood smoke and old leather', value: { family: 'wood-earth', strength: 1 } },
+                { text: 'Delicate flowers and soft powder', value: { family: 'floral-amber', strength: -1 } },
+            ]
+        }
+    ];
+
+    // --- QUIZ STATE ---
+    let currentStep = 0;
+    // Accumulator for scoring: Maps scent families to their total score/weight.
+    // { familySlug: score, strength: modifier }
+    let quizScore = {
+        'warm-spice': 0,
+        'citrus-fresh': 0,
+        'floral-amber': 0,
+        'clean-aquatic': 0,
+        'wood-earth': 0,
+        strength: 0, // Total strength modifier
+        userSelections: {} // Stores the selected option value for persistence
+    };
+
+    // --- DOM Elements ---
+    const quizContainer = document.getElementById('quiz-container');
+    const navButtons = document.getElementById('quiz-navigation');
+    const nextButton = document.getElementById('next-button');
+    const prevButton = document.getElementById('prev-button');
+    const progressBar = document.getElementById('quiz-progress-bar');
+    const quizStatus = document.getElementById('quiz-status');
+    const resultContainer = document.getElementById('recommendation-result');
+    const resultCard = document.getElementById('recommended-product-card');
+
+    // --- RENDER LOGIC ---
+
+    /**
+     * Updates the progress bar and status text.
+     */
+    function updateProgress() {
+        const percentage = (currentStep / quizQuestions.length) * 100;
+        progressBar.style.width = `${percentage}%`;
+        quizStatus.textContent = `${currentStep} of ${quizQuestions.length} Questions`;
+
+        prevButton.disabled = currentStep === 0;
+        
+        // Next button disabled only if the current question hasn't been answered
+        const currentQuestionId = quizQuestions[currentStep] ? quizQuestions[currentStep].id : null;
+        const isAnswered = quizScore.userSelections[currentQuestionId] !== undefined;
+        nextButton.disabled = !isAnswered && currentStep < quizQuestions.length;
+
+        if (currentStep === quizQuestions.length) {
+            nextButton.textContent = 'See Results';
+        } else {
+            nextButton.textContent = 'Next →';
+        }
+    }
+
+    /**
+     * Renders the current question and its options.
+     */
+    function renderQuestion() {
+        if (currentStep >= quizQuestions.length) {
+            navButtons.classList.add('hidden');
+            showRecommendation();
+            return;
+        }
+
+        const questionData = quizQuestions[currentStep];
+        let optionsHtml = '';
+
+        questionData.options.forEach((option, index) => {
+            const isSelected = quizScore.userSelections[questionData.id] === index;
+            const buttonClass = isSelected 
+                ? 'bg-burnt-orange text-parchment ring-4 ring-burnt-orange/50' 
+                : 'bg-white text-charcoal hover:bg-stone/10';
+                
+            optionsHtml += `
+                <button type="button" 
+                        class="quiz-option-button w-full text-left p-4 rounded-lg shadow-md font-roboto text-lg transition duration-200 ${buttonClass}"
+                        data-question-id="${questionData.id}"
+                        data-option-index="${index}">
+                    ${option.text}
+                </button>
+            `;
+        });
+
+        quizContainer.innerHTML = `
+            <h3 class="font-playfair text-2xl font-bold text-charcoal mb-6">${currentStep + 1}. ${questionData.question}</h3>
+            <div class="space-y-4">
+                ${optionsHtml}
+            </div>
+        `;
+        
+        attachOptionListeners();
+        updateProgress();
+        navButtons.classList.remove('hidden');
+    }
+
+    /**
+     * Attaches click listeners to the dynamically rendered option buttons.
+     */
+    function attachOptionListeners() {
+        document.querySelectorAll('.quiz-option-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const questionId = e.target.getAttribute('data-question-id');
+                const optionIndex = parseInt(e.target.getAttribute('data-option-index'), 10);
+                
+                handleAnswer(questionId, optionIndex);
+                renderQuestion(); // Re-render to show selection visually
+            });
+        });
+    }
+
+    // --- LOGIC ---
+
+    /**
+     * Processes the user's answer, updates the score, and persists the selection.
+     * @param {string} questionId - The ID of the question answered.
+     * @param {number} optionIndex - The index of the selected option.
+     */
+    function handleAnswer(questionId, optionIndex) {
+        const questionData = quizQuestions.find(q => q.id === questionId);
+        const selectedOption = questionData.options[optionIndex];
+        
+        // 1. Remove previous score contributions for this question (if any)
+        const previousIndex = quizScore.userSelections[questionId];
+        if (previousIndex !== undefined) {
+            const previousOption = questionData.options[previousIndex];
+            for (const key in previousOption.value) {
+                if (key === 'family') {
+                    quizScore[previousOption.value.family] -= 1;
+                } else if (key === 'strength') {
+                    quizScore.strength -= previousOption.value.strength;
+                }
+            }
+        }
+        
+        // 2. Apply new score contributions
+        for (const key in selectedOption.value) {
+            if (key === 'family') {
+                quizScore[selectedOption.value.family] = (quizScore[selectedOption.value.family] || 0) + 1;
+            } else if (key === 'strength') {
+                quizScore.strength += selectedOption.value.strength;
+            }
+        }
+        
+        // 3. Persist the selection
+        quizScore.userSelections[questionId] = optionIndex;
+
+        // Enable next button immediately after selection
+        nextButton.disabled = false; 
+    }
+
+    /**
+     * Determines the final product recommendation based on the accumulated quiz score.
+     */
+    async function showRecommendation() {
+        quizContainer.classList.add('hidden');
+        navButtons.classList.add('hidden');
+        resultContainer.classList.remove('hidden');
+
+        // Step 1: Determine the primary scent family
+        let recommendedFamily = '';
+        let maxScore = -Infinity;
+
+        // Iterate through all scent family scores
+        for (const family in quizScore) {
+            if (family !== 'strength' && family !== 'userSelections') {
+                if (quizScore[family] > maxScore) {
+                    maxScore = quizScore[family];
+                    recommendedFamily = family;
+                }
+            }
+        }
+        
+        // Fallback for a tie or zero score (default to a popular, balanced family)
+        if (!recommendedFamily || maxScore === 0) {
+            recommendedFamily = 'floral-amber';
+        }
+
+        // Step 2: Determine the preferred strength range
+        let preferredStrength;
+        if (quizScore.strength > 0) {
+            preferredStrength = 4; // Higher strength (4-5)
+        } else if (quizScore.strength < 0) {
+            preferredStrength = 2; // Lower strength (1-2)
+        } else {
+            preferredStrength = 3; // Neutral/Medium strength (3)
+        }
+        
+        console.log(`Recommendation: Family=${recommendedFamily}, Strength Modifier=${quizScore.strength}, Target Strength=${preferredStrength}`);
+
+        // Step 3: Query Firestore for the product
+        try {
+            const productsCol = collection(db, 'products');
+            let q = query(
+                productsCol,
+                where('scentFamily', '==', recommendedFamily),
+                // Try to find a product close to the preferred strength
+                where('strength', '>=', preferredStrength - 1), 
+                where('strength', '<=', preferredStrength + 1), 
+                where('stock', '>', 0), // Only recommend products that are in stock
+                limit(1)
+            );
+            
+            let querySnapshot = await getDocs(q);
+
+            // Fallback 1: If no match found by strength, remove strength constraint
+            if (querySnapshot.empty) {
+                console.log("Fallback 1: No product found by strength. Removing strength constraint.");
+                q = query(
+                    productsCol,
+                    where('scentFamily', '==', recommendedFamily),
+                    where('stock', '>', 0), 
+                    limit(1)
+                );
+                querySnapshot = await getDocs(q);
+            }
+            
+            // Fallback 2: If still no match, recommend ANY in-stock product
+            if (querySnapshot.empty) {
+                 console.log("Fallback 2: No product found by family. Recommending any product.");
+                 q = query(
+                    productsCol,
+                    where('stock', '>', 0), 
+                    limit(1)
+                );
+                querySnapshot = await getDocs(q);
+            }
+
+            if (!querySnapshot.empty) {
+                const productDoc = querySnapshot.docs[0];
+                const product = productDoc.data();
+                product.id = productDoc.id;
+                renderRecommendationCard(product);
+            } else {
+                renderRecommendationError("We couldn't find a candle for you right now, but please check out our full collection!");
+            }
+
+        } catch (error) {
+            console.error("Error fetching recommendation:", error);
+            renderRecommendationError("An error occurred during your search. Please try again.");
+        }
+    }
+
+    /**
+     * Renders the final recommended product card.
+     */
+    function renderRecommendationCard(product) {
+        document.getElementById('result-loading').classList.add('hidden');
+        const familyName = product.scentFamily.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
+        resultCard.innerHTML = `
+            <a href="/product/?id=${product.id}" class="block space-y-3">
+                <img src="/${product.imageUrl}" alt="${product.name}" class="w-full h-40 object-cover rounded-lg shadow-md border border-stone/20">
+                <p class="font-roboto text-sm uppercase tracking-widest text-burnt-orange">${familyName}</p>
+                <h3 class="font-playfair text-2xl font-bold text-charcoal">${product.name}</h3>
+                <p class="font-roboto text-xl font-semibold text-burnt-orange">$${product.price}</p>
+                <p class="font-roboto text-sm text-stone">${product.shortDescription}</p>
+                <button class="w-full py-2 bg-charcoal text-parchment font-roboto font-bold rounded-lg mt-3 hover:bg-stone transition duration-150">
+                    Shop Now
+                </button>
+            </a>
+        `;
+    }
+    
+    /**
+     * Renders an error message if a recommendation cannot be made.
+     */
+    function renderRecommendationError(message) {
+        document.getElementById('result-loading').classList.add('hidden');
+        resultCard.innerHTML = `<p class="font-roboto text-red-700 italic">${message}</p>`;
+    }
+
+    // --- Main Initialization ---
+    
+    function initializeQuiz() {
+        document.getElementById('quiz-loading').classList.add('hidden');
+
+        // Navigation listeners
+        nextButton.addEventListener('click', () => {
+            if (currentStep < quizQuestions.length) {
+                currentStep++;
+                renderQuestion();
+            }
+        });
+        
+        prevButton.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderQuestion();
+            }
+        });
+
+        // Start the quiz
+        renderQuestion();
+    }
+
+    // FIX (Race Condition): Wait for firebase-loader.js to dispatch its signal
+    document.addEventListener('firebase-ready', initializeQuiz);
+</script>

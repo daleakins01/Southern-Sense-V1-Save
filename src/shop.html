@@ -1,224 +1,160 @@
 ---
 layout: layout.html
-title: "Shop All - Southern Sense"
-description: "Browse our full collection of hand-poured soy wax candles and melts."
+title: Shop All Candles
 ---
 
-<!-- 
-  This page dynamically fetches all products from the 'products'
-  collection in Firestore and displays them in a grid.
--->
-
-<div class="bg-parchment">
-    <div class="container mx-auto px-4 py-12 md:py-20">
-        
-        <!-- Page Header -->
-        <div class="text-center mb-12">
-            <h1 class="text-5xl md:text-6xl font-playfair text-charcoal mb-4">
-                Our Collection
-            </h1>
-            <p class="text-lg text-stone max-w-2xl mx-auto">
-                Discover our full range of hand-poured soy wax candles and wax melts,
-                crafted with clean-burning wicks and phthalate-free fragrances.
-            </p>
-        </div>
-
-        <!-- 
-          Product Grid
-          The 'product-grid' element will be populated by JavaScript.
-        -->
-        <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
-            
-            <!-- 
-              Loading State
-              This placeholder content will be shown while products are loading.
-            -->
-            <div id="product-loader" class="text-center col-span-full py-20">
-                <p class="text-2xl font-playfair text-stone animate-pulse">
-                    Loading Products...
-                </p>
-            </div>
-
-            <!-- 
-              JavaScript will inject product cards here.
-              Example of a product card structure:
-
-              <div classclassName="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
-                  <a href="/product/?id=PRODUCT_ID" class="block group">
-                      <div class="relative w-full h-72">
-                          <img src="/product-image.webp" 
-                               alt="Product Name" 
-                               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                          
-                          <span class="absolute top-4 left-4 bg-burnt-orange text-white text-xs font-semibold px-3 py-1 rounded-full">
-                              Out of Stock
-                          </span>
-                      </div>
-                  </a>
-                  <div class="p-6 flex-grow flex flex-col">
-                      <h3 class="text-2xl font-playfair text-charcoal mb-2">
-                          <a href="/product/?id=PRODUCT_ID" class="hover:text-burnt-orange transition-colors">
-                              Product Name
-                          </a>
-                      </h3>
-                      <p class="text-stone text-sm mb-4 flex-grow">
-                          Short description goes here.
-                      </p>
-                      <div class="flex justify-between items-center mt-auto">
-                          <p class="text-2xl font-roboto text-charcoal font-medium">
-                              $20.00
-                          </p>
-                          <a href="/product/?id=PRODUCT_ID" 
-                             class="bg-charcoal text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-burnt-orange transition-all duration-300">
-                              View Details
-                          </a>
-                      </div>
-                  </div>
-              </div>
-            -->
-
-        </div> <!-- /#product-grid -->
+<div class="container mx-auto p-4 lg:p-8 py-16">
+    
+    <div class="text-center pt-10 pb-12">
+        <h1 id="shop-title" class="font-playfair text-5xl font-extrabold text-charcoal mb-4">Our Full Collection</h1>
+        <p class="font-roboto text-xl text-stone max-w-3xl mx-auto">
+            Browse our entire collection of hand-poured candles and wax melts, crafted with southern elegance.
+        </p>
     </div>
+    
+    <div id="loading-spinner" class="text-center py-20">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-burnt-orange mx-auto"></div>
+        <p class="mt-4 text-lg font-roboto text-stone">Loading products...</p>
+    </div>
+
+    <div id="no-results" class="hidden text-center py-20 bg-parchment border border-stone/20 text-charcoal px-4 py-3 rounded relative max-w-lg mx-auto" role="alert">
+        <strong class="font-bold block text-2xl mb-2">No Products Found</strong>
+        <p class="sm:inline" id="no-results-text">We couldn't find any products matching your selection. Try a different filter!</p>
+        <a href="/shop/" class="block mt-4 text-sm underline text-burnt-orange hover:text-burnt-orange/80">View All Products</a>
+    </div>
+
+    <div id="product-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        </div>
 </div>
 
-
-<!-- 
-  JavaScript for this page.
-  It fetches all products from the 'products' collection in Firestore
-  and dynamically creates the product cards.
--->
 <script type="module">
-    // Import the initialized 'db' object from our loader
-    // This import is now safe because we wait for the 'firebase-ready' event
+    // --- Firestore Imports ---
     import { db } from '/firebase-loader.js';
-    
-    // Import necessary functions from the Firebase SDK
-    import { collection, getDocs, query } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    import { 
+        collection, 
+        getDocs, 
+        query, 
+        orderBy, 
+        where 
+    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-    // Get the grid and loader elements
-    const grid = document.getElementById('product-grid');
-    const loader = document.getElementById('product-loader');
+    // --- DOM Elements ---
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const productGrid = document.getElementById('product-grid');
+    const noResults = document.getElementById('no-results');
+    const shopTitle = document.getElementById('shop-title');
 
     /**
-     * Creates an HTML string for a single product card.
-     * @param {object} product - The product data from Firestore.
-     * @returns {string} - The HTML string for the product card.
+     * Extracts query parameters (like 'family') from the URL.
+     * @returns {Object} An object containing the URL parameters.
      */
-    function createProductCard(product) {
-        const { id, name, price, shortDescription, imageUrl, stock } = product;
-        
-        // Use a placeholder image if one isn't provided in the database
-        const placeholderImg = `https://placehold.co/600x600/FBF9F6/3D352E?text=${name.replace(' ', '+')}`;
-        const imgSrc = imageUrl ? `/${imageUrl}` : placeholderImg;
+    function getUrlParameters() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+            family: params.get('family') // e.g., 'fruity-sweet'
+        };
+    }
 
-        // Check if the product is out of stock
-        const isOutOfStock = !stock || stock === 0;
+    /**
+     * Formats a slug (e.g., 'fruity-sweet') to a display name (e.g., 'Fruity Sweet').
+     * @param {string} slug - The scentFamily slug.
+     * @returns {string} The formatted name.
+     */
+    function formatScentFamilyName(slug) {
+        if (!slug) return '';
+        return slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    }
 
-        // Conditionally create the "Out of Stock" badge
+    /**
+     * Renders a single product card.
+     * @param {Object} product - The product data object.
+     * @returns {string} The HTML string for the product card.
+     */
+    function renderProductCard(product) {
+        const isOutOfStock = product.stock <= 0;
         const stockBadge = isOutOfStock 
-            ? `<span class="absolute top-4 left-4 bg-burnt-orange text-white text-xs font-semibold px-3 py-1 rounded-full">Out of Stock</span>`
+            ? `<div class="absolute top-4 left-4 bg-stone text-parchment px-3 py-1 text-xs font-bold rounded-full shadow-md">Sold Out</div>`
             : '';
-        
-        // Conditionally set the "Add to Cart" / "View Details" button
-        const buttonText = "View Details"; // Always "View Details" on shop page
-        const productLink = `/product/?id=${id}`;
-
+        const linkClass = isOutOfStock 
+            ? 'opacity-60' 
+            : 'hover:shadow-xl hover:scale-[1.02] transition duration-300';
+            
         return `
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl">
-                <!-- Product Image Link -->
-                <a href="${productLink}" class="block group">
-                    <div class="relative w-full h-80">
-                        <img src="${imgSrc}" 
-                             alt="${name}" 
-                             onerror="this.src='${placeholderImg}'; this.onerror=null;"
-                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                        
-                        <!-- Out of Stock Badge -->
-                        ${stockBadge}
-                    </div>
-                </a>
-                
-                <!-- Product Info -->
-                <div class="p-6 flex-grow flex flex-col">
-                    <h3 class="text-2xl font-playfair text-charcoal mb-2">
-                        <a href="${productLink}" class="hover:text-burnt-orange transition-colors">
-                            ${name}
-                        </a>
-                    </h3>
-                    <p class="text-stone text-sm mb-4 flex-grow">
-                        ${shortDescription}
-                    </p>
-                    
-                    <!-- Price & Button -->
-                    <div class="flex justify-between items-center mt-auto pt-4 border-t border-stone/20">
-                        <p class="text-2xl font-roboto text-charcoal font-medium">
-                            $${price}
-                        </p>
-                        <a href="${productLink}" 
-                           class="bg-charcoal text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-burnt-orange transition-all duration-300">
-                            ${buttonText}
-                        </a>
-                    </div>
+            <a href="/product/?id=${product.id}" class="block bg-parchment rounded-lg shadow-md overflow-hidden ${linkClass}">
+                <div class="relative">
+                    <img src="/${product.imageUrl}" alt="${product.name}" class="w-full h-48 object-cover">
+                    ${stockBadge}
                 </div>
-            </div>
+                <div class="p-4 space-y-1">
+                    <h3 class="font-playfair text-xl font-bold text-charcoal">${product.name}</h3>
+                    <p class="font-roboto text-sm text-stone">${product.shortDescription}</p>
+                    <p class="font-roboto text-lg font-semibold text-burnt-orange">$${product.price}</p>
+                </div>
+            </a>
         `;
     }
 
     /**
-     * Fetches all products from Firestore and populates the.
+     * Fetches and renders products based on URL filters.
      */
     async function loadProducts() {
-        // This function will only run *after* 'firebase-ready' is fired,
-        // so the 'db' object is guaranteed to be available.
-        try {
-            const productList = [];
-            
-            // 1. Create a query to get all documents from the 'products' collection
-            const q = query(collection(db, 'products'));
+        loadingSpinner.classList.remove('hidden');
+        productGrid.classList.add('hidden');
+        noResults.classList.add('hidden');
+        
+        const params = getUrlParameters();
 
-            // 2. Execute the query
+        try {
+            const productsCol = collection(db, 'products');
+            let q = query(productsCol, orderBy('name', 'asc'));
+
+            // === FILTER LOGIC (NEW) ===
+            if (params.family) {
+                // If a scent family filter is present, apply it
+                q = query(q, where('scentFamily', '==', params.family));
+                
+                // Update the page title to reflect the filter
+                shopTitle.textContent = `${formatScentFamilyName(params.family)} Collection`;
+                shopTitle.classList.add('text-burnt-orange', 'border-b-4', 'border-burnt-orange/50', 'inline-block', 'px-4', 'pb-1');
+            } else {
+                 // Reset title if no filter is active
+                shopTitle.textContent = 'Our Full Collection';
+                shopTitle.classList.remove('text-burnt-orange', 'border-b-4', 'border-burnt-orange/50', 'inline-block', 'px-4', 'pb-1');
+            }
+            // ==========================
+
             const querySnapshot = await getDocs(q);
-            
-            // 3. Loop through each document and add its data to our list
-            querySnapshot.forEach((doc) => {
-                productList.push({ id: doc.id, ...doc.data() });
+            const products = [];
+            querySnapshot.forEach(doc => {
+                const productData = doc.data();
+                productData.id = doc.id;
+                products.push(productData);
             });
 
-            // 4. Clear the loader and populate the grid
-            loader.remove(); // Remove the "Loading..." message
-
-            if (productList.length === 0) {
-                // Show a message if no products are found
-                grid.innerHTML = `
-                    <p class="col-span-full text-center text-xl text-stone py-16">
-                        No products are available at this time. Please check back soon!
-                    </p>
-                `;
-                return;
-            }
-
-            // 5. Create HTML for each product card and add it to the grid
-            for (const product of productList) {
-                const cardHtml = createProductCard(product);
-                grid.insertAdjacentHTML('beforeend', cardHtml);
+            loadingSpinner.classList.add('hidden');
+            
+            if (products.length > 0) {
+                productGrid.innerHTML = products.map(renderProductCard).join('');
+                productGrid.classList.remove('hidden');
+            } else {
+                // Show a clear message if no products match the filter
+                if (params.family) {
+                    document.getElementById('no-results-text').textContent = `We couldn't find any products in the "${formatScentFamilyName(params.family)}" family. Try a different one!`;
+                }
+                noResults.classList.remove('hidden');
             }
 
         } catch (error) {
             console.error("Error loading products:", error);
-            // Show a user-friendly error message
-            loader.innerHTML = `
-                <p class="text-red-600 col-span-full text-center text-xl py-16">
-                    We're sorry, but there was an error loading our products.
-                    Please refresh the page to try again.
-                </This>
-            `;
+            loadingSpinner.classList.add('hidden');
+            document.getElementById('no-results-text').textContent = `An error occurred while loading the products: ${error.message}`;
+            noResults.classList.remove('hidden');
         }
     }
 
-    // --- THIS IS THE FIX ---
-    // Instead of 'DOMContentLoaded', we wait for our custom 'firebase-ready' event.
-    // This event is dispatched by firebase-loader.js *after* db is initialized.
+    // --- Main Initialization ---
+    
+    // FIX (Race Condition): Wait for firebase-loader.js to dispatch its signal
     document.addEventListener('firebase-ready', loadProducts);
 
 </script>
-

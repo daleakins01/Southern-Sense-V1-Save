@@ -1,139 +1,188 @@
 ---
 layout: layout.html
+title: Scent Glossary
 ---
 
-<main class="container mx-auto px-4 py-12">
-  <div class="max-w-4xl mx-auto">
-    <h1
-      class="font-playfair text-4xl font-bold text-charcoal text-center mb-8"
-    >
-      Scent Glossary
-    </h1>
-
-    <div
-      class="prose prose-lg max-w-none text-stone prose-headings:text-charcoal prose-headings:font-playfair prose-a:text-burnt-orange hover:prose-a:text-burnt-orange/80"
-    >
-      <p class="text-lg">
-        Ever wonder what "notes" mean in a fragrance? Or what the difference
-        is between a "woody" and an "earthy" scent? Our scent glossary is here
-        to guide you.
-      </p>
-
-      <h2 class="text-2xl font-playfair font-semibold">
-        The Scent Families
-      </h2>
-      <p>
-        Most fragrances can be grouped into "families." These are broad
-        categories that share similar characteristics. At Southern Sense, our
-        scents primarily fall into these families:
-      </p>
-      <dl class="space-y-4">
-        <div>
-          <dt class="font-playfair text-xl text-charcoal">
-            🌿 Fresh & Clean
-          </dt>
-          <dd class="pl-4 border-l-2 border-burnt-orange/30">
-            Bright, airy, and uplifting. Think of fresh laundry, sea breezes,
-            or crisp morning air. These scents are often based on citrus,
-            green herbs, and light florals.
-            <br /><strong class="text-stone/90"
-              >Examples:</strong
-            >
-            Lemon, Cotton, Basil, Sea Salt.
-          </dd>
-        </div>
-        <div>
-          <dt class="font-playfair text-xl text-charcoal">
-            🌸 Floral
-          </dt>
-          <dd class="pl-4 border-l-2 border-burnt-orange/30">
-            The scent of blooming gardens. This family ranges from light and
-            delicate (like jasmine) to rich and heady (like rose or tuberose).
-            <br /><strong class="text-stone/90"
-              >Examples:</strong
-            >
-            Jasmine, Rose, Peony, Lavender.
-          </dd>
-        </div>
-        <div>
-          <dt class="font-playfair text-xl text-charcoal">
-            🍓 Fruity & Sweet
-          </dt>
-          <dd class="pl-4 border-l-2 border-burnt-orange/30">
-            Playful, sweet, and often juicy. These scents are built around
-            fruits, berries, and "gourmand" notes (scents that smell edible,
-            like vanilla or caramel).
-            <br /><strong class="text-stone/90"
-              >Examples:</strong
-            >
-            Strawberry, Coconut, Vanilla, Peach.
-          </dd>
-        </div>
-        <div>
-          <dt class="font-playfair text-xl text-charcoal">
-            🌲 Earthy & Woody
-          </dt>
-          <dd class="pl-4 border-l-2 border-burnt-orange/30">
-            Warm, grounding, and complex. These fragrances evoke the sense of
-            a forest floor, a cozy cabin, or rich soil. They are often blended
-            with spices for extra warmth.
-            <br /><strong class="text-stone/90"
-              >Examples:</strong
-            >
-            Sandalwood, Cedar, Patchouli, Cinnamon, Clove.
-          </dd>
-        </div>
-      </dl>
-
-      <h2 class="text-2xl font-playfair font-semibold">
-        Understanding Scent Notes
-      </h2>
-      <p>
-        A fragrance is a blend of different ingredients, called "notes."
-        These notes unfold over time in three stages, creating the full
-        experience of the scent.
-      </p>
-      <ul>
-        <li>
-          <strong>Top Notes:</strong> This is your first impression. They are
-          the lightest notes and fade the fastest. Common top notes include
-          citrus (lemon, bergamot) and light herbs (mint, basil).
-        </li>
-        <li>
-          <strong>Middle Notes (or "Heart Notes"):</strong> These notes emerge
-          as the top notes fade. They form the "heart" of the fragrance and
-          are usually fuller and more rounded. Common middle notes include
-          florals (rose, jasmine) and spices (cinnamon, clove).
-        </li>
-        <li>
-          <strong>Base Notes:</strong> These are the deep, rich notes that
-          anchor the scent and last the longest. They provide the final,
-          lasting impression. Common base notes include woods (sandalwood,
-          cedar), vanilla, musk, and amber.
-        </li>
-      </ul>
-
-      <h2 class="text-2xl font-playfair font-semibold">
-        Other Terms to Know
-      </h2>
-      <dl class="space-y-2">
-        <dt class="font-playfair text-lg text-charcoal">
-          Scent Throw
-        </dt>
-        <dd class="pl-4">
-          This refers to how well a candle's fragrance fills a room. A "strong
-          throw" will fill a large space, while a "subtle throw" is better for
-          a small room.
-        </dd>
-        <dt class="font-playfair text-lg text-charcoal">
-          Wax Melt
-        </dt>
-        <dd class="pl-4">
-          A wickless piece of scented wax that is gently heated in a wax
-          warmer to release its fragrance. A great flame-free alternative to
-          candles.
-        </dd>
-      </dl>
+<div class="container mx-auto p-4 lg:p-8">
+    <div class="text-center pt-10 pb-12">
+        <h1 class="font-playfair text-5xl font-extrabold text-charcoal mb-4">The Southern Sense Scent Glossary</h1>
+        <p class="font-roboto text-xl text-stone max-w-3xl mx-auto">
+            Explore our curated catalog by the heart of the fragrance—the Scent Family. Discover your next favorite by exploring notes that speak to you.
+        </p>
     </div>
-  </div>
-</main>
+
+    <div id="loading-spinner" class="text-center py-20">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-burnt-orange mx-auto"></div>
+        <p class="mt-4 text-lg font-roboto text-stone">Loading Scent Families...</p>
+    </div>
+
+    <div id="error-message" class="hidden text-center py-20 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <strong class="font-bold block">Error Loading Products</strong>
+        <span class="block sm:inline" id="error-text">Could not load the scent catalog. Please try again later.</span>
+    </div>
+
+    <div id="scent-families-container" class="space-y-12 hidden">
+        </div>
+</div>
+
+<script type="module">
+    // --- Firestore Imports ---
+    import { db } from '/firebase-loader.js';
+    import { collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    // --- DOM Elements ---
+    const container = document.getElementById('scent-families-container');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const errorMessage = document.getElementById('error-message');
+
+    /**
+     * Helper function to convert a slug (e.g., 'fruity-sweet') to a display name (e.g., 'Fruity Sweet').
+     * @param {string} slug - The scentFamily slug.
+     * @returns {string} The formatted name.
+     */
+    function formatScentFamilyName(slug) {
+        return slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    }
+    
+    /**
+     * Renders a single product card using Eleventy-style data.
+     * This template mirrors the design used on the main shop.html page.
+     * @param {Object} product - The product data object.
+     * @returns {string} The HTML string for the product card.
+     */
+    function renderProductCard(product) {
+        const isOutOfStock = product.stock <= 0;
+        const stockBadge = isOutOfStock 
+            ? `<div class="absolute top-4 left-4 bg-stone text-parchment px-3 py-1 text-xs font-bold rounded-full shadow-md">Sold Out</div>`
+            : '';
+        const linkClass = isOutOfStock 
+            ? 'opacity-60 pointer-events-none' 
+            : 'hover:shadow-xl hover:scale-[1.02] transition duration-300';
+            
+        return `
+            <a href="/product/?id=${product.id}" class="block bg-parchment rounded-lg shadow-md overflow-hidden ${linkClass}">
+                <div class="relative">
+                    <img src="/${product.imageUrl}" alt="${product.name}" class="w-full h-48 object-cover">
+                    ${stockBadge}
+                </div>
+                <div class="p-4 space-y-1">
+                    <h3 class="font-playfair text-xl font-bold text-charcoal">${product.name}</h3>
+                    <p class="font-roboto text-sm text-stone">${product.shortDescription}</p>
+                    <p class="font-roboto text-lg font-semibold text-burnt-orange">$${product.price}</p>
+                </div>
+            </a>
+        `;
+    }
+
+    /**
+     * Renders all scent families and their associated products.
+     * @param {Object} groupedProducts - Products grouped by scentFamily.
+     */
+    function renderScentFamilies(groupedProducts) {
+        let familiesHtml = '';
+
+        // Iterate over the grouped object keys (scent families)
+        // Object.keys ensures we process the families in a consistent order
+        Object.keys(groupedProducts).sort().forEach(familySlug => {
+            const familyName = formatScentFamilyName(familySlug);
+            const products = groupedProducts[familySlug];
+            
+            // Build the product cards HTML for this family
+            const productsHtml = products.map(renderProductCard).join('');
+            
+            // Render the collapsible family section
+            familiesHtml += `
+                <div class="border border-stone/20 rounded-xl shadow-lg overflow-hidden bg-parchment/70">
+                    <button class="scent-family-toggle w-full flex justify-between items-center p-6 bg-parchment hover:bg-parchment/90 transition" 
+                            data-target="#products-${familySlug}" aria-expanded="false" aria-controls="products-${familySlug}">
+                        <h2 class="font-playfair text-3xl font-bold text-charcoal">${familyName} <span class="text-burnt-orange ml-2">(${products.length})</span></h2>
+                        <i class="fas fa-chevron-down text-charcoal transition-transform duration-300"></i>
+                    </button>
+
+                    <div id="products-${familySlug}" class="scent-family-content hidden p-6 border-t border-stone/10">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            ${productsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = familiesHtml;
+        container.classList.remove('hidden');
+
+        // Attach event listeners for the accordion functionality
+        document.querySelectorAll('.scent-family-toggle').forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.getAttribute('data-target');
+                const targetContent = document.querySelector(targetId);
+                const icon = button.querySelector('i');
+                const isExpanded = button.getAttribute('aria-expanded') === 'true';
+
+                // Toggle the state
+                if (isExpanded) {
+                    targetContent.classList.add('hidden');
+                    button.setAttribute('aria-expanded', 'false');
+                    icon.classList.remove('rotate-180');
+                } else {
+                    targetContent.classList.remove('hidden');
+                    button.setAttribute('aria-expanded', 'true');
+                    icon.classList.add('rotate-180');
+                }
+            });
+        });
+    }
+
+    /**
+     * Main function to fetch all products, group them, and render the glossary.
+     */
+    async function loadScentGlossary() {
+        loadingSpinner.classList.remove('hidden');
+        errorMessage.classList.add('hidden');
+        container.classList.add('hidden');
+        
+        try {
+            const productsCol = collection(db, 'products');
+            // Ordering by name for consistent product lists within each family
+            const q = query(productsCol, orderBy('name', 'asc')); 
+            const querySnapshot = await getDocs(q);
+
+            const allProducts = [];
+            querySnapshot.forEach(doc => {
+                const productData = doc.data();
+                // Ensure the product has a scent family and required fields
+                if (productData.scentFamily && productData.name && productData.price) {
+                    productData.id = doc.id; // Add ID for the product link
+                    allProducts.push(productData);
+                }
+            });
+
+            // Group products by scentFamily
+            const groupedProducts = allProducts.reduce((acc, product) => {
+                const family = product.scentFamily;
+                if (!acc[family]) {
+                    acc[family] = [];
+                }
+                acc[family].push(product);
+                return acc;
+            }, {});
+
+            renderScentFamilies(groupedProducts);
+
+        } catch (error) {
+            console.error("Error loading scent glossary:", error);
+            document.getElementById('error-text').textContent = `An error occurred: ${error.message}`;
+            errorMessage.classList.remove('hidden');
+        } finally {
+            loadingSpinner.classList.add('hidden');
+        }
+    }
+
+    // --- Main Initialization ---
+    
+    // FIX (Race Condition): Wait for firebase-loader.js to dispatch its signal
+    document.addEventListener('firebase-ready', () => {
+        loadScentGlossary();
+    });
+
+</script>

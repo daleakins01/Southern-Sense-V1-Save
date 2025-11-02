@@ -1,112 +1,157 @@
-// This is the main JavaScript file for the Southern Sense website.
-// It handles global functionality like the mobile menu and cart count.
+// --- Firebase Imports ---
+import { auth, db } from '/firebase-loader.js';
+import { 
+    onAuthStateChanged, 
+    signOut 
+} from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+import { 
+    collection, 
+    getDocs, 
+    query, 
+    where 
+} from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-/**
- * Main function to initialize all site scripts.
- * This is the entry point for all client-side JavaScript.
- */
-function main() {
-    console.log("Southern Sense main.js loaded.");
-    
-    // Initialize event listeners
-    attachMobileMenuListeners();
-    
-    // Other global initializations can go here...
-    // e.g., initializeCartBubble();
-}
-
-/**
- * Attaches click event listeners to the mobile menu button and panel.
- * This allows the user to toggle the mobile navigation.
- * * FIX 5.1: This function is now called *after* the DOM is loaded,
- * so 'button' and 'panel' will be found.
- */
-function attachMobileMenuListeners() {
-    const button = document.getElementById('mobile-menu-button');
-    const panel = document.getElementById('mobile-menu-panel');
-    const svgOpen = button ? button.querySelector('svg') : null; // Get the hamburger icon
-    const svgClose = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); // Create a close icon (X)
-    
-    // Configure the close icon
-    svgClose.setAttribute('class', 'w-8 h-8');
-    svgClose.setAttribute('fill', 'none');
-    svgClose.setAttribute('stroke', 'currentColor');
-    svgClose.setAttribute('viewBox', '0 0 24 24');
-    svgClose.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
-    svgClose.style.display = 'none'; // Hide it initially
-
-    if (button && panel && svgOpen) {
-        // Add the close icon to the button
-        button.appendChild(svgClose);
-
-        button.addEventListener('click', () => {
-            const isHidden = panel.classList.toggle('hidden');
-            const isExpanded = button.getAttribute('aria-expanded') === 'true';
-
-            // Toggle visibility
-            panel.setAttribute('aria-hidden', isHidden);
-            button.setAttribute('aria-expanded', !isExpanded);
-
-            // Toggle icons
-            if (isHidden) {
-                svgOpen.style.display = 'block';
-                svgClose.style.display = 'none';
-                button.setAttribute('aria-label', 'Open navigation menu');
-            } else {
-                svgOpen.style.display = 'none';
-                svgClose.style.display = 'block';
-                button.setAttribute('aria-label', 'Close navigation menu');
-            }
-        });
-    } else {
-        // This log will no longer appear, but we keep it for safety.
-        console.warn("Mobile menu buttons or panel not found.");
-    }
-}
-
+// --- Global Constants ---
+const SHIPPING_FEE = 10.00;
 
 // --- Utility Functions ---
 
 /**
- * Formats a price (in cents or as a string) into a USD currency string.
- * e.g., 2000 -> "$20.00"
- * e.g., "20.00" -> "$20.00"
- * @param {number|string} price - The price in cents or as a string.
- * @returns {string} - A formatted USD string.
+ * Formats a scent family slug (e.g., 'fruity-sweet') to a display name (e.g., 'Fruity Sweet').
+ * @param {string} slug - The scentFamily slug.
+ * @returns {string} The formatted name.
  */
-function formatPrice(price) {
-    let priceInCents;
-    if (typeof price === 'string') {
-        priceInCents = parseFloat(price) * 100;
-    } else if (typeof price === 'number') {
-        // Assume it's already in cents if it's a large integer
-        // This logic might need refinement based on data source
-        if (price > 1000) { 
-            priceInCents = price;
-        } else {
-            priceInCents = price * 100;
-        }
+function formatScentFamilyName(slug) {
+    if (!slug) return '';
+    return slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
+// --- Dynamic Navigation Logic (NEW) ---
+
+/**
+ * Fetches unique scent families from Firestore and populates the Shop dropdown menu.
+ */
+async function loadScentFamilyDropdown() {
+    const linksContainer = document.getElementById('scent-family-links');
+    if (!linksContainer) return; // Exit if not on a page that includes the header
+
+    try {
+        const productsCol = collection(db, 'products');
+        const q = query(productsCol, where('scentFamily', '!=', null));
+        const querySnapshot = await getDocs(q);
+
+        const families = new Set();
+        querySnapshot.forEach(doc => {
+            const family = doc.data().scentFamily;
+            if (family) {
+                families.add(family);
+            }
+        });
+        
+        // Convert Set to Array and sort alphabetically
+        const sortedFamilies = Array.from(families).sort();
+
+        let linksHtml = '';
+        sortedFamilies.forEach(slug => {
+            const name = formatScentFamilyName(slug);
+            // Link to the shop page, filtered by the scentFamily query parameter
+            linksHtml += `
+                <a href="/shop/?family=${slug}" class="block font-roboto text-sm text-charcoal hover:text-burnt-orange transition-colors">${name}</a>
+            `;
+        });
+        
+        linksContainer.innerHTML = linksHtml;
+
+    } catch (error) {
+        console.error("Error loading scent family dropdown:", error);
+        linksContainer.innerHTML = `<p class="text-sm text-red-500">Error loading families.</p>`;
+    }
+}
+
+
+// --- Cart Logic (Original - Simplified for context) ---
+
+/**
+ * Reads cart data from localStorage.
+ * @returns {Array} The cart items array.
+ */
+function getCart() {
+    const cart = localStorage.getItem('southernSenseCart');
+    return cart ? JSON.parse(cart) : [];
+}
+
+/**
+ * Updates the visual cart count in the header.
+ */
+function updateCartCount() {
+    const cart = getCart();
+    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const cartCountElement = document.getElementById('cart-count');
+    if (cartCountElement) {
+        cartCountElement.textContent = count > 99 ? '99+' : count.toString();
+    }
+}
+
+
+// --- Auth Logic (Original - Simplified for context) ---
+
+/**
+ * Updates the header links based on the user's login status.
+ * @param {Object | null} user - The Firebase Auth user object.
+ */
+function updateAuthLinks(user) {
+    const loginLink = document.getElementById('login-link');
+    const accountLink = document.getElementById('account-link');
+    
+    if (user) {
+        if (loginLink) loginLink.classList.add('hidden');
+        if (accountLink) accountLink.classList.remove('hidden');
     } else {
-        return "$0.00";
+        if (loginLink) loginLink.classList.remove('hidden');
+        if (accountLink) accountLink.classList.add('hidden');
     }
+}
 
-    if (isNaN(priceInCents)) {
-        return "$0.00";
-    }
-
-    return (priceInCents / 100).toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'USD'
+/**
+ * Initializes the Firebase Auth observer.
+ */
+function initializeAuth() {
+    onAuthStateChanged(auth, (user) => {
+        updateAuthLinks(user);
     });
 }
 
 
-// --- Global Execution ---
+// --- Main Initialization ---
 
 /**
- * FIX 5.1:
- * We must wait for the DOM to be fully loaded before running main().
- * This prevents the "Mobile menu buttons... not found" error,
- * which was a race condition.
+ * Initializes all global features.
  */
-document.addEventListener('DOMContentLoaded', main);
+function init() {
+    // 1. Initialize Auth State
+    initializeAuth();
+    
+    // 2. Initial Cart Count Display
+    updateCartCount();
+    
+    // 3. Populate Shop Dropdown Menu (NEW)
+    // We wait for firebase-ready, but since this file is loaded after firebase-loader, 
+    // we use a simple check and then listen for changes.
+    loadScentFamilyDropdown();
+
+    // Listen for local storage changes (e.g., cart updates on other pages)
+    window.addEventListener('storage', (event) => {
+        if (event.key === 'southernSenseCart') {
+            updateCartCount();
+        }
+    });
+}
+
+// Ensure init runs after firebase is ready (if not already loaded)
+document.addEventListener('firebase-ready', init);
+
+// If firebase-ready already fired before this script loaded (which is typical for a module load), run it now.
+// This check is often complex, but using the listener is the safest approach in this codebase structure.
+
+// Export functions for use in other modules (like product.html)
+export { getCart, updateCartCount, SHIPPING_FEE };

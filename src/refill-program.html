@@ -1,115 +1,171 @@
 ---
 layout: layout.html
+title: Refill Program
 ---
 
-<main class="container mx-auto px-4 py-12">
-  <div class="max-w-3xl mx-auto">
-    <h1
-      class="font-playfair text-4xl font-bold text-charcoal text-center mb-8"
-    >
-      Southern Sense Refill Program
-    </h1>
-
-    <div
-      class="prose prose-lg max-w-none text-stone prose-headings:text-charcoal prose-headings:font-playfair prose-a:text-burnt-orange hover:prose-a:text-burnt-orange/80"
-    >
-      <p>
-        Welcome to our sustainable refill program! We're thrilled to offer a
-        way to enjoy your favorite Southern Sense candles while being kind to
-        the planet (and your wallet).
-      </p>
-
-      <h2 class="text-2xl font-playfair font-semibold">How It Works</h2>
-      <p>
-        Our program is simple. You bring us your *clean* and *undamaged*
-        Southern Sense candle jars, and we'll refill them with the scent of
-        your choice for a discounted price.
-      </p>
-
-      <h3 class="text-xl font-playfair font-semibold">Refill Pricing</h3>
-      <p>
-        Refills are priced based on the size of the jar. This offers you a
-        significant savings compared to purchasing a new candle each time.
-      </p>
-      <ul>
-        <li>
-          <strong>Signature Jars (approx. 8-10 oz):</strong> $15.00
-        </li>
-        <li>
-          <strong>Luxe Collection Jars (approx. 12-14 oz):</strong> $22.00
-        </li>
-        <li>
-          <strong>Wax Melts (requires your own container):</strong> $7.00 per
-          3 oz.
-        </li>
-      </ul>
-      <p>
-        <em
-          >Please note: Prices are subject to change. This program is
-          currently available for <strong>local drop-off and pick-up
-          only.</strong></em
-        >
-      </p>
-
-      <h2 class="text-2xl font-playfair font-semibold">
-        Guidelines for Refills
-      </h2>
-      <p>
-        To ensure a high-quality and safe refill, we have a few important
-        guidelines:
-      </p>
-      <ol>
-        <li>
-          <strong>Only Southern Sense Jars:</strong> We can only accept jars
-          that were originally purchased from Southern Sense. We cannot verify
-          the safety and heat resistance of other containers.
-        </li>
-        <li>
-          <strong>Clean Jars Only:</strong> Jars must be returned completely
-          clean. This means all old wax, wick-tabs, and residue must be
-          removed. Jars with residue will be returned to you un-filled.
-        </li>
-        <li>
-          <strong>No Damaged Jars:</strong> We cannot refill any jars that have
-          chips, cracks, or deep scratches. This is a critical safety measure,
-          as damaged glass can break when heated.
-        </li>
-        <li>
-          <strong>Wick & Scent Choice:</strong> You can choose any scent from
-          our current collection for your refill, even if it's different from
-          the original!
-        </li>
-      </ol>
-
-      <h3 class="text-xl font-playfair font-semibold">
-        How to Clean Your Jar
-      </h3>
-      <p>
-        The easiest way to clean your jar is to place it in the freezer for a
-        few hours. The cold will cause the wax to shrink and pop out easily.
-        You can then use a spoon to (gently!) remove the metal wick tab at the
-        bottom.
-      </p>
-      <p>
-        After the wax is out, wash the jar thoroughly with hot, soapy water to
-        remove any remaining oil or residue. Dry it completely.
-      </p>
-
-      <h2 class="text-2xl font-playfair font-semibold">
-        Ready for a Refill?
-      </h2>
-      <p>
-        Please contact us directly to arrange a drop-off time for your clean
-        jars. We'll confirm your scent choices and give you a timeline for
-        pick-up.
-      </p>
-      <a
-        href="/contact.html"
-        class="inline-block bg-burnt-orange text-white font-roboto px-8 py-3 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg no-underline"
-      >
-        Arrange Your Refill
-      </a>
+<div class="container mx-auto p-4 lg:p-8">
+    
+    <div id="loading-spinner" class="text-center py-20">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-burnt-orange mx-auto"></div>
+        <p class="mt-4 text-lg font-roboto text-stone">Loading Refill Program Details...</p>
     </div>
-  </div>
-</main>
 
+    <div id="refill-content" class="hidden max-w-4xl mx-auto">
+        
+        <div class="text-center pt-10 pb-12">
+            <h1 id="refill-title" class="font-playfair text-5xl font-extrabold text-charcoal mb-4"></h1>
+            <p id="refill-subtitle" class="font-roboto text-xl text-stone max-w-3xl mx-auto"></p>
+        </div>
+
+        <div id="refill-intro" class="font-roboto text-lg text-charcoal leading-relaxed mb-10 p-6 bg-stone/5 rounded-lg border-l-4 border-burnt-orange shadow-md space-y-4">
+            </div>
+
+        <div class="mb-12">
+            <h2 id="refill-how-it-works-title" class="font-playfair text-3xl font-bold text-charcoal mb-6 border-b pb-2 border-stone/10">How It Works</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <div class="flex items-start space-x-4">
+                    <span class="text-3xl font-playfair font-bold text-burnt-orange flex-shrink-0">1.</span>
+                    <p id="refill-step-1-text" class="font-roboto text-lg text-charcoal"></p>
+                </div>
+
+                <div class="flex items-start space-x-4">
+                    <span class="text-3xl font-playfair font-bold text-burnt-orange flex-shrink-0">2.</span>
+                    <p id="refill-step-2-text" class="font-roboto text-lg text-charcoal"></p>
+                </div>
+
+                <div class="flex items-start space-x-4">
+                    <span class="text-3xl font-playfair font-bold text-burnt-orange flex-shrink-0">3.</span>
+                    <p id="refill-step-3-text" class="font-roboto text-lg text-charcoal"></p>
+                </div>
+
+                <div class="flex items-start space-x-4">
+                    <span class="text-3xl font-playfair font-bold text-burnt-orange flex-shrink-0">4.</span>
+                    <p id="refill-step-4-text" class="font-roboto text-lg text-charcoal"></p>
+                </div>
+
+                <div class="flex items-start space-x-4 md:col-span-2">
+                    <span class="text-3xl font-playfair font-bold text-burnt-orange flex-shrink-0">5.</span>
+                    <p id="refill-step-5-text" class="font-roboto text-lg text-charcoal"></p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="mb-12 pt-6 border-t border-stone/10">
+            <h2 id="refill-price-title" class="font-playfair text-3xl font-bold text-charcoal mb-6">Pricing</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                
+                <div class="p-6 bg-parchment rounded-lg border border-burnt-orange/30 shadow-md">
+                    <h3 class="font-playfair text-xl font-bold text-burnt-orange mb-2">Refill 1</h3>
+                    <p id="refill-price-1-text" class="font-roboto text-lg text-charcoal"></p>
+                </div>
+
+                <div class="p-6 bg-parchment rounded-lg border border-burnt-orange/30 shadow-md">
+                    <h3 class="font-playfair text-xl font-bold text-burnt-orange mb-2">Refill 2</h3>
+                    <p id="refill-price-2-text" class="font-roboto text-lg text-charcoal"></p>
+                </div>
+
+                <div class="p-6 bg-parchment rounded-lg border border-burnt-orange/30 shadow-md">
+                    <h3 class="font-playfair text-xl font-bold text-burnt-orange mb-2">Refill 3+</h3>
+                    <p id="refill-price-3-text" class="font-roboto text-lg text-charcoal"></p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="mb-12 pt-6 border-t border-stone/10">
+            <h2 id="refill-policies-title" class="font-playfair text-3xl font-bold text-charcoal mb-6">Policies</h2>
+            <div class="space-y-4">
+                <p id="refill-policy-1-text" class="font-roboto text-lg text-charcoal p-4 bg-stone/5 rounded-lg"></p>
+                <p id="refill-policy-2-text" class="font-roboto text-lg text-charcoal p-4 bg-stone/5 rounded-lg"></p>
+            </div>
+        </div>
+
+        <div class="text-center py-10">
+            <a href="/contact/" class="inline-block py-3 px-8 bg-burnt-orange text-parchment font-playfair text-xl font-bold rounded-lg shadow-xl hover:bg-opacity-90 transition duration-150">
+                Start Your Refill Today
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<script type="module">
+    // --- Firestore Imports ---
+    import { db } from '/firebase-loader.js';
+    import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    // --- DOM Elements ---
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const contentContainer = document.getElementById('refill-content');
+
+    /**
+     * Renders the fetched content onto the page.
+     * @param {Object} content - The data retrieved from the /siteContent/refillProgram document.
+     */
+    function renderContent(content) {
+        // --- Header ---
+        document.getElementById('refill-title').textContent = content.refillTitle || 'Our Commitment to Sustainability';
+        document.getElementById('refill-subtitle').textContent = content.refillSubtitle || 'Keep your favorite jars and save money with our simple, eco-friendly refill program.';
+
+        // --- Intro ---
+        document.getElementById('refill-intro').innerHTML = content.refillIntro || '<p>We are proud to offer a sustainable solution that allows you to reuse your beautiful Southern Sense candle jars, reducing waste and rewarding your loyalty. This program is our way of saying thank you for caring about the environment.</p>';
+
+        // --- How It Works ---
+        document.getElementById('refill-how-it-works-title').textContent = content.refillHowItWorksTitle || 'How It Works';
+        document.getElementById('refill-step-1-text').textContent = content.refillStep1Text || 'Clean out your empty Southern Sense jar, removing all wax residue and the metal wick clips.';
+        document.getElementById('refill-step-2-text').textContent = content.refillStep2Text || 'Visit a local drop-off partner or ship your empty jar(s) back to our facility.';
+        document.getElementById('refill-step-3-text').textContent = content.refillStep3Text || 'We inspect your jar to ensure it’s in perfect condition for a new pour.';
+        document.getElementById('refill-step-4-text').textContent = content.refillStep4Text || 'Your jar is refilled with the original scent, using our same high-quality ingredients.';
+        document.getElementById('refill-step-5-text').textContent = content.refillStep5Text || 'We ship your perfectly renewed candle back to you, ready to enjoy for weeks to come!';
+        
+        // --- Pricing ---
+        document.getElementById('refill-price-title').textContent = content.refillPriceTitle || 'Refill Pricing Structure';
+        document.getElementById('refill-price-1-text').textContent = content.refillPrice1Text || 'Get 1 refill at 20% off the original price.';
+        document.getElementById('refill-price-2-text').textContent = content.refillPrice2Text || 'Get 2 refills at 25% off the original price.';
+        document.getElementById('refill-price-3-text').textContent = content.refillPrice3Text || 'Get 3 or more refills at 30% off the original price.';
+        
+        // --- Policies ---
+        document.getElementById('refill-policies-title').textContent = content.refillPoliciesTitle || 'Important Policies';
+        document.getElementById('refill-policy-1-text').textContent = content.refillPolicy1Text || 'Jars must be thoroughly cleaned of wax and wick clips prior to drop-off/shipment. Jars returned dirty will incur a cleaning fee.';
+        document.getElementById('refill-policy-2-text').textContent = content.refillPolicy2Text || 'Refills can only be made with the original scent. We cannot cross-scent due to potential residue and quality control.';
+        
+
+        // Show content
+        loadingSpinner.classList.add('hidden');
+        contentContainer.classList.remove('hidden');
+    }
+
+    /**
+     * Fetches the 'refillProgram' document from the /siteContent collection.
+     */
+    async function loadRefillContent() {
+        try {
+            const refillRef = doc(db, 'siteContent', 'refillProgram');
+            const docSnap = await getDoc(refillRef);
+
+            if (docSnap.exists()) {
+                renderContent(docSnap.data());
+            } else {
+                console.warn("No 'refillProgram' content found in siteContent. Using fallbacks.");
+                renderContent({}); // Render with defaults/empty data
+            }
+
+        } catch (error) {
+            console.error("Error loading Refill Program content:", error);
+            // Fallback to error state
+            loadingSpinner.classList.add('hidden');
+            contentContainer.innerHTML = '<div class="text-center text-red-700 py-20 font-roboto">An error occurred while loading this page\'s content. Please refresh.</div>';
+            contentContainer.classList.remove('hidden');
+        }
+    }
+
+    // --- Main Initialization ---
+    
+    // FIX (Race Condition): Wait for firebase-loader.js to dispatch its signal
+    document.addEventListener('firebase-ready', () => {
+        loadRefillContent();
+    });
+
+</script>

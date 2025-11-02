@@ -1,129 +1,331 @@
 ---
 layout: layout.html
-title: Account
+title: My Account
 ---
 
-<section class="max-w-4xl mx-auto mt-10 px-4 text-gray-800">
-  <h1 class="text-3xl font-bold mb-6">Your Account</h1>
+<div class="container mx-auto p-4 lg:p-8 py-16">
+    <div class="max-w-4xl mx-auto">
 
-  <div id="profile-section" class="mb-10">
-    <p id="loading-profile">Loading profile...</p>
-    <div id="profile-content" class="hidden space-y-2">
-      <p><strong>Name:</strong> <span id="user-name"></span></p>
-      <p><strong>Email:</strong> <span id="user-email"></span></p>
-      <p><strong>Role:</strong> <span id="user-role"></span></p>
-      <button id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded mt-4">Sign Out</button>
-    </div>
-  </div>
+        <div id="loading-spinner" class="text-center py-20">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-burnt-orange mx-auto"></div>
+            <p class="mt-4 text-lg font-roboto text-stone">Loading Account Data...</p>
+        </div>
 
-  <hr class="my-8" />
+        <div id="not-logged-in" class="hidden text-center py-20 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <strong class="font-bold block">Access Denied</strong>
+            <span class="block sm:inline">You must be logged in to view your account dashboard.</span>
+            <div class="mt-4 flex justify-center space-x-4">
+                <a href="/login/" class="text-sm underline text-red-700 hover:text-red-900 font-bold">Log In</a>
+                <a href="/register/" class="text-sm underline text-red-700 hover:text-red-900">Register</a>
+            </div>
+        </div>
+        
+        <div id="account-dashboard" class="hidden">
+            
+            <h1 class="font-playfair text-4xl font-extrabold text-charcoal mb-2">Welcome, <span id="user-name-display"></span></h1>
+            <p class="font-roboto text-lg text-stone mb-6" id="user-email-display"></p>
+            
+            <nav class="flex space-x-2 border-b border-stone/20 mb-8">
+                <button class="tab-button py-2 px-4 font-roboto font-semibold text-charcoal border-b-2 border-transparent hover:border-burnt-orange transition-colors duration-150 active-tab" 
+                        data-target="profile-section" id="profile-tab">Profile</button>
+                <button class="tab-button py-2 px-4 font-roboto font-semibold text-charcoal border-b-2 border-transparent hover:border-burnt-orange transition-colors duration-150" 
+                        data-target="orders-section" id="orders-tab">Order History</button>
+            </nav>
 
-  <div id="orders-section">
-    <h2 class="text-2xl font-semibold mb-4">Your Orders</h2>
-    <p id="loading-orders">Loading your orders...</p>
-    <div id="orders-list" class="hidden space-y-4"></div>
-  </div>
-</section>
+            <div id="tab-content">
+                
+                <div id="profile-section" class="tab-content-item space-y-8">
+                    <h2 class="font-playfair text-3xl font-bold text-charcoal border-b pb-2">Your Details</h2>
+                    
+                    <div class="bg-parchment p-6 rounded-xl shadow-lg border border-stone/10 max-w-lg">
+                        <div class="space-y-4">
+                            <div>
+                                <p class="font-roboto text-sm uppercase tracking-wider text-stone">Full Name</p>
+                                <p class="font-playfair text-xl font-bold text-charcoal" id="profile-name"></p>
+                            </div>
+                            <div>
+                                <p class="font-roboto text-sm uppercase tracking-wider text-stone">Email Address</p>
+                                <p class="font-playfair text-xl font-bold text-charcoal" id="profile-email"></p>
+                            </div>
+                            <div>
+                                <p class="font-roboto text-sm uppercase tracking-wider text-stone">Account Role</p>
+                                <p class="font-playfair text-xl font-bold text-charcoal" id="profile-role">Customer</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="font-roboto text-sm text-stone/80 italic">To update your name or password, please contact support.</p>
+                    
+                    <button id="logout-button" class="mt-8 py-2 px-6 border border-red-500 text-red-500 font-roboto rounded-lg hover:bg-red-500 hover:text-parchment transition duration-150">
+                        Log Out
+                    </button>
+                </div>
+
+                <div id="orders-section" class="tab-content-item hidden space-y-6">
+                    <h2 class="font-playfair text-3xl font-bold text-charcoal border-b pb-2">Past Orders</h2>
+                    <div id="orders-list" class="space-y-4">
+                        <p id="no-orders-message" class="hidden font-roboto text-stone italic py-4">You have not placed any orders yet. Time to shop!</p>
+                        <p id="orders-loading" class="font-roboto text-stone">Loading your order history...</p>
+                    </div>
+                </div>
+
+            </div> </div> </div>
+</div>
 
 <script type="module">
-  import { getFirestore, doc, getDoc, collection, getDocs, query, where } from "/firebase-loader.js";
-  import { onAuthStateChanged, signOut } from "/firebase-loader.js";
+    // --- Firebase Imports ---
+    import { db, auth } from '/firebase-loader.js';
+    import { 
+        getAuth, 
+        onAuthStateChanged 
+    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    import { 
+        doc, 
+        getDoc, 
+        collection, 
+        query, 
+        where, 
+        getDocs, 
+        orderBy 
+    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+    import { signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    
+    // --- DOM Elements ---
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const notLoggedIn = document.getElementById('not-logged-in');
+    const dashboard = document.getElementById('account-dashboard');
+    const ordersList = document.getElementById('orders-list');
+    
+    let currentUserId = null;
 
-  const db = window.firebaseDB || getFirestore();
-  const auth = window.firebaseAuth;
+    // --- Utility Functions ---
 
-  const nameEl = document.getElementById("user-name");
-  const emailEl = document.getElementById("user-email");
-  const roleEl = document.getElementById("user-role");
-  const profileContent = document.getElementById("profile-content");
-  const loadingProfile = document.getElementById("loading-profile");
-  const loadingOrders = document.getElementById("loading-orders");
-  const ordersList = document.getElementById("orders-list");
-  const logoutBtn = document.getElementById("logout-btn");
-
-  async function loadProfile(user) {
-    try {
-      const userDocRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userDocRef);
-      if (userSnap.exists()) {
-        const data = userSnap.data();
-        // Handle either 'name' or 'firstName' + 'lastName'
-        const fullName = data.name || [data.firstName, data.lastName].filter(Boolean).join(" ") || "Valued Customer";
-        nameEl.textContent = fullName;
-        emailEl.textContent = data.email || user.email || "Unknown";
-        roleEl.textContent = data.isAdmin ? "Admin" : "Customer";
-      } else {
-        nameEl.textContent = "Valued Customer";
-        emailEl.textContent = user.email || "Unknown";
-        roleEl.textContent = "Customer";
-      }
-      loadingProfile.classList.add("hidden");
-      profileContent.classList.remove("hidden");
-    } catch (err) {
-      console.error("[Account] Failed to load profile:", err);
-      loadingProfile.textContent = "Error loading profile.";
+    /**
+     * Helper to render the appropriate color badge for order status.
+     * @param {string} status - The order status string.
+     * @returns {string} HTML for a styled badge.
+     */
+    function renderStatusBadge(status) {
+        let colorClass;
+        let iconClass;
+        switch (status) {
+            case 'Paid':
+                colorClass = 'bg-green-100 text-green-800';
+                iconClass = 'fa-check-circle';
+                break;
+            case 'Shipped':
+                colorClass = 'bg-blue-100 text-blue-800';
+                iconClass = 'fa-shipping-fast';
+                break;
+            case 'Pending':
+                colorClass = 'bg-yellow-100 text-yellow-800';
+                iconClass = 'fa-clock';
+                break;
+            case 'Cancelled':
+                colorClass = 'bg-red-100 text-red-800';
+                iconClass = 'fa-times-circle';
+                break;
+            default:
+                colorClass = 'bg-stone/10 text-stone';
+                iconClass = 'fa-question-circle';
+        }
+        return `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${colorClass}"><i class="fas ${iconClass} mr-1"></i>${status}</span>`;
     }
-  }
 
-  async function loadOrders(user) {
-    try {
-      const ordersRef = collection(db, "orders");
-      const q = query(ordersRef, where("userId", "==", user.uid));
-      const querySnap = await getDocs(q);
+    /**
+     * Initializes the tabbed navigation functionality.
+     */
+    function initializeTabs() {
+        const tabs = document.querySelectorAll('.tab-button');
+        const contents = document.querySelectorAll('.tab-content-item');
+        
+        // Initial setup for the default active tab
+        document.getElementById('profile-tab').classList.add('border-burnt-orange');
+        document.getElementById('profile-tab').classList.remove('border-transparent');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetId = tab.getAttribute('data-target');
+                
+                // Deactivate all tabs and hide all content
+                tabs.forEach(t => {
+                    t.classList.remove('border-burnt-orange');
+                    t.classList.add('border-transparent');
+                });
+                contents.forEach(c => c.classList.add('hidden'));
+                
+                // Activate the clicked tab and show its content
+                tab.classList.add('border-burnt-orange');
+                tab.classList.remove('border-transparent');
+                document.getElementById(targetId).classList.remove('hidden');
 
-      loadingOrders.classList.add("hidden");
-
-      if (querySnap.empty) {
-        const noOrdersMsg = document.createElement("p");
-        noOrdersMsg.textContent = "You have no orders yet.";
-        ordersList.appendChild(noOrdersMsg);
-        ordersList.classList.remove("hidden");
-        return;
-      }
-
-      querySnap.forEach((docSnap) => {
-        const order = docSnap.data();
-        const card = document.createElement("div");
-        card.className = "border p-4 rounded shadow-sm";
-        const date = order.date || (order.createdAt && order.createdAt.toDate ? order.createdAt.toDate().toLocaleDateString() : "Unknown date");
-        const total = order.total ? `$${order.total.toFixed(2)}` : "Unknown total";
-        card.innerHTML = `
-          <p><strong>Order ID:</strong> ${docSnap.id}</p>
-          <p><strong>Date:</strong> ${date}</p>
-          <p><strong>Total:</strong> ${total}</p>
-          <p><strong>Status:</strong> ${order.status || "Processing"}</p>
-        `;
-        ordersList.appendChild(card);
-      });
-
-      ordersList.classList.remove("hidden");
-    } catch (err) {
-      console.error("[Account] Failed to load orders:", err);
-      loadingOrders.textContent = "Error loading orders.";
+                // Special: If Order History tab is clicked, ensure data is loaded
+                if (targetId === 'orders-section') {
+                    loadOrderHistory(currentUserId);
+                }
+            });
+        });
     }
-  }
 
-  async function initAccount() {
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        loadingProfile.textContent = "Please log in to view your account.";
-        return;
-      }
-      console.log("[Account] Auth detected:", user.email);
-      await loadProfile(user);
-      await loadOrders(user);
-    });
-  }
+    // --- Profile Logic ---
+    
+    /**
+     * Loads user profile data (name, role) from the /users collection.
+     * @param {Object} user - The Firebase Auth user object.
+     */
+    async function loadUserProfile(user) {
+        const uid = user.uid;
+        const defaultName = user.displayName || 'Customer';
+        const defaultEmail = user.email || 'N/A';
+        
+        document.getElementById('user-name-display').textContent = defaultName;
+        document.getElementById('user-email-display').textContent = defaultEmail;
+        document.getElementById('profile-name').textContent = defaultName;
+        document.getElementById('profile-email').textContent = defaultEmail;
+        
+        try {
+            // 1. Check /users collection for custom profile data
+            const userRef = doc(db, 'users', uid);
+            const userSnap = await getDoc(userRef);
 
-  logoutBtn.addEventListener("click", async () => {
-    await signOut(auth);
-    window.location.href = "/";
-  });
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                // Override with Firestore name if available
+                const firestoreName = userData.name || defaultName; 
+                document.getElementById('user-name-display').textContent = firestoreName;
+                document.getElementById('profile-name').textContent = firestoreName;
 
-  // Initialize after Firebase is ready
-  if (window._southernsense_firebase_init) {
-    initAccount();
-  } else {
-    window.addEventListener("firebase-ready", initAccount);
-  }
+                // 2. Check /admins collection for role
+                const adminRef = doc(db, 'admins', uid);
+                const adminSnap = await getDoc(adminRef);
+
+                if (adminSnap.exists()) {
+                    document.getElementById('profile-role').textContent = 'Administrator';
+                    document.getElementById('profile-role').classList.add('text-burnt-orange', 'font-extrabold');
+                    // Add link to admin panel
+                    document.getElementById('profile-role').insertAdjacentHTML('afterend', 
+                        `<a href="/admin.html" class="block text-sm font-roboto underline text-burnt-orange hover:text-charcoal mt-1">Go to Admin Panel</a>`
+                    );
+                }
+            }
+        } catch (error) {
+            console.error("Error loading user profile:", error);
+            // Continue with default values if Firestore fails
+        }
+    }
+
+    /**
+     * Attaches the logout listener.
+     */
+    function initializeLogout() {
+        document.getElementById('logout-button').addEventListener('click', async () => {
+            try {
+                await signOut(getAuth());
+                // Will redirect via onAuthStateChanged observer
+            } catch (error) {
+                console.error("Logout error:", error);
+                alert("Error logging out. Please try again.");
+            }
+        });
+    }
+
+    // --- Order History Logic ---
+
+    /**
+     * Loads the authenticated user's order history from the /orders collection.
+     * @param {string} userId - The UID of the authenticated user.
+     */
+    async function loadOrderHistory(userId) {
+        document.getElementById('orders-loading').classList.remove('hidden');
+        ordersList.innerHTML = '';
+        document.getElementById('no-orders-message').classList.add('hidden');
+
+        try {
+            const ordersRef = collection(db, 'orders');
+            // Query for orders where the 'userId' matches the current user's UID
+            const q = query(
+                ordersRef,
+                where('userId', '==', userId),
+                orderBy('date', 'desc') // Show newest orders first
+            );
+            
+            const querySnapshot = await getDocs(q);
+            const orders = [];
+            
+            querySnapshot.forEach((doc) => {
+                const orderData = doc.data();
+                orderData.id = doc.id;
+                orders.push(orderData);
+            });
+
+            document.getElementById('orders-loading').classList.add('hidden');
+            
+            if (orders.length === 0) {
+                document.getElementById('no-orders-message').classList.remove('hidden');
+                return;
+            }
+
+            let ordersHtml = '';
+            orders.forEach(order => {
+                const date = order.date ? new Date(order.date.seconds * 1000).toLocaleDateString() : 'Unknown Date';
+                const total = order.total ? parseFloat(order.total).toFixed(2) : 'N/A';
+                const statusBadge = renderStatusBadge(order.status || 'Pending');
+
+                ordersHtml += `
+                    <div class="p-4 bg-white rounded-lg shadow-md border border-stone/10">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-2 mb-2">
+                            <p class="font-playfair text-xl font-bold text-charcoal">Order #${order.id.substring(0, 8).toUpperCase()}</p>
+                            ${statusBadge}
+                        </div>
+                        <div class="font-roboto text-sm text-stone space-y-1">
+                            <p>Date Placed: <span class="text-charcoal">${date}</span></p>
+                            <p>Order Total: <span class="font-bold text-burnt-orange">$${total}</span></p>
+                            <p>Items: ${order.items.length}</p>
+                        </div>
+                        <a href="/order-confirmation/?id=${order.id}" class="mt-3 inline-block text-burnt-orange hover:underline font-semibold text-sm">View Details &rarr;</a>
+                    </div>
+                `;
+            });
+            
+            ordersList.innerHTML = ordersHtml;
+
+        } catch (error) {
+            console.error("Error loading order history:", error);
+            document.getElementById('orders-loading').textContent = `Error loading history: ${error.message}`;
+        }
+    }
+
+
+    // --- Main Initialization ---
+
+    /**
+     * Initializes the page after Firebase is ready and authentication state is resolved.
+     */
+    function initializeAccountPage() {
+        onAuthStateChanged(getAuth(), (user) => {
+            loadingSpinner.classList.add('hidden');
+
+            if (user) {
+                currentUserId = user.uid;
+                dashboard.classList.remove('hidden');
+                notLoggedIn.classList.add('hidden');
+                
+                // 1. Initialize UI elements
+                initializeTabs();
+                initializeLogout();
+                
+                // 2. Load data
+                loadUserProfile(user);
+                // Orders are loaded when the Orders tab is clicked for the first time
+                
+            } else {
+                dashboard.classList.add('hidden');
+                notLoggedIn.classList.remove('hidden');
+                // Redirect to login page is a better UX, but keeping the message here for a soft fail.
+            }
+        });
+    }
+
+    // FIX (Race Condition): Wait for firebase-loader.js to dispatch its signal
+    document.addEventListener('firebase-ready', initializeAccountPage);
 </script>

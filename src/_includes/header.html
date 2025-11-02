@@ -1,76 +1,86 @@
-<!-- src/_includes/header.html -->
-<header class="site-header">
-  <div class="brand">
-    <h1>Southern Sense</h1>
-    <p class="muted">Candles, Refills &amp; Southern Comforts</p>
-  </div>
+<header class="bg-parchment shadow-md sticky top-0 z-50">
+    <div class="container mx-auto p-4 flex justify-between items-center">
+        <a href="/" class="flex items-center space-x-2">
+            <img src="/logo.webp" alt="Southern Sense Logo" class="h-10 w-auto">
+            <span class="hidden sm:inline font-playfair text-2xl font-bold text-charcoal">Southern Sense</span>
+        </a>
 
-  <nav class="main-nav" aria-label="Main Navigation">
-    <a href="/">Home</a>
-    <a href="/shop/">Shop</a>
-    <a href="/refill-program/">Refill Program</a>
-    <a href="/about/">About</a>
-    <a href="/account/">Account</a>
-    <a id="admin-link" href="/admin/" style="display:none;">Admin Panel</a>
-  </nav>
+        <nav class="hidden lg:flex space-x-6 items-center">
+            
+            <div class="relative group">
+                <a href="/shop/" class="nav-link flex items-center" id="shop-dropdown-toggle">
+                    Shop 
+                    <i class="fas fa-chevron-down text-xs ml-1 transition-transform duration-200"></i>
+                </a>
+                <div id="shop-dropdown-menu" class="absolute left-1/2 transform -translate-x-1/2 mt-0 w-64 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 pointer-events-none group-hover:pointer-events-auto border border-stone/10">
+                    <div class="p-4 space-y-3">
+                        <a href="/shop/" class="block font-playfair text-lg font-bold text-charcoal hover:text-burnt-orange transition-colors">All Products</a>
+                        <hr class="border-stone/20">
+                        <h4 class="font-roboto text-xs uppercase tracking-wider text-stone mb-2">Shop by Scent Family</h4>
+                        <div id="scent-family-links" class="space-y-1">
+                            <p class="text-sm font-roboto text-stone/80">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <a href="/scent-quiz/" class="nav-link">Scent Quiz</a>
+            <a href="/subscriptions/" class="nav-link">Subscriptions</a>
+            <a href="/gifting/" class="nav-link font-bold text-burnt-orange border-b-2 border-burnt-orange">Gifting</a>
+            <a href="/refill-program/" class="nav-link">Refill Program</a>
+            <a href="/about/" class="nav-link">Our Story</a>
+            <a href="/contact/" class="nav-link">Contact</a>
+        </nav>
+
+        <div class="flex items-center space-x-4">
+            <div id="auth-links" class="flex items-center space-x-4">
+                <a href="/login/" id="login-link" class="text-charcoal hover:text-burnt-orange transition-colors duration-150">
+                    <i class="fas fa-user-circle text-2xl"></i>
+                </a>
+                <a href="/account/" id="account-link" class="hidden text-charcoal hover:text-burnt-orange transition-colors duration-150">
+                    <i class="fas fa-user-circle text-2xl"></i>
+                </a>
+            </div>
+
+            <a href="/cart/" class="relative text-charcoal hover:text-burnt-orange transition-colors duration-150">
+                <i class="fas fa-shopping-cart text-2xl"></i>
+                <span id="cart-count" class="absolute -top-1 -right-2 bg-burnt-orange text-parchment text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    0
+                </span>
+            </a>
+
+            <button id="mobile-menu-button" class="lg:hidden text-charcoal hover:text-burnt-orange transition-colors duration-150">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-parchment shadow-xl border-t border-stone/10 p-4 space-y-3">
+        <a href="/shop/" class="mobile-nav-link font-bold text-burnt-orange">Shop All</a> 
+        <a href="/scent-quiz/" class="mobile-nav-link">Scent Quiz</a>
+        <a href="/subscriptions/" class="mobile-nav-link">Subscriptions</a>
+        <a href="/gifting/" class="mobile-nav-link font-bold text-burnt-orange">Gifting</a>
+        <a href="/refill-program/" class="mobile-nav-link">Refill Program</a>
+        <a href="/about/" class="mobile-nav-link">Our Story</a>
+        <a href="/contact/" class="mobile-nav-link">Contact</a>
+        <hr class="border-stone/20">
+        <a href="/account/" id="mobile-account-link" class="mobile-nav-link">My Account</a>
+        <a href="/login/" id="mobile-login-link" class="mobile-nav-link">Login</a>
+    </div>
 </header>
 
-<style>
-  header.site-header {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:12px 0 16px 0;
-    border-bottom:2px solid rgba(164,123,91,0.15);
-  }
-  .brand h1 {
-    font-family:"Cormorant Garamond",serif;
-    font-weight:700;
-    color:#6a4a38;
-    font-size:30px;
-    margin:0;
-    letter-spacing:0.6px;
-  }
-  .brand p {
-    font-size:13px;
-    color:#7a6b60;
-    margin:2px 0 0 0;
-  }
-  nav.main-nav a {
-    text-decoration:none;
-    color:#6a4a38;
-    font-weight:600;
-    padding:8px 12px;
-    border-radius:8px;
-    transition:background 0.2s;
-  }
-  nav.main-nav a:hover {
-    background:rgba(164,123,91,0.08);
-  }
-</style>
+<script>
+    // Styles for the navigation links
+    const navLinkStyle = "font-roboto text-charcoal hover:text-burnt-orange transition-colors duration-150";
+    document.querySelectorAll('.nav-link').forEach(link => link.className += ' ' + navLinkStyle);
+    
+    const mobileNavLinkStyle = "block font-roboto text-charcoal text-lg p-2 hover:bg-stone/10 rounded transition-colors duration-150";
+    document.querySelectorAll('.mobile-nav-link').forEach(link => link.className += ' ' + mobileNavLinkStyle);
 
-<script type="module">
-  import { getFirestore, doc, getDoc } from '/firebase-loader.js';
-  import { getAuth, onAuthStateChanged } from '/firebase-loader.js';
-
-  const auth = window.firebaseAuth || getAuth();
-  const db = window.firebaseDB || getFirestore();
-  const adminLink = document.getElementById('admin-link');
-
-  async function showAdminLink(user) {
-    try {
-      if (!user) return;
-      const uid = user.uid;
-      const adminRef = doc(db, 'admins', uid);
-      const adminSnap = await getDoc(adminRef);
-      if (adminSnap.exists()) adminLink.style.display = 'inline-block';
-    } catch (err) {
-      console.warn('[Header] Admin check failed', err);
-    }
-  }
-
-  onAuthStateChanged(auth, (user) => showAdminLink(user));
-  window.addEventListener('firebase-ready', () => {
-    if (auth.currentUser) showAdminLink(auth.currentUser);
-  });
+    // Mobile Menu Toggle Logic
+    const menuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    menuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
 </script>

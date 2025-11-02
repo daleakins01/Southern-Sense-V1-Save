@@ -1,65 +1,103 @@
 ---
 layout: layout.html
-title: "About Us"
-description: "Learn about the story of Southern Sense, our founder Paula Bryan, and our commitment to hand-poured, clean-burning candles."
+title: About Us
 ---
 
-<!-- 
-  About Page Content
--->
-<div class="relative py-16 bg-white overflow-hidden">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="lg:grid lg:grid-cols-2 lg:gap-16">
-      
-      <!-- 1. Founder Image -->
-      <div class="relative h-96 rounded-lg shadow-lg overflow-hidden lg:h-auto">
-        <!-- 
-          FIX (1:43 PM): Removed '/src' prefix. Path is now relative to the site root.
-        -->
-        <img 
-          class="w-full h-full object-cover object-center" 
-          src="/paula-bryan-portrait.webp" 
-          alt="Paula Bryan, founder of Southern Sense"
-          onerror="this.onerror=null; this.src='https://placehold.co/600x720/A8A29E/3D352E?text=Paula+Bryan&font=playfairdisplay';"
-        >
-      </div>
+<div class="container mx-auto p-4 lg:p-8">
+    
+    <div id="loading-spinner" class="text-center py-20">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-burnt-orange mx-auto"></div>
+        <p class="mt-4 text-lg font-roboto text-stone">Loading Our Story...</p>
+    </div>
 
-      <!-- 2. Text Content -->
-      <div class="relative mt-12 lg:mt-0 lg:py-16">
-        <div class="text-base text-stone-600 space-y-6">
-          <h1 class="text-4xl font-playfair font-bold text-charcoal sm:text-5xl">
-            From Our Home to Yours
-          </h1>
-          <p class="text-xl">
-            Hi, I'm Paula Bryan, the founder of Southern Sense. My journey into candlemaking 
-            started right here in my North Carolina kitchen, born from a desire to fill my 
-            home with warm, inviting scents that felt both luxurious and safe for my family.
-          </p>
-          <p>
-            What began as a personal passion quickly grew. I was frustrated with mass-produced 
-            candles that burned unevenly, lost their scent, and were made with harsh chemicals. 
-            I knew there had to be a better way—a way to combine the art of traditional 
-            candlemaking with modern, clean ingredients.
-          </p>
-          <p>
-            Southern Sense is the result of that dream. Every candle we offer is hand-poured 
-            in small batches. We use a premium blend of natural soy wax, clean-burning cotton wicks, 
-            and phthalate-free fragrance oils infused with essential oils. 
-          </p>
-          <p class="font-semibold text-charcoal">
-            Our mission is simple: to create high-quality, clean-burning candles that 
-            bring a sense of comfort, elegance, and southern hospitality into your home.
-          </p>
-          <p>
-            Thank you for supporting our small business and letting us share our passion with you.
-          </p>
-          <p class="font-accent text-4xl text-burnt-orange mt-4">
-            Paula Bryan
-          </p>
+    <div id="about-content" class="hidden max-w-5xl mx-auto">
+        
+        <div class="text-center pt-10 pb-12">
+            <h1 id="about-title" class="font-playfair text-5xl font-extrabold text-charcoal mb-4"></h1>
+            <h2 id="about-subtitle" class="font-roboto text-xl text-stone max-w-3xl mx-auto"></h2>
         </div>
-      </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
+            
+            <div id="about-paragraph-1" class="lg:col-span-2 font-roboto text-lg text-charcoal leading-relaxed space-y-4">
+                </div>
+
+            <div class="lg:col-span-1">
+                <img id="about-image" src="" alt="Portrait of Southern Sense Founder" class="w-full h-auto object-cover rounded-lg shadow-xl border-4 border-parchment">
+                <p class="mt-3 text-center text-sm font-roboto text-stone italic">Paula Bryan, Founder</p>
+            </div>
+            
+            <div id="about-paragraph-2" class="lg:col-span-3 font-roboto text-lg text-charcoal leading-relaxed pt-6 border-t border-stone/10 space-y-4">
+                </div>
+
+        </div>
 
     </div>
-  </div>
 </div>
 
+<script type="module">
+    // --- Firestore Imports ---
+    import { db } from '/firebase-loader.js';
+    import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    // --- DOM Elements ---
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const contentContainer = document.getElementById('about-content');
+
+    /**
+     * Renders the fetched content onto the page.
+     * @param {Object} content - The data retrieved from the /siteContent/about document.
+     */
+    function renderContent(content) {
+        // Text Content
+        document.getElementById('about-title').textContent = content.aboutTitle || 'Our Story';
+        document.getElementById('about-subtitle').textContent = content.aboutSubtitle || 'A commitment to quality and southern tradition.';
+        
+        // Image
+        const imageElement = document.getElementById('about-image');
+        imageElement.src = `/${content.aboutImage || 'paula-bryan-portrait.webp'}`; // Use a fallback image
+        
+        // Paragraphs (allowing for HTML content, e.g., <p> tags from the Admin Panel)
+        const p1 = document.getElementById('about-paragraph-1');
+        const p2 = document.getElementById('about-paragraph-2');
+        
+        p1.innerHTML = content.aboutParagraph1 || '<p>Content coming soon. Please check back later!</p>';
+        p2.innerHTML = content.aboutParagraph2 || '';
+
+        // Show content
+        loadingSpinner.classList.add('hidden');
+        contentContainer.classList.remove('hidden');
+    }
+
+    /**
+     * Fetches the 'about' document from the /siteContent collection.
+     */
+    async function loadAboutContent() {
+        try {
+            const aboutRef = doc(db, 'siteContent', 'about');
+            const docSnap = await getDoc(aboutRef);
+
+            if (docSnap.exists()) {
+                renderContent(docSnap.data());
+            } else {
+                console.warn("No 'about' content found in siteContent. Using fallbacks.");
+                renderContent({}); // Render with defaults/empty data
+            }
+
+        } catch (error) {
+            console.error("Error loading About Us content:", error);
+            // Fallback to error state if possible
+            loadingSpinner.classList.add('hidden');
+            contentContainer.innerHTML = '<div class="text-center text-red-700 py-20 font-roboto">An error occurred while loading this page\'s content. Please refresh.</div>';
+            contentContainer.classList.remove('hidden');
+        }
+    }
+
+    // --- Main Initialization ---
+    
+    // FIX (Race Condition): Wait for firebase-loader.js to dispatch its signal
+    document.addEventListener('firebase-ready', () => {
+        loadAboutContent();
+    });
+
+</script>

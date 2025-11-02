@@ -70,26 +70,20 @@
 </header>
 
 <script>
-    // Styles for the navigation links
-    const navLinkStyle = "font-roboto text-charcoal hover:text-burnt-orange transition-colors duration-150";
-    document.querySelectorAll('.nav-link').forEach(link => link.className += ' ' + navLinkStyle);
-    
-    const mobileNavLinkStyle = "block font-roboto text-charcoal text-lg p-2 hover:bg-stone/10 rounded transition-colors duration-150";
-    document.querySelectorAll('.mobile-nav-link').forEach(link => link.className += ' ' + mobileNavLinkStyle);
+    (function() {
+        const navLinkStyle = "font-roboto text-charcoal hover:text-burnt-orange transition-colors duration-150";
+        document.querySelectorAll('.nav-link').forEach(link => link.className += ' ' + navLinkStyle);
+        
+        const mobileNavLinkStyle = "block font-roboto text-charcoal text-lg p-2 hover:bg-stone/10 rounded transition-colors duration-150";
+        document.querySelectorAll('.mobile-nav-link').forEach(link => link.className += ' ' + mobileNavLinkStyle);
 
-    // Mobile Menu Toggle Logic
-    const menuButton = document.getElementById('mobile-menu-button');
-    const mobileMenu = document.getElementById('mobile-menu');
-    menuButton.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
-    });
-
-    // Cleanup for links that might have inherited bolding
-    document.querySelectorAll('a').forEach(link => {
-         if (link.href.includes('/subscriptions/') || link.href.includes('/scent-quiz/')) {
-            link.classList.remove('font-bold', 'text-burnt-orange', 'border-b-2', 'border-burnt-orange');
-         }
-    });
-
-    // NOTE: Real-time cart count and auth links are handled by main.js
+        const menuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        if (menuButton && mobileMenu) {
+            menuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+    })();
 </script>

@@ -56,7 +56,7 @@
     </div>
 
     <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-parchment shadow-xl border-t border-stone/10 p-4 space-y-3">
-        <a href="/shop/" class="mobile-nav-link font-bold text-burnt-orange">Shop All</a> 
+        <a href="/shop/" class="mobile-nav-link">Shop</a>
         <a href="/scent-quiz/" class="mobile-nav-link">Scent Quiz</a>
         <a href="/subscriptions/" class="mobile-nav-link">Subscriptions</a>
         <a href="/gifting/" class="mobile-nav-link font-bold text-burnt-orange">Gifting</a>
@@ -83,4 +83,13 @@
     menuButton.addEventListener('click', () => {
         mobileMenu.classList.toggle('hidden');
     });
+
+    // Cleanup for links that might have inherited bolding
+    document.querySelectorAll('a').forEach(link => {
+         if (link.href.includes('/subscriptions/') || link.href.includes('/scent-quiz/')) {
+            link.classList.remove('font-bold', 'text-burnt-orange', 'border-b-2', 'border-burnt-orange');
+         }
+    });
+
+    // NOTE: Real-time cart count and auth links are handled by main.js
 </script>

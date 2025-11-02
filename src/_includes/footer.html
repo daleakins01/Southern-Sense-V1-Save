@@ -59,7 +59,17 @@
 </footer>
 
 <style>
+    /*
+      CRITICAL FIX: These styles ensure footer links have contrast (stone) against
+      the charcoal background and a visual hover effect (parchment).
+    */
     .footer-link {
-        @apply block font-roboto text-sm text-stone hover:text-parchment transition-colors duration-150;
+        display: block;
+        color: var(--color-stone, #78716C); /* Fallback to stone */
+        font-size: 0.875rem;
+        transition: color 0.2s;
+    }
+    .footer-link:hover {
+        color: var(--color-parchment, #FBF9F6); /* Parchment color on hover */
     }
 </style>

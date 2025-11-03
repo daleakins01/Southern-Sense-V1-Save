@@ -789,6 +789,10 @@ video {
   display: inline-block;
 }
 
+.inline {
+  display: inline;
+}
+
 .flex {
   display: flex;
 }
@@ -945,6 +949,10 @@ video {
   max-width: 64rem;
 }
 
+.max-w-6xl {
+  max-width: 72rem;
+}
+
 .max-w-lg {
   max-width: 32rem;
 }
@@ -1057,10 +1065,6 @@ video {
 
 .gap-12 {
   gap: 3rem;
-}
-
-.gap-2 {
-  gap: 0.5rem;
 }
 
 .gap-4 {

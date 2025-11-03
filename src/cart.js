@@ -8,10 +8,10 @@
 import { db, collection, doc, setDoc } from '/src/firebase-loader.js';
 
 // --- State Management ---
-const CART_STORAGE_KEY = 'southernSenseCart'; // MOVED TO BE DEFINED BEFORE USE
-let cart = loadCartFromStorage(); // Now called after its dependency is defined
+const CART_STORAGE_KEY = 'southernSenseCart'; 
+let cart = loadCartFromStorage(); 
 
-// --- DOM Elements (Placeholders, updated when cart drawer is rendered) ---
+// --- DOM Elements (Placeholders) ---
 let cartItemsContainer;
 let cartTotalElement;
 let checkoutButton;
@@ -22,7 +22,6 @@ let checkoutButton;
  */
 function loadCartFromStorage() {
     try {
-        // Now CART_STORAGE_KEY is guaranteed to be initialized
         const serializedCart = localStorage.getItem(CART_STORAGE_KEY); 
         return serializedCart ? JSON.parse(serializedCart) : [];
     } catch (e) {
@@ -61,7 +60,6 @@ export function addToCart(id, name, price, imageUrl, quantity = 1) {
 
     saveCartToStorage();
     renderCartDrawer();
-    // OPTIONAL: Show a quick notification or badge update
 }
 
 /**
@@ -107,18 +105,19 @@ function calculateCartTotal() {
  * Renders the full cart contents into the cart drawer DOM element.
  */
 export function renderCartDrawer() {
-    // Re-initialize DOM elements on render to ensure we catch them
+    // FIX: Look up elements safely inside the function, not relying on global lookup
     cartItemsContainer = document.getElementById('cart-items-container');
     cartTotalElement = document.getElementById('cart-total');
     checkoutButton = document.getElementById('checkout-button');
     const cartCountBadge = document.getElementById('cart-count-badge');
     const cartStatusMessage = document.getElementById('cart-status-message');
 
+    // CRITICAL FIX: Ensure all required elements exist before trying to access their properties
     if (!cartItemsContainer || !cartTotalElement) {
-        // This warning is fine, as renderCartDrawer is called immediately on DCL
-        // on all pages, but only fully renders if the elements exist (in cart.html).
-        console.warn("Cart drawer elements not found in DOM.");
-        return;
+        // This is a normal warning on pages where the full drawer isn't visible
+        // The script exits here to prevent the TypeError crash.
+        // console.warn("Cart drawer elements not found in DOM."); 
+        return; 
     }
     
     // Update cart badge count
@@ -146,7 +145,7 @@ export function renderCartDrawer() {
             
             const itemTotalPrice = (item.price * item.quantity).toFixed(2);
             
-            // FIX: Ensure the image path is prefixed with /src/ for the final path
+            // Ensure the image path is prefixed with /src/ for the final path
             const itemImageUrl = item.imageUrl.startsWith('/src/') ? item.imageUrl : `/src/${item.imageUrl}`;
 
             itemElement.innerHTML = `
@@ -172,7 +171,7 @@ export function renderCartDrawer() {
         setupItemListeners();
     }
 
-    // Update total
+    // FIX: This line is safe now because of the null check above
     cartTotalElement.textContent = calculateCartTotal().toFixed(2);
 }
 
@@ -230,3 +229,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial render of the cart drawer content
     renderCartDrawer();
 });
+
+// The addToCart and renderCartDrawer functions are exported inline.

@@ -1,113 +1,150 @@
 ---
-layout: layout.html
-title: Create Account - Southern Sense
-description: Sign up for a new Southern Sense account.
+layout: layout
+title: Create Account
 ---
 
-<div class="container mx-auto px-4 py-12 max-w-lg">
-    <div class="bg-white p-8 md:p-12 rounded-lg shadow-lg border border-stone/20">
-        
-        <h1 class="text-4xl font-playfair font-bold text-charcoal mb-6 text-center">Create Account</h1>
-        
-        <!-- Error Message Placeholder -->
-        <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-6" role="alert">
-            <p id="error-text">Error placeholder</p>
-        </div>
+<script type="module">
+    import { registerUser } from '/src/auth.js';
+    import { onAuthStateChanged } from '/firebase-loader.js';
+    
+    // --- DOM Elements ---
+    const registrationForm = document.getElementById('registration-form');
+    const registerMessage = document.getElementById('register-message');
+    const submitButton = document.getElementById('submit-button');
+    
+    // --- Handlers ---
 
-        <!-- Registration Form -->
-        <form id="register-form" class="space-y-6">
+    /**
+     * Handles the form submission for user registration.
+     */
+    async function handleRegistration(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(registrationForm);
+        const firstName = formData.get('firstName').trim();
+        const lastName = formData.get('lastName').trim();
+        const email = formData.get('email').trim();
+        const password = formData.get('password');
+        const confirmPassword = formData.get('confirmPassword');
+
+        // Reset message
+        registerMessage.classList.add('hidden');
+        registerMessage.classList.remove('text-red-600', 'text-green-600');
+
+        if (!firstName || !lastName || !email || !password || !confirmPassword) {
+            registerMessage.textContent = 'Please fill out all fields.';
+            registerMessage.classList.remove('hidden');
+            registerMessage.classList.add('text-red-600');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            registerMessage.textContent = 'Passwords do not match.';
+            registerMessage.classList.remove('hidden');
+            registerMessage.classList.add('text-red-600');
+            return;
+        }
+
+        if (password.length < 6) {
+            registerMessage.textContent = 'Password must be at least 6 characters long.';
+            registerMessage.classList.remove('hidden');
+            registerMessage.classList.add('text-red-600');
+            return;
+        }
+
+        submitButton.disabled = true;
+        submitButton.textContent = 'Creating Account...';
+
+        try {
+            // Use the updated registerUser function
+            await registerUser(email, password, firstName, lastName);
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- First Name -->
+            // Redirect to the account page on successful registration
+            window.location.href = '/account/';
+
+        } catch (error) {
+            console.error("Registration Error:", error);
+            
+            let message = 'Registration failed. Please check your network or try again.';
+            if (error.code === 'auth/email-already-in-use') {
+                message = 'This email address is already registered.';
+            } else if (error.code === 'auth/weak-password') {
+                message = 'Password is too weak. Choose a stronger one.';
+            }
+            
+            registerMessage.textContent = message;
+            registerMessage.classList.remove('hidden');
+            registerMessage.classList.add('text-red-600');
+
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Create Account';
+        }
+    }
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        registrationForm.addEventListener('submit', handleRegistration);
+        
+        // Redirect if user is already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // If user is already logged in, redirect them away from register page
+                window.location.href = '/account/'; 
+            }
+        });
+    });
+
+</script>
+
+<main class="container mx-auto px-4 py-16 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-lg bg-white p-8 rounded-lg shadow-xl">
+        <h1 class="text-4xl font-playfair text-charcoal mb-8 text-center">Create Your Account</h1>
+
+        <form id="registration-form" class="space-y-6">
+            
+            <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label for="firstName" class="block text-sm font-medium text-charcoal mb-2">First Name</label>
-                    <input 
-                        type="text" 
-                        id="firstName" 
-                        name="firstName" 
-                        required 
-                        class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent transition-all"
-                        placeholder="First"
-                    >
+                    <label for="firstName" class="block text-sm font-medium text-stone mb-1">First Name</label>
+                    <input type="text" id="firstName" name="firstName" required 
+                           class="w-full p-3 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
                 </div>
-                
-                <!-- Last Name -->
                 <div>
-                    <label for="lastName" class="block text-sm font-medium text-charcoal mb-2">Last Name</label>
-                    <input 
-                        type="text" 
-                        id="lastName" 
-                        name="lastName" 
-                        required 
-                        class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent transition-all"
-                        placeholder="Last"
-                    >
+                    <label for="lastName" class="block text-sm font-medium text-stone mb-1">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" required 
+                           class="w-full p-3 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
                 </div>
             </div>
 
-            <!-- Email Input -->
             <div>
-                <label for="email" class="block text-sm font-medium text-charcoal mb-2">Email Address</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    required 
-                    class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent transition-all"
-                    placeholder="you@example.com"
-                >
+                <label for="email" class="block text-sm font-medium text-stone mb-1">Email Address</label>
+                <input type="email" id="email" name="email" required 
+                       class="w-full p-3 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
             </div>
-            
-            <!-- Password Input -->
+
             <div>
-                <label for="password" class="block text-sm font-medium text-charcoal mb-2">Password</labe>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    required 
-                    minlength="6"
-                    class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange focus:border-transparent transition-all"
-                    placeholder="Minimum 6 characters"
-                >
+                <label for="password" class="block text-sm font-medium text-stone mb-1">Password (min 6 characters)</label>
+                <input type="password" id="password" name="password" required 
+                       class="w-full p-3 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
             </div>
-            
-            <!-- Submit Button -->
+
             <div>
-                <button 
-                    type="submit" 
-                    id="register-button"
-                    class="w-full bg-burnt-orange text-white font-bold py-3 px-6 rounded-full shadow-md hover:bg-burnt-orange/90 transition-all duration-300 transform hover:scale-105"
-                >
-                    <!-- Spinner and Text -->
-                    <span id="button-text">Create My Account</span>
-                    <span id="button-spinner" class.remove="hidden" class="hidden">
-                        <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    </span>
-                </button>
+                <label for="confirmPassword" class="block text-sm font-medium text-stone mb-1">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required 
+                       class="w-full p-3 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
             </div>
+
+            <p id="register-message" class="text-sm font-semibold hidden"></p>
+
+            <button type="submit" id="submit-button"
+                    class="w-full px-4 py-3 bg-burnt-orange text-parchment font-bold text-lg rounded-lg shadow-lg hover:bg-burnt-orange/80 transition duration-300">
+                Create Account
+            </button>
         </form>
-        
-        <hr class="my-8 border-stone/20">
-        
-        <!-- Link to Login -->
-        <div class="text-center">
-            <p class="text-stone">
-                Already have an account?
-                <a href="/login/" class="font-semibold text-burnt-orange hover:underline">Log in here</a>
-            </p>
-        </div>
-        
+
+        <p class="mt-6 text-center text-sm text-stone">
+            Already have an account? 
+            <a href="/login/" class="font-semibold text-burnt-orange hover:text-charcoal transition">Log In Here</a>
+        </p>
     </div>
-</div>
-
-<!-- 
-  This script handles the registration form submission.
-  It is a "module" because it imports functions from other files.
-  FIX 8.2: The path is now corrected to "/auth.js" (no "/src/").
--->
-<script type="module" src="/auth.js"></script>
-
+</main>

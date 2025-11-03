@@ -1,254 +1,238 @@
 ---
-layout: layout.html
-title: Order Confirmation
+layout: layout
+title: Order Confirmed
 ---
 
-<div class="container mx-auto p-4 lg:p-8 py-16">
-    <div class="max-w-4xl mx-auto">
-
-        <div id="loading-spinner" class="text-center py-20">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-burnt-orange mx-auto"></div>
-            <p class="mt-4 text-lg font-roboto text-stone">Processing Order Confirmation...</p>
-        </div>
-
-        <div id="error-message" class="hidden text-center py-20 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <strong class="font-bold block">Order Not Found</strong>
-            <span class="block sm:inline" id="error-text">We could not retrieve the details for this order. Please ensure the link is correct or check your email confirmation.</span>
-            <a href="/account/" class="block mt-4 text-sm underline text-red-700 hover:text-red-900">View My Orders</a>
-        </div>
-
-        <div id="order-receipt" class="hidden bg-parchment p-6 md:p-10 rounded-xl shadow-2xl border border-stone/10">
-
-            <div class="text-center border-b pb-6 mb-6 border-stone/20">
-                <i class="fas fa-check-circle text-6xl text-burnt-orange mb-3"></i>
-                <h1 class="font-playfair text-4xl font-extrabold text-charcoal mb-2">Thank You for Your Order!</h1>
-                <p class="font-roboto text-lg text-stone">Your order is confirmed and is being processed. You will receive an email update soon.</p>
-                <p id="order-id-display" class="font-roboto text-sm text-stone mt-2 font-bold"></p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center mb-8">
-                <div class="p-3 bg-stone/5 rounded-lg">
-                    <p class="font-roboto text-sm uppercase tracking-wider text-stone">Order Date</p>
-                    <p id="order-date" class="font-playfair text-xl font-bold text-charcoal"></p>
-                </div>
-                <div class="p-3 bg-stone/5 rounded-lg">
-                    <p class="font-roboto text-sm uppercase tracking-wider text-stone">Order Status</p>
-                    <div id="order-status" class="font-playfair text-xl font-bold text-charcoal"></div>
-                </div>
-                <div class="p-3 bg-stone/5 rounded-lg">
-                    <p class="font-roboto text-sm uppercase tracking-wider text-stone">Payment Total</p>
-                    <p id="order-total" class="font-playfair text-xl font-bold text-burnt-orange"></p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 pt-4 border-t border-stone/20">
-                
-                <div class="space-y-2">
-                    <h2 class="font-playfair text-2xl font-bold text-charcoal">Shipping Address</h2>
-                    <p id="shipping-name" class="font-roboto font-semibold text-charcoal"></p>
-                    <p id="shipping-line1" class="font-roboto text-stone text-sm"></p>
-                    <p id="shipping-line2" class="font-roboto text-stone text-sm"></p>
-                    <p id="shipping-city-state-zip" class="font-roboto text-stone text-sm"></p>
-                </div>
-
-                <div class="space-y-2">
-                    <h2 class="font-playfair text-2xl font-bold text-charcoal">Contact Details</h2>
-                    <p class="font-roboto font-semibold text-charcoal">Email</p>
-                    <p id="contact-email" class="font-roboto text-stone text-sm"></p>
-                    <p class="font-roboto font-semibold text-charcoal pt-2">Phone</p>
-                    <p id="contact-phone" class="font-roboto text-stone text-sm"></p>
-                </div>
-            </div>
-
-            <div class="pt-4 border-t border-stone/20">
-                <h2 class="font-playfair text-2xl font-bold text-charcoal mb-4">Items Ordered</h2>
-                <div id="items-list" class="space-y-4">
-                    </div>
-            </div>
-            
-            <div class="mt-8 pt-4 border-t border-stone/20 max-w-sm ml-auto">
-                <div class="font-roboto text-charcoal space-y-2">
-                    <div class="flex justify-between">
-                        <span>Subtotal:</span>
-                        <span id="subtotal-amount"></span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Shipping:</span>
-                        <span id="shipping-amount"></span>
-                    </div>
-                    <div class="flex justify-between font-bold text-xl pt-2 border-t border-stone/20">
-                        <span>Grand Total:</span>
-                        <span id="grand-total-amount" class="text-burnt-orange"></span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="text-center mt-10 pt-6 border-t border-stone/20">
-                <p class="font-roboto text-lg text-stone mb-4">Have questions about your order? </p>
-                <a href="/contact/" class="inline-block py-3 px-8 bg-charcoal text-parchment font-playfair text-lg font-bold rounded-lg shadow-md hover:bg-stone transition duration-150">
-                    Contact Customer Service
-                </a>
-            </div>
-
-        </div>
-    </div>
-</div>
-
 <script type="module">
-    // --- Firebase Imports ---
-    import { db } from '/firebase-loader.js';
     import { 
+        db, 
         doc, 
-        getDoc,
-    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+        getDoc, 
+        auth, 
+        onAuthStateChanged 
+    } from '/firebase-loader.js';
 
     // --- DOM Elements ---
-    const loadingSpinner = document.getElementById('loading-spinner');
-    const errorMessage = document.getElementById('error-message');
-    const orderReceipt = document.getElementById('order-receipt');
-    const itemsList = document.getElementById('items-list');
+    const confirmationLoader = document.getElementById('confirmation-loader');
+    const confirmationContent = document.getElementById('confirmation-content');
+    const orderIdDisplay = document.getElementById('order-id-display');
+    const orderDateDisplay = document.getElementById('order-date-display');
+    const orderTotalDisplay = document.getElementById('order-total-display');
+    const shippingNameDisplay = document.getElementById('shipping-name-display');
+    const shippingAddressDisplay = document.getElementById('shipping-address-display');
+    const itemizedListContainer = document.getElementById('itemized-list-container');
+    const subtotalDisplay = document.getElementById('subtotal-display');
+    const shippingDisplay = document.getElementById('shipping-display');
+    const authMessageContainer = document.getElementById('auth-message-container');
+    const errorSection = document.getElementById('error-section');
+    const errorMessageEl = document.getElementById('error-message');
+
 
     // --- Utility Functions ---
-
+    
     /**
-     * Extracts the order ID from the URL's query string.
-     * @returns {string | null} The order ID or null if not found.
+     * Formats a Firebase Timestamp object into a readable date string.
      */
-    function getOrderIdFromUrl() {
-        const params = new URLSearchParams(window.location.search);
-        return params.get('id');
-    }
-
-    /**
-     * Helper to render the appropriate color badge for order status.
-     * @param {string} status - The order status string.
-     * @returns {string} HTML for a styled badge.
-     */
-    function renderStatusBadge(status) {
-        let colorClass;
-        let iconClass;
-        switch (status) {
-            case 'Paid':
-                colorClass = 'bg-green-100 text-green-800';
-                iconClass = 'fa-check-circle';
-                break;
-            case 'Shipped':
-                colorClass = 'bg-blue-100 text-blue-800';
-                iconClass = 'fa-shipping-fast';
-                break;
-            case 'Pending':
-                colorClass = 'bg-yellow-100 text-yellow-800';
-                iconClass = 'fa-clock';
-                break;
-            case 'Cancelled':
-                colorClass = 'bg-red-100 text-red-800';
-                iconClass = 'fa-times-circle';
-                break;
-            default:
-                colorClass = 'bg-stone/10 text-stone';
-                iconClass = 'fa-question-circle';
-        }
-        return `<p class="inline-flex items-center text-xl ${colorClass} p-1 rounded-md"><i class="fas ${iconClass} mr-2"></i>${status}</p>`;
-    }
-
-
-    /**
-     * Renders the complete order details onto the page.
-     * @param {Object} orderData - The data retrieved from the /orders document.
-     */
-    function renderOrder(orderData) {
-        const orderId = getOrderIdFromUrl();
-        const address = orderData.shippingAddress || {};
-        const contact = orderData.contactDetails || {};
-        const items = orderData.items || [];
-        
-        // Ensure totals are treated as numbers and formatted
-        const subtotal = parseFloat(orderData.subtotal || 0).toFixed(2);
-        const shipping = parseFloat(orderData.shipping || 0).toFixed(2);
-        const total = parseFloat(orderData.total || 0).toFixed(2);
-
-        // --- Header & Summary ---
-        document.getElementById('order-id-display').textContent = `Order # ${orderId}`;
-        document.getElementById('order-date').textContent = orderData.date ? new Date(orderData.date.seconds * 1000).toLocaleDateString() : 'N/A';
-        document.getElementById('order-status').innerHTML = renderStatusBadge(orderData.status || 'Pending');
-        document.getElementById('order-total').textContent = `$${total}`;
-
-        // --- Shipping Details ---
-        document.getElementById('shipping-name').textContent = address.recipient || 'N/A';
-        document.getElementById('shipping-line1').textContent = address.line1 || 'N/A';
-        document.getElementById('shipping-line2').textContent = address.line2 || ''; // Optional field
-        document.getElementById('shipping-city-state-zip').textContent = `${address.city || 'N/A'}, ${address.state || 'N/A'} ${address.zip || 'N/A'}`;
-        
-        // --- Contact Details ---
-        document.getElementById('contact-email').textContent = contact.email || orderData.email || 'N/A';
-        document.getElementById('contact-phone').textContent = contact.phone || 'N/A';
-        
-        // --- Items List ---
-        let itemsHtml = '';
-        items.forEach(item => {
-            const price = parseFloat(item.price || 0).toFixed(2);
-            const lineTotal = (item.price * item.quantity).toFixed(2);
-            itemsHtml += `
-                <div class="flex justify-between items-center py-2 border-b border-stone/10">
-                    <div class="flex items-center space-x-3">
-                        <img src="/${item.imageUrl}" alt="${item.name}" class="w-12 h-12 object-cover rounded-md flex-shrink-0 border border-stone/20">
-                        <p class="font-roboto text-base text-charcoal font-semibold">${item.name}</p>
-                    </div>
-                    <div class="text-right font-roboto text-sm text-stone">
-                        <p>${item.quantity} x $${price}</p>
-                        <p class="font-semibold text-charcoal">$${lineTotal}</p>
-                    </div>
-                </div>
-            `;
+    function formatDate(timestamp) {
+        if (!timestamp || !timestamp.toDate) return 'N/A';
+        return timestamp.toDate().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
-        itemsList.innerHTML = itemsHtml;
-        
-        // --- Totals Breakdown ---
-        document.getElementById('subtotal-amount').textContent = `$${subtotal}`;
-        document.getElementById('shipping-amount').textContent = `$${shipping}`;
-        document.getElementById('grand-total-amount').textContent = `$${total}`;
-        
-        // Show the content
-        loadingSpinner.classList.add('hidden');
-        orderReceipt.classList.remove('hidden');
+    }
+    
+    /**
+     * Renders an error state and message.
+     */
+    function renderError(message) {
+        confirmationLoader.classList.add('hidden');
+        confirmationContent.classList.add('hidden');
+        errorSection.classList.remove('hidden');
+        errorMessageEl.textContent = message;
     }
 
+    // --- Main Logic ---
+
     /**
-     * Fetches the order data from Firestore.
+     * Fetches and displays the order details based on the URL query parameter.
      */
-    async function loadOrder() {
-        const orderId = getOrderIdFromUrl();
+    async function loadOrderDetails(currentUser) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('orderId');
 
         if (!orderId) {
-            loadingSpinner.classList.add('hidden');
-            errorMessage.classList.remove('hidden');
-            document.getElementById('error-text').textContent = "No order ID was provided in the URL.";
+            renderError("No Order ID provided in the URL.");
             return;
         }
+
+        confirmationLoader.classList.remove('hidden');
+        errorSection.classList.add('hidden');
 
         try {
             const orderRef = doc(db, 'orders', orderId);
             const docSnap = await getDoc(orderRef);
 
-            if (docSnap.exists()) {
-                const orderData = docSnap.data();
-                renderOrder(orderData);
-            } else {
-                loadingSpinner.classList.add('hidden');
-                errorMessage.classList.remove('hidden');
-                document.getElementById('error-text').textContent = `Order with ID "${orderId}" not found.`;
+            if (!docSnap.exists()) {
+                renderError(`Order ID: ${orderId} was not found in our records.`);
+                return;
             }
 
+            const order = docSnap.data();
+            
+            // CRITICAL SECURITY CHECK: Ensure the user owns the order, unless they were a guest checkout
+            if (order.userId && currentUser && order.userId !== currentUser.uid) {
+                // If a userId exists on the order and it doesn't match the current user, deny read access.
+                renderError("Access Denied: You do not have permission to view this order.");
+                return;
+            }
+            // If the user is logged out (guest checkout), the read is allowed by Firestore Rules if no 'userId' field exists on the order.
+
+            // --- Render Order Header ---
+            orderIdDisplay.textContent = orderId.toUpperCase();
+            orderDateDisplay.textContent = formatDate(order.createdAt);
+            orderTotalDisplay.textContent = `$${order.totals.total.toFixed(2)}`;
+            
+            // --- Render Shipping Info ---
+            const customer = order.customer || {};
+            shippingNameDisplay.textContent = `${customer.firstName || 'Guest'} ${customer.lastName || 'Customer'}`;
+            shippingAddressDisplay.innerHTML = `
+                ${customer.address}<br>
+                ${customer.city}, ${customer.state} ${customer.zip}
+            `;
+            
+            // --- Render Itemized List and Subtotals ---
+            let itemsHtml = '';
+            order.items.forEach(item => {
+                const itemTotal = (item.price * item.quantity).toFixed(2);
+                itemsHtml += `
+                    <div class="flex justify-between py-3 border-b border-stone/10">
+                        <div class="flex items-center space-x-3">
+                            <img src="${item.imageUrl || '/src/logo.webp'}" alt="${item.name}" class="w-12 h-12 object-cover rounded-md">
+                            <div>
+                                <p class="font-medium text-charcoal">${item.name}</p>
+                                <p class="text-sm text-stone">Qty: ${item.quantity} @ $${item.price.toFixed(2)}</p>
+                            </div>
+                        </div>
+                        <span class="font-medium text-charcoal">$${itemTotal}</span>
+                    </div>
+                `;
+            });
+            itemizedListContainer.innerHTML = itemsHtml;
+            
+            subtotalDisplay.textContent = `$${order.totals.subtotal.toFixed(2)}`;
+            shippingDisplay.textContent = `$${order.totals.shipping.toFixed(2)}`;
+            
+            // --- Render Auth Message ---
+            if (currentUser) {
+                authMessageContainer.innerHTML = `
+                    <p class="text-sm text-stone mt-2">
+                        This order has been saved to your <a href="/account/" class="text-burnt-orange font-semibold hover:underline">Account History</a>.
+                    </p>
+                `;
+            } else {
+                authMessageContainer.innerHTML = `
+                    <p class="text-sm text-stone mt-2">
+                        To easily track this order, consider <a href="/register/" class="text-burnt-orange font-semibold hover:underline">creating an account</a>.
+                    </p>
+                `;
+            }
+
+            // --- Success: Show content ---
+            confirmationLoader.classList.add('hidden');
+            confirmationContent.classList.remove('hidden');
+
         } catch (error) {
-            console.error("Error loading order confirmation:", error);
-            loadingSpinner.classList.add('hidden');
-            errorMessage.classList.remove('hidden');
-            document.getElementById('error-text').textContent = `An unexpected error occurred: ${error.message}`;
+            console.error("Error during order lookup:", error);
+            renderError("A critical error occurred while fetching your order details.");
         }
     }
 
-    // --- Main Initialization ---
-    
-    // FIX (Race Condition): Wait for firebase-loader.js to dispatch its signal
-    document.addEventListener('firebase-ready', loadOrder);
+    // --- Initialization ---
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Use auth listener to get user state before loading, which is needed for the security check
+        onAuthStateChanged(auth, (user) => {
+            // Pass the user object (can be null for guest checkout) to the loader
+            loadOrderDetails(user); 
+        });
+    });
+
 </script>
+
+<main class="container mx-auto px-4 py-12 min-h-screen">
+    
+    <div id="confirmation-loader" class="flex justify-center items-center h-96">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-burnt-orange"></div>
+    </div>
+    
+    <div id="error-section" class="hidden text-center max-w-lg mx-auto py-20 bg-parchment rounded-lg shadow-lg">
+        <h1 class="text-4xl font-playfair text-red-600 mb-4">Oops! Order Not Found</h1>
+        <p id="error-message" class="text-lg text-stone mb-6">
+            The order ID provided could not be matched with any record.
+        </p>
+        <a href="/shop/" class="px-8 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-lg hover:bg-burnt-orange/80 transition duration-300">
+            Return to Shop
+        </a>
+    </div>
+
+    <div id="confirmation-content" class="hidden max-w-4xl mx-auto">
+        
+        <div class="text-center pb-8 border-b border-stone/20 mb-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-600 mx-auto mb-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <h1 class="text-5xl font-playfair text-charcoal mb-2">Order Confirmed!</h1>
+            <p class="text-xl text-stone">Thank you for your purchase from Southern Sense.</p>
+            <p class="text-lg text-charcoal font-medium mt-4">Order #<span id="order-id-display">...</span></p>
+            <div id="auth-message-container">
+                </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-2">
+                <h2 class="text-3xl font-playfair text-charcoal mb-4 border-b pb-2">What You Ordered</h2>
+                <div id="itemized-list-container">
+                    </div>
+
+                <div class="mt-6 space-y-2 max-w-xs ml-auto">
+                    <div class="flex justify-between text-stone">
+                        <span>Subtotal:</span>
+                        <span id="subtotal-display" class="font-medium"></span>
+                    </div>
+                    <div class="flex justify-between text-stone">
+                        <span>Shipping:</span>
+                        <span id="shipping-display" class="font-medium"></span>
+                    </div>
+                    <div class="flex justify-between text-xl font-bold text-burnt-orange pt-2 border-t">
+                        <span>GRAND TOTAL:</span>
+                        <span id="order-total-display-footer"></span>
+                    </div>
+                </div>
+                
+                <div class="mt-8 pt-4 border-t border-stone/20">
+                    <p class="text-sm text-stone">
+                        Questions about your order? Email us at <a href="mailto:support@southernsense.org" class="text-burnt-orange hover:underline">support@southernsense.org</a> and reference your Order #.
+                    </p>
+                </div>
+            </div>
+
+            <div class="lg:col-span-1 p-6 bg-parchment rounded-lg shadow-md border-l-4 border-stone">
+                <h2 class="text-3xl font-playfair text-charcoal mb-4 border-b pb-2">Shipping To</h2>
+                <p id="shipping-name-display" class="text-lg font-semibold text-charcoal mb-1">
+                    Shipping Name
+                </p>
+                <address id="shipping-address-display" class="text-stone not-italic leading-relaxed">
+                    </address>
+
+                <h3 class="text-2xl font-playfair text-charcoal mt-6 mb-2 pt-4 border-t">Estimated Delivery</h3>
+                <p class="text-stone">5-7 Business Days (Excludes processing time)</p>
+                
+                <h3 class="text-2xl font-playfair text-charcoal mt-6 mb-2 pt-4 border-t">Date Placed</h3>
+                <p id="order-date-display" class="text-stone"></p>
+            </div>
+            
+        </div>
+    </div>
+</main>

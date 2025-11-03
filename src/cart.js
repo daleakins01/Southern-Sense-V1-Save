@@ -17,8 +17,8 @@ import {
     addDoc, 
     collection, 
     Timestamp,
-    doc, // <-- FIX: Added missing import
-    updateDoc // <-- FIX: Added missing import
+    doc, 
+    updateDoc 
 } from '/firebase-loader.js';
 
 // --- Constants ---

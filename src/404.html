@@ -1,24 +1,37 @@
 ---
-layout: layout.html
-title: "Page Not Found"
+layout: layout
+title: Page Not Found (404)
+permalink: 404.html
+eleventyExcludeFromCollections: true
 ---
 
-<main
-  class="container mx-auto px-4 py-24 flex flex-col items-center justify-center text-center"
->
-  <h1 class="text-8xl font-playfair font-bold text-burnt-orange">404</h1>
-  <h2 class="mt-4 text-4xl font-playfair font-semibold text-charcoal">
-    Page Not Found
-  </h2>
-  <p class="mt-6 text-lg text-stone max-w-md">
-    We're sorry, but the page you are looking for doesn't seem to exist. It might
-    have been moved, deleted, or you may have mistyped the URL.
-  </p>
-  <a
-    href="/"
-    class="mt-10 inline-block bg-burnt-orange text-white font-roboto px-8 py-3 rounded-md shadow-lg hover:bg-opacity-90 transition-all duration-300 text-lg font-medium"
-  >
-    Go to Homepage
-  </a>
-</main>
+<main class="container mx-auto px-4 py-16 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-2xl text-center">
+        
+        <p class="text-9xl font-playfair text-burnt-orange font-bold mb-4">404</p>
+        
+        <h1 class="text-5xl font-playfair text-charcoal mb-6">
+            The Scent Has Escaped Us
+        </h1>
+        
+        <p class="text-xl text-stone leading-relaxed mb-8">
+            The page you were looking for seems to have drifted away. Don't worry, we'll guide you back to the perfect fragrance.
+        </p>
 
+        <div class="space-y-4 md:space-y-0 md:space-x-6">
+            <a href="/" class="inline-block px-8 py-4 bg-burnt-orange text-parchment font-bold text-lg rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
+                Return to Homepage
+            </a>
+            <a href="/shop/" class="inline-block px-8 py-4 border-2 border-stone text-charcoal font-semibold text-lg rounded-lg hover:bg-stone/10 transition duration-300">
+                Shop All Candles
+            </a>
+        </div>
+
+        <div class="mt-12 pt-8 border-t border-stone/20 max-w-sm mx-auto">
+             <p class="text-sm text-stone">
+                 Need immediate assistance? <a href="/contact.html" class="text-burnt-orange hover:underline">Contact Customer Care</a>.
+             </p>
+        </div>
+        
+    </div>
+</main>

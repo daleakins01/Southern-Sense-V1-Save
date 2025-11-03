@@ -1,240 +1,122 @@
 ---
-layout: layout.html
-title: "Your Cart - Southern Sense"
-description: "Review your shopping cart and proceed to checkout."
+layout: layout
+title: Shopping Cart
 ---
 
-<!-- 
-  This page displays the contents of the user's shopping cart.
-  It reads from localStorage, displays the items, and allows
-  for quantity updates, item removal, and proceeding to checkout.
--->
-<div class="bg-parchment">
-    <div class="container mx-auto px-4 py-12 md:py-20 min-h-[60vh]">
-
-        <!-- Page Header -->
-        <div class="text-center mb-12">
-            <h1 class="text-5xl md:text-6xl font-playfair text-charcoal mb-4">
-                Your Shopping Cart
-            </h1>
-        </div>
-
-        <!-- 
-          Cart Wrapper
-          This will be populated by cart.js 
-        -->
-        <div class="max-w-4xl mx-auto">
-            
-            <!-- 
-              Loading State 
-              This is shown by default and hidden by JavaScript.
-            -->
-            <div id="cart-loader" class="text-center py-20">
-                <p class="text-2xl font-playfair text-stone animate-pulse">
-                    Loading Your Cart...
-                </p>
-            </div>
-
-            <!-- 
-              Cart Content
-              This section is hidden by default and shown by JavaScript.
-              It contains the list of items and the order summary.
-            -->
-            <div id="cart-content" class="hidden">
-                
-                <!-- Cart Items List -->
-                <div id="cart-items-container" class="space-y-6">
-                    <!-- 
-                      Cart items will be injected here by cart.js
-                      Example structure:
-                      <div class="flex items-center bg-white p-4 rounded-lg shadow-md gap-4">
-                          <img src="/product-image.webp" alt="Product" class="w-24 h-24 object-cover rounded-lg">
-                          <div class="flex-grow">
-                              <h3 class="text-xl font-playfair text-charcoal">Product Name</h3>
-                              <p class="text-stone text-sm">Price: $20.00</p>
-                          </div>
-                          <div class="flex items-center gap-3">
-                              <button class="quantity-decrease" data-id="product-id">-</button>
-                              <input type="number" value="1" min="1" class="w-16 text-center border rounded">
-                              <button class="quantity-increase" data-id="product-id">+</button>
-                          </div>
-                          <p class="text-lg font-medium text-charcoal w-24 text-right">$20.00</p>
-                          <button class="remove-item text-red-600 hover:text-red-800" data-id="product-id">&times;</button>
-                      </div>
-                    -->
-                </div>
-
-                <!-- 
-                  Checkout & Summary Section
-                  This appears below the cart items
-                -->
-                <div class="mt-10 bg-white p-8 rounded-lg shadow-lg">
-                    <div class="md:flex md:justify-between md:items-start">
-                        
-                        <!-- Customer Info Form -->
-                        <div class="w-full md:w-1/2 md:pr-10 mb-8 md:mb-0">
-                            <h2 class="text-3xl font-playfair text-charcoal mb-6">
-                                Shipping Information
-                            </h2>
-                            <form id="checkout-form" class="space-y-4">
-                                <!-- Form Error Message -->
-                                <div id="form-error" class="hidden p-4 bg-red-100 text-red-800 rounded-lg text-sm">
-                                    <!-- Error message will be injected here -->
-                                </div>
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label for="firstName" class="block text-sm font-medium text-charcoal mb-1">First Name</label>
-                                        <input type="text" id="firstName" name="firstName" required
-                                               class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange">
-                                    </div>
-                                    <div>
-                                        <label for="lastName" class="block text-sm font-medium text-charcoal mb-1">Last Name</label>
-                                        <input type="text" id="lastName" name="lastName" required
-                                               class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label for="email" class="block text-sm font-medium text-charcoal mb-1">Email</label>
-                                    <input type="email" id="email" name="email" required
-                                           class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange">
-                                </div>
-                                <div>
-                                    <label for="address" class="block text-sm font-medium text-charcoal mb-1">Address</label>
-                                    <input type="text" id="address" name="address" required placeholder="123 Main St"
-                                           class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange">
-                                </div>
-                                <div>
-                                    <label for="city" class="block text-sm font-medium text-charcoal mb-1">City</label>
-                                    <input type="text" id="city" name="city" required
-                                           class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange">
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label for="state" class="block text-sm font-medium text-charcoal mb-1">State</label>
-                                        <input type="text" id="state" name="state" required
-                                               class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange">
-                                    </div>
-                                    <div>
-                                        <label for="zip" class="block text-sm font-medium text-charcoal mb-1">ZIP Code</label>
-                                        <input type="text" id="zip" name="zip" required
-                                               class="w-full px-4 py-3 border border-stone/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange">
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Order Summary & Payment -->
-                        <div class="w-full md:w-1/2 md:pl-10 md:border-l md:border-stone/20">
-                            <h2 class="text-3xl font-playfair text-charcoal mb-6">
-                                Order Summary
-                            </h2>
-                            <div class="space-y-4">
-                                <div class="flex justify-between text-lg">
-                                    <span class="text-stone">Subtotal</span>
-                                    <span id="cart-subtotal" class="font-medium text-charcoal">$0.00</span>
-                                </div>
-                                <div class="flex justify-between text-lg">
-                                    <span class="text-stone">Shipping</span>
-                                    <span id="cart-shipping" class="font-medium text-charcoal">$0.00</span>
-                                </div>
-                                <div class="flex justify-between text-2xl font-bold pt-4 border-t border-stone/20">
-                                    <span class="text-charcoal">Total</span>
-                                    <span id="cart-total" class="text-charcoal">$0.00</span>
-                                </div>
-                            </div>
-                            
-                            <!-- 
-                              PayPal Button Container
-                              This div will be targeted by the PayPal SDK.
-                            -->
-                            <div class="mt-8">
-                                <div id="paypal-button-container">
-                                    <!-- PayPal button will render here -->
-                                </div>
-                                <p id="paypal-loader" class="hidden text-center text-stone animate-pulse">Loading Payment Options...</p>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-            </div> <!-- /#cart-content -->
-
-            <!-- 
-              Empty Cart State
-              This is hidden by default and shown by JavaScript if cart is empty.
-            -->
-            <div id="cart-empty" class="hidden text-center py-20">
-                <p class="text-2xl font-playfair text-stone mb-8">
-                    Your cart is currently empty.
-                </p>
-                <a href="/shop/"
-                   class="inline-block bg-charcoal text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-burnt-orange transition-all duration-300">
-                    Continue Shopping
-                </a>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-<!-- 
-  JavaScript for the Cart Page.
-  - Loads cart.js module.
-  - Calls renderCart() to display items.
-  - Attaches form listeners.
-  - Initializes PayPal.
-  - FIX 11.1: Added listener for 'firebase-ready' to fix race condition.
--->
+<script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
 <script type="module">
-    // Import all functions from our main cart.js logic file
-    import { 
-        renderCart, 
-        attachFormListeners, 
-        initPayPal 
-    } from '/cart.js';
+    import { renderCart, initPayPal, attachFormListeners } from '/src/cart.js';
     
-    // Import 'auth' for loading user data
-    import { auth, onAuthStateChanged } from '/firebase-loader.js';
+    // --- DOM Elements ---
+    const cartLoader = document.getElementById('cart-loader');
+    const cartContent = document.getElementById('cart-content');
+    const cartEmpty = document.getElementById('cart-empty');
+    const checkoutForm = document.getElementById('checkout-form');
+    const formError = document.getElementById('form-error');
 
     /**
-     * Initializes the entire cart page.
-     * This function is now called *after* 'firebase-ready'
+     * Initializes the Cart Page and all dependent components.
      */
-    function initializeCartPage() {
-        console.log("Cart page: Firebase is ready. Initializing cart.");
+    async function initializeCart() {
+        // 1. Initial render of cart items and totals
+        renderCart(); 
 
-        // 1. Render all items from localStorage
-        renderCart();
-        
-        // 2. Attach listeners to the form for validation
+        // 2. Hide loader and show content (renderCart handles the empty/full state)
+        cartLoader.classList.add('hidden');
+        cartEmpty.classList.remove('hidden'); // Initially show empty, will be hidden by renderCart if items exist
+
+        // 3. Setup form listeners for real-time validation feedback
         attachFormListeners();
-        
-        // 3. Initialize the PayPal button
-        // We must pass the formError element to it
-        const formError = document.getElementById('form-error');
+
+        // 4. Initialize PayPal buttons (must be called after totals are calculated)
         initPayPal(formError);
-        
-        // 4. Try to pre-fill the form if the user is logged in
-        onAuthStateChanged(auth, (user) => {
-            if (user && user.email) {
-                // User is logged in, try to fill email
-                const emailInput = document.getElementById('email');
-                if (emailInput) {
-                    emailInput.value = user.email;
-                }
-                // We could also pre-fill name from their profile
-                // but we would need to fetch their user doc.
-                // For now, email is a good start.
-            }
-        });
     }
 
-    // --- THIS IS THE FIX ---
-    // We wait for the 'firebase-ready' event *before* we try to initialize
-    // the cart, attach listeners, or load PayPal. This ensures 'db' is
-    // available for the checkout process.
-    document.addEventListener('firebase-ready', initializeCartPage);
+    document.addEventListener('DOMContentLoaded', initializeCart);
 
 </script>
+
+<main class="container mx-auto px-4 py-12 min-h-screen">
+    
+    <header class="max-w-4xl mx-auto text-center mb-12">
+        <h1 class="text-5xl font-playfair text-charcoal mb-4">Your Shopping Cart</h1>
+        <p class="text-lg text-stone leading-relaxed">Review your items and complete your order.</p>
+    </header>
+
+    <div id="cart-loader" class="flex justify-center items-center h-48">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-burnt-orange"></div>
+    </div>
+
+    <div id="cart-empty" class="text-center py-20 hidden">
+        <p class="text-2xl font-playfair text-stone mb-6">Your cart is currently empty.</p>
+        <a href="/shop/" class="px-8 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-lg hover:bg-burnt-orange/80 transition duration-300">
+            Start Shopping Now
+        </a>
+    </div>
+
+    <div id="cart-content" class="hidden">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            
+            <div class="lg:col-span-2 space-y-6">
+                <h2 class="text-3xl font-playfair text-charcoal mb-4 border-b pb-2">Items in Cart</h2>
+                <div id="cart-items-container" class="space-y-4">
+                    </div>
+            </div>
+
+            <div class="lg:col-span-1 sticky top-24">
+                <div class="bg-parchment p-6 rounded-lg shadow-xl">
+                    <h2 class="text-3xl font-playfair text-burnt-orange mb-6">Order Summary</h2>
+                    
+                    <div class="space-y-3 border-b border-stone/30 pb-4 mb-4">
+                        <div class="flex justify-between text-charcoal">
+                            <span>Subtotal</span>
+                            <span id="cart-subtotal" class="font-medium">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-charcoal">
+                            <span>Shipping (Flat Rate)</span>
+                            <span id="cart-shipping" class="font-medium">$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between text-2xl font-bold text-charcoal mb-6">
+                        <span>Order Total</span>
+                        <span id="cart-total">$0.00</span>
+                    </div>
+
+                    <h3 class="text-xl font-playfair text-charcoal mb-4">Shipping & Contact Info</h3>
+                    
+                    <form id="checkout-form" class="space-y-4">
+                        <input type="text" name="firstName" placeholder="First Name *" required 
+                               class="w-full p-3 border border-stone/30 rounded-lg">
+                        <input type="text" name="lastName" placeholder="Last Name *" required 
+                               class="w-full p-3 border border-stone/30 rounded-lg">
+                        <input type="email" name="email" placeholder="Email Address *" required 
+                               class="w-full p-3 border border-stone/30 rounded-lg">
+                        <input type="text" name="address" placeholder="Street Address *" required 
+                               class="w-full p-3 border border-stone/30 rounded-lg">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" name="city" placeholder="City *" required 
+                                   class="w-full p-3 border border-stone/30 rounded-lg">
+                            <input type="text" name="state" placeholder="State/Region *" required 
+                                   class="w-full p-3 border border-stone/30 rounded-lg">
+                        </div>
+                        <input type="text" name="zip" placeholder="Zip/Postal Code *" required 
+                               class="w-full p-3 border border-stone/30 rounded-lg">
+                    </form>
+
+                    <p id="form-error" class="text-sm font-semibold text-red-600 mt-4 hidden">
+                        </p>
+
+                    <div class="mt-8 border-t pt-4">
+                        <h3 class="text-xl font-playfair text-charcoal mb-4">Pay with PayPal</h3>
+                        <div id="paypal-loader" class="text-center text-sm text-stone mb-4">
+                            Loading payment buttons...
+                        </div>
+                        <div id="paypal-button-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

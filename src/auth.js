@@ -1,68 +1,79 @@
-// src/auth.js
+/*
+ * Authentication Logic (auth.js)
+ *
+ * This module exports functions for user authentication (registration, login, logout)
+ * and ensures that user profiles are created/managed in Firestore upon registration.
+ */
 
-// --- Firebase Imports ---
-import { auth, db } from '/firebase-loader.js';
 import { 
+    auth, 
+    db, 
     createUserWithEmailAndPassword, 
-    getAuth 
-} from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-import { 
+    signInWithEmailAndPassword, 
+    signOut, 
     doc, 
-    setDoc 
-} from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+    setDoc, 
+    Timestamp 
+} from '/firebase-loader.js';
 
-// --- DOM Elements ---
-const registerForm = document.getElementById('register-form');
-const registerStatus = document.getElementById('register-status');
-const registerButton = document.getElementById('register-button');
+// --- Constants ---
+// Define the Firestore collection where customer profiles are stored
+const USERS_COLLECTION = 'users';
 
 /**
- * Initializes the registration form submission logic.
+ * Registers a new user with Firebase Auth and creates a corresponding Firestore profile.
+ * * @param {string} email - The user's email address.
+ * @param {string} password - The user's chosen password.
+ * @param {string} firstName - The user's first name.
+ * @param {string} lastName - The user's last name.
+ * @returns {Promise<Object>} The authenticated user object and a reference to the profile.
  */
-function initializeRegister() {
-    registerForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        registerButton.disabled = true;
-        registerButton.textContent = 'Registering...';
-        registerStatus.classList.add('hidden');
+export async function registerUser(email, password, firstName, lastName) {
+    // 1. Create user in Firebase Authentication
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
 
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const name = document.getElementById('name').value;
+    // 2. Create user profile document in Firestore (using UID as the document ID)
+    const userProfileRef = doc(db, USERS_COLLECTION, user.uid);
+    
+    // Ensure all required fields (firstName, lastName, role, etc.) are set for /account.html logic
+    const profileData = {
+        userId: user.uid,
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        role: 'customer', // Default role for new users
+        createdAt: Timestamp.now()
+    };
+    
+    // Firestore security rules (Firestore Rules file) expect the UID to be the document ID 
+    // and the request.auth.uid to match that ID upon creation.
+    await setDoc(userProfileRef, profileData);
 
-        try {
-            // 1. Create the Firebase Auth user
-            const userCredential = await createUserWithEmailAndPassword(getAuth(), email, password);
-            const user = userCredential.user;
-
-            // 2. Create the corresponding user profile document in Firestore
-            await setDoc(doc(db, 'users', user.uid), {
-                email: email,
-                name: name,
-                role: 'customer',
-                createdAt: new Date().toISOString()
-            });
-
-            registerStatus.textContent = 'Registration successful! Redirecting to your account...';
-            registerStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-green-100 text-green-700';
-            registerStatus.classList.remove('hidden');
-
-            // 3. Redirect to the account page
-            setTimeout(() => {
-                // IMPORTANT: Rely on the global observer to route the user correctly, 
-                // but direct to a known logged-in state page.
-                window.location.href = '/account/'; 
-            }, 1000);
-
-        } catch (error) {
-            registerStatus.textContent = `Registration Failed: ${error.message.replace('Firebase: ', '')}`;
-            registerStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-red-100 text-red-700';
-            registerStatus.classList.remove('hidden');
-            registerButton.disabled = false;
-            registerButton.textContent = 'Create Account';
-        }
-    });
+    console.log("User registered and profile created in Firestore:", user.uid);
+    return user;
 }
 
-// CRITICAL FIX: Only run the registration setup logic after Firebase is ready.
-document.addEventListener('firebase-ready', initializeRegister);
+/**
+ * Logs in an existing user with Firebase Auth.
+ * * @param {string} email - The user's email address.
+ * @param {string} password - The user's password.
+ * @returns {Promise<Object>} The authenticated user object.
+ */
+export async function loginUser(email, password) {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    console.log("User logged in:", userCredential.user.uid);
+    return userCredential.user;
+}
+
+/**
+ * Logs out the current user.
+ * * @returns {Promise<void>}
+ */
+export async function logout() {
+    await signOut(auth);
+    console.log("User logged out.");
+}
+
+// NOTE: onAuthStateChanged is handled directly in page scripts (e.g., account.html, admin.html)
+// using the imported auth object, not exported from here.

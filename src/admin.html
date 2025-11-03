@@ -13,9 +13,9 @@ title: Admin Panel
         getDocs, 
         where, 
         doc, 
-        updateDoc,
         getDoc, 
-        deleteDoc, // NEW: Added for deleting reviews
+        updateDoc,
+        deleteDoc, 
     } from '/firebase-loader.js';
     import { logout } from '/src/auth.js';
     
@@ -24,7 +24,9 @@ title: Admin Panel
     let isAdmin = false;
     let currentOrders = [];
     let currentProducts = [];
-    let currentReviews = []; // NEW: To store fetched reviews
+    let currentReviews = [];
+    let currentAlerts = [];
+    let siteContent = {}; 
 
     // --- DOM Elements ---
     const adminLoader = document.getElementById('admin-loader');
@@ -43,17 +45,24 @@ title: Admin Panel
     const closeModalButton = document.getElementById('close-modal-button');
     const productEditForm = document.getElementById('product-edit-form');
     
-    // NEW: Reviews Tab Elements
+    // Reviews Tab Elements
     const reviewsContainer = document.getElementById('reviews-container');
     const reviewsMessage = document.getElementById('reviews-message');
     const pendingReviewsCount = document.getElementById('pending-reviews-count');
+    
+    // Stock Alerts Tab Elements
+    const stockAlertsContainer = document.getElementById('stock-alerts-container');
+    const stockAlertsMessage = document.getElementById('stock-alerts-message');
+    const totalStockAlertsCount = document.getElementById('total-stock-alerts-count');
+    
+    // Site Content Tab Elements
+    const contentTabsContainer = document.getElementById('content-tabs-container');
+    const siteContentForm = document.getElementById('site-content-form');
+    const contentSaveMessage = document.getElementById('content-save-message');
 
 
     // --- Utility Functions ---
     
-    /**
-     * Formats a Firebase Timestamp object into a readable date string.
-     */
     function formatDate(timestamp) {
         if (!timestamp || !timestamp.toDate) return 'N/A';
         return timestamp.toDate().toLocaleDateString('en-US', {
@@ -63,9 +72,6 @@ title: Admin Panel
         });
     }
 
-    /**
-     * Returns a string of star icons based on rating.
-     */
     function renderStars(rating) {
         let stars = '';
         for (let i = 0; i < 5; i++) {
@@ -74,9 +80,6 @@ title: Admin Panel
         return stars;
     }
 
-    /**
-     * Determines the Tailwind CSS classes for an order status.
-     */
     function getStatusClasses(status) {
         switch (status) {
             case 'Paid':
@@ -92,8 +95,8 @@ title: Admin Panel
         }
     }
 
-    // --- Core Admin Logic: Orders Tab (Existing) ---
-
+    // --- Core Admin Logic: Orders Tab ---
+    
     async function fetchAllOrders() {
         ordersMessage.textContent = 'Loading all customer orders...';
         ordersMessage.classList.remove('hidden', 'text-red-600');
@@ -211,7 +214,7 @@ title: Admin Panel
     }
 
 
-    // --- Core Admin Logic: Products Tab (Existing) ---
+    // --- Core Admin Logic: Products Tab ---
 
     async function fetchAllProducts() {
         productsMessage.textContent = 'Loading product catalog...';
@@ -221,7 +224,7 @@ title: Admin Panel
         
         try {
             const productsRef = collection(db, 'products');
-            const querySnapshot = await getDocs(productsRef);
+            const querySnapshot = await getDocs(query(productsRef));
 
             if (querySnapshot.empty) {
                 productsMessage.textContent = 'No products found in the database.';
@@ -346,11 +349,8 @@ title: Admin Panel
         }
     }
     
-    // --- NEW CORE ADMIN LOGIC: Reviews Tab ---
+    // --- Core Admin Logic: Reviews Tab ---
 
-    /**
-     * Fetches all reviews, with pending (approved: false) reviews first.
-     */
     async function fetchAllReviews() {
         reviewsMessage.textContent = 'Loading reviews...';
         reviewsMessage.classList.remove('hidden', 'text-red-600');
@@ -359,7 +359,6 @@ title: Admin Panel
 
         try {
             const reviewsRef = collection(db, 'reviews');
-            // Admins can read all reviews
             const querySnapshot = await getDocs(query(reviewsRef));
 
             if (querySnapshot.empty) {
@@ -374,10 +373,9 @@ title: Admin Panel
                 currentReviews.push(review);
             });
             
-            // Sort: Pending first, then by date (newest first)
             currentReviews.sort((a, b) => {
                 if (a.approved !== b.approved) {
-                    return a.approved ? 1 : -1; // false comes before true
+                    return a.approved ? 1 : -1;
                 }
                 return b.createdAt.toDate() - a.createdAt.toDate();
             });
@@ -392,11 +390,8 @@ title: Admin Panel
         }
     }
     
-    /**
-     * Renders the list of reviews for the Admin interface.
-     */
     function renderReviewsList() {
-        reviewsContainer.innerHTML = ''; // Clear existing reviews
+        reviewsContainer.innerHTML = '';
         const pendingCount = currentReviews.filter(r => r.approved === false).length;
         pendingReviewsCount.textContent = pendingCount;
         
@@ -437,9 +432,6 @@ title: Admin Panel
         attachReviewListeners();
     }
     
-    /**
-     * Attaches event listeners to the new review action buttons.
-     */
     function attachReviewListeners() {
         document.querySelectorAll('.approve-review').forEach(button => {
             button.addEventListener('click', (e) => updateReviewStatus(e.target.dataset.id, true));
@@ -452,9 +444,6 @@ title: Admin Panel
         });
     }
 
-    /**
-     * Updates the 'approved' status of a review in Firestore.
-     */
     async function updateReviewStatus(reviewId, approvedStatus) {
         const reviewRef = doc(db, 'reviews', reviewId);
         
@@ -464,7 +453,6 @@ title: Admin Panel
             const statusText = approvedStatus ? 'Approved' : 'Unapproved';
             alert(`Review ${reviewId.slice(-6)} successfully ${statusText.toLowerCase()}.`);
             
-            // Re-fetch and re-render the list to update the display
             await fetchAllReviews();
             
         } catch (error) {
@@ -473,9 +461,6 @@ title: Admin Panel
         }
     }
     
-    /**
-     * Deletes a review from Firestore.
-     */
     async function deleteReview(reviewId) {
         if (!confirm("Are you sure you want to permanently delete this review? This action cannot be undone.")) {
             return;
@@ -490,6 +475,251 @@ title: Admin Panel
         } catch (error) {
             console.error("Error deleting review:", error);
             alert("Failed to delete review. Check console.");
+        }
+    }
+    
+    // --- Core Admin Logic: Stock Alerts Tab ---
+
+    async function fetchStockAlerts() {
+        stockAlertsMessage.textContent = 'Loading back-in-stock requests...';
+        stockAlertsMessage.classList.remove('hidden', 'text-red-600');
+        stockAlertsContainer.innerHTML = '';
+        currentAlerts = [];
+
+        try {
+            const alertsRef = collection(db, 'backInStockRequests');
+            const q = query(alertsRef, where('resolved', '==', false)); 
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                stockAlertsMessage.textContent = 'No pending stock alerts found. Good job!';
+                totalStockAlertsCount.textContent = 0;
+                return;
+            }
+
+            querySnapshot.forEach(doc => {
+                const alert = doc.data();
+                alert.id = doc.id;
+                currentAlerts.push(alert);
+            });
+            
+            currentAlerts.sort((a, b) => a.requestedAt.toDate() - b.requestedAt.toDate());
+
+            renderStockAlertsList();
+            stockAlertsMessage.classList.add('hidden'); 
+
+        } catch (error) {
+            console.error("Error fetching stock alerts:", error);
+            stockAlertsMessage.textContent = 'Error fetching stock alerts. Check console for details.';
+            stockAlertsMessage.classList.remove('hidden');
+        }
+    }
+    
+    function renderStockAlertsList() {
+        stockAlertsContainer.innerHTML = '';
+        totalStockAlertsCount.textContent = currentAlerts.length;
+        
+        currentAlerts.forEach(alert => {
+            const formattedDate = formatDate(alert.requestedAt);
+
+            const alertHtml = `
+                <div class="p-4 rounded-lg shadow-md border-l-4 border-burnt-orange bg-parchment/70 mb-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-lg font-playfair text-charcoal font-semibold">${alert.productName}</p>
+                            <p class="text-sm text-stone">Requested on: ${formattedDate}</p>
+                        </div>
+                        <a href="mailto:${alert.email}" class="px-3 py-1 bg-stone text-parchment rounded-full text-sm font-semibold hover:bg-stone/80 transition">
+                            Email Customer
+                        </a>
+                    </div>
+                    
+                    <p class="text-sm text-charcoal mt-2">
+                        Customer Email: <span class="font-medium">${alert.email}</span>
+                    </p>
+                    
+                    <div class="mt-4 pt-3 border-t">
+                        <button data-id="${alert.id}" class="resolve-alert px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition">
+                            Mark as Resolved (Stock Replenished)
+                        </button>
+                    </div>
+                </div>
+            `;
+            stockAlertsContainer.innerHTML += alertHtml;
+        });
+        
+        attachAlertListeners();
+    }
+    
+    function attachAlertListeners() {
+        document.querySelectorAll('.resolve-alert').forEach(button => {
+            button.addEventListener('click', (e) => resolveAlert(e.target.dataset.id));
+        });
+    }
+
+    async function resolveAlert(alertId) {
+        if (!confirm("Are you sure you want to mark this alert as RESOLVED and remove it from the list? Ensure the customer has been notified.")) {
+            return;
+        }
+        
+        const alertRef = doc(db, 'backInStockRequests', alertId);
+        
+        try {
+            await deleteDoc(alertRef); 
+            
+            alert(`Alert for ${alertId.slice(-6)} resolved and removed.`);
+            await fetchStockAlerts();
+
+        } catch (error) {
+            console.error("Error resolving alert:", error);
+            alert("Failed to resolve alert. Check console.");
+        }
+    }
+    
+    // --- Core Admin Logic: Site Content Tab ---
+    
+    const SITE_CONTENT_DOCS = [
+        { id: 'about', name: 'About Us Page' },
+        { id: 'candleCare', name: 'Candle Care Page' },
+        { id: 'refillProgram', name: 'Refill Program Page' },
+    ];
+    
+    async function fetchSiteContent() {
+        siteContent = {};
+        try {
+            const contentRef = collection(db, 'siteContent');
+            const querySnapshot = await getDocs(query(contentRef));
+            
+            querySnapshot.forEach(doc => {
+                siteContent[doc.id] = doc.data();
+            });
+            
+            renderContentTabs();
+            // Automatically switch to the first content document on load
+            if (SITE_CONTENT_DOCS.length > 0) {
+                switchContentDocument(SITE_CONTENT_DOCS[0].id);
+            }
+            
+        } catch (error) {
+            console.error("Error fetching site content:", error);
+            alert("Failed to load site content.");
+        }
+    }
+    
+    function renderContentTabs() {
+        contentTabsContainer.innerHTML = '';
+        SITE_CONTENT_DOCS.forEach(docInfo => {
+            const button = document.createElement('button');
+            button.className = 'content-tab-button px-4 py-2 mr-2 mb-2 rounded-lg font-medium transition duration-150 ease-in-out bg-stone/20 hover:bg-burnt-orange/30 text-charcoal';
+            button.textContent = docInfo.name;
+            button.setAttribute('data-content-id', docInfo.id);
+            button.addEventListener('click', () => switchContentDocument(docInfo.id));
+            contentTabsContainer.appendChild(button);
+        });
+    }
+    
+    function switchContentDocument(docId) {
+        const contentData = siteContent[docId];
+        if (!contentData) {
+            siteContentForm.innerHTML = `<p class="text-red-600">Content for "${docId}" not found in Firestore.</p>`;
+            return;
+        }
+        
+        // Update button styles
+        document.querySelectorAll('.content-tab-button').forEach(button => {
+            if (button.getAttribute('data-content-id') === docId) {
+                button.classList.add('bg-burnt-orange', 'text-parchment');
+                button.classList.remove('bg-stone/20', 'hover:bg-burnt-orange/30', 'text-charcoal');
+            } else {
+                button.classList.remove('bg-burnt-orange', 'text-parchment');
+                button.classList.add('bg-stone/20', 'hover:bg-burnt-orange/30', 'text-charcoal');
+            }
+        });
+
+        // 1. Clear and setup form fields
+        siteContentForm.innerHTML = '';
+        siteContentForm.setAttribute('data-content-id', docId);
+
+        // 2. Iterate through contentData keys to build dynamic fields
+        for (const key in contentData) {
+            if (typeof contentData[key] !== 'string') continue;
+            
+            const labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); 
+
+            const fieldGroup = document.createElement('div');
+            fieldGroup.className = 'mb-4';
+            
+            const label = document.createElement('label');
+            label.className = 'block text-sm font-medium text-charcoal mb-1';
+            label.textContent = labelText;
+            label.setAttribute('for', `content-field-${key}`);
+            
+            let inputElement;
+            const content = contentData[key];
+
+            // Use textarea for long content (descriptions, safety warnings, etc.)
+            if (key.includes('Content') || key.includes('Description') || content.length > 50) {
+                inputElement = document.createElement('textarea');
+                inputElement.rows = 5;
+                inputElement.placeholder = 'Supports basic HTML tags (p, ul, li, strong, em)';
+            } else {
+                inputElement = document.createElement('input');
+                inputElement.type = 'text';
+            }
+            
+            inputElement.className = 'w-full p-3 border border-stone/30 rounded-lg text-charcoal bg-white';
+            inputElement.id = `content-field-${key}`;
+            inputElement.name = key;
+            inputElement.value = content;
+
+            fieldGroup.appendChild(label);
+            fieldGroup.appendChild(inputElement);
+            siteContentForm.appendChild(fieldGroup);
+        }
+        
+        // 3. Add Save Button
+        siteContentForm.innerHTML += `
+            <div class="pt-4 border-t mt-6">
+                <button type="submit" id="save-content-button" class="w-full px-4 py-3 bg-burnt-orange text-parchment font-bold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
+                    Save Page Content
+                </button>
+            </div>
+        `;
+    }
+
+    async function handleSiteContentUpdate(e) {
+        e.preventDefault();
+        
+        const docId = siteContentForm.getAttribute('data-content-id');
+        const saveButton = document.getElementById('save-content-button');
+        saveButton.disabled = true;
+        saveButton.textContent = 'Saving...';
+        contentSaveMessage.classList.add('hidden');
+
+        try {
+            const formData = new FormData(siteContentForm);
+            const updateData = {};
+            
+            for (const [key, value] of formData.entries()) {
+                updateData[key] = value;
+            }
+
+            const contentRef = doc(db, 'siteContent', docId);
+            await updateDoc(contentRef, updateData);
+
+            siteContent[docId] = updateData;
+            contentSaveMessage.textContent = `Content for ${docId.replace(/([A-Z])/g, ' $1').toUpperCase()} updated successfully!`;
+            contentSaveMessage.classList.remove('hidden');
+            
+        } catch (error) {
+            console.error("Error updating site content:", error);
+            contentSaveMessage.textContent = "Error saving content. Check console for details.";
+            contentSaveMessage.classList.remove('hidden');
+            contentSaveMessage.classList.add('text-red-600');
+        } finally {
+            saveButton.disabled = false;
+            saveButton.textContent = 'Save Page Content';
+            setTimeout(() => contentSaveMessage.classList.add('hidden'), 5000);
         }
     }
 
@@ -516,7 +746,13 @@ title: Admin Panel
         } else if (targetId === 'tab-products') {
             fetchAllProducts();
         } else if (targetId === 'tab-reviews') {
-            fetchAllReviews(); // NEW: Fetch reviews on tab switch
+            fetchAllReviews();
+        } else if (targetId === 'tab-stock-alerts') {
+            fetchStockAlerts();
+        } else if (targetId === 'tab-content') {
+            fetchSiteContent();
+        } else if (targetId === 'tab-tools') { // NEW: Placeholder action for tools
+            console.log("Tools tab opened. Utility scripts are import-firestore.mjs and export-firestore.mjs.");
         }
     }
 
@@ -539,7 +775,8 @@ title: Admin Panel
         await Promise.all([
             fetchAllOrders(),
             fetchAllProducts(),
-            fetchAllReviews() // NEW: Fetch reviews for dashboard count
+            fetchAllReviews(),
+            fetchStockAlerts()
         ]);
 
         adminLoader.classList.add('hidden');
@@ -580,6 +817,10 @@ title: Admin Panel
         
         if(productEditForm) {
             productEditForm.addEventListener('submit', handleProductUpdate);
+        }
+        
+        if(siteContentForm) {
+            siteContentForm.addEventListener('submit', handleSiteContentUpdate);
         }
 
         // Authentication State Listener (Security Guard)
@@ -656,15 +897,16 @@ title: Admin Panel
                         </div>
 
                         <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                            <h3 class="text-xl font-medium text-charcoal">Low Stock Items</h3>
-                            <p id="low-stock-count" class="text-4xl font-bold text-stone mt-2">--</p>
-                            <a data-tab="tab-products" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Manage Stock &rarr;</a>
+                            <h3 class="text-xl font-medium text-charcoal">Active Stock Alerts</h3>
+                            <p id="total-stock-alerts-count" class="text-4xl font-bold text-stone mt-2">--</p>
+                            <a data-tab="tab-stock-alerts" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">View Alerts &rarr;</a>
                         </div>
                     </div>
 
                     <div class="mt-8 p-6 bg-parchment rounded-lg border-l-4 border-burnt-orange">
                         <h3 class="text-xl font-playfair text-charcoal mb-3">System Health Summary:</h3>
-                        <p class="text-stone">E-commerce flow **STABLE** (Authenticated checkout fixed). Inventory tracking is **LIVE**. Next priority: **Stock Alerts**.</p>
+                        <p class="text-stone">E-commerce flow **STABLE** (Authenticated checkout fixed). All Admin operational tabs are now **ACTIVE**.</p>
+                        <p class="text-sm text-stone mt-2 font-semibold">Admin Panel features are **COMPLETE**.</p>
                     </div>
                 </div>
 
@@ -728,20 +970,57 @@ title: Admin Panel
                 
                 <div id="tab-stock-alerts" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
                     <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Back-in-Stock Requests</h2>
-                    <p class="text-stone">This tab will list all customer requests for out-of-stock products, allowing the Admin to contact customers when stock is replenished and clear the request.</p>
+                    <p id="stock-alerts-message" class="text-stone mb-4">Fetching current back-in-stock requests.</p>
+
+                    <div class="mt-4 p-4 bg-gray-50 border rounded-lg border-burnt-orange/50">
+                        <h3 class="font-semibold text-charcoal">Action Guide:</h3>
+                        <p class="text-sm text-stone">1. Replenish stock for the item listed below in the **Products** tab.</p>
+                        <p class="text-sm text-stone">2. Click **Email Customer** to notify them.</p>
+                        <p class="text-sm text-stone">3. Click **Mark as Resolved** to clear the alert.</p>
+                    </div>
+
+                    <div id="stock-alerts-container" class="mt-6">
+                        </div>
                 </div>
 
                 <div id="tab-content" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Site Content & Pages</h2>
-                    <p class="text-stone">This tab will provide a simple WYSIWYG or Markdown editor interface for updating static pages like **About**, **Candle Care**, and **Refill Program** which are stored in the `/siteContent` collection.</p>
+                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Site Content Management (CMS)</h2>
+                    
+                    <div id="content-tabs-container" class="mb-4 border-b pb-2">
+                        </div>
+                    
+                    <p id="content-save-message" class="hidden px-4 py-2 bg-green-100 text-green-700 rounded-lg mb-4 text-sm">Content saved successfully!</p>
+
+                    <form id="site-content-form" data-content-id="about" class="space-y-4">
+                        <p class="text-stone">Loading editable fields...</p>
+                        </form>
                 </div>
 
                 <div id="tab-tools" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Utility Tools</h2>
-                    <p class="text-stone">This tab is for one-off or advanced tasks, such as bulk data import/export (already partially functional with the existing scripts) or rebuilding site-wide caches.</p>
-                    <div class="mt-4 p-4 bg-gray-50 border rounded-lg">
-                        <h3 class="font-semibold text-charcoal">Firebase Import/Export Scripts</h3>
-                        <p class="text-sm text-stone">The utility scripts (`import-firestore.mjs` and `export-firestore.mjs`) are available locally for backup and bootstrap purposes.</p>
+                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Utility & Developer Tools</h2>
+                    
+                    <div class="mt-4 p-4 bg-gray-50 border rounded-lg border-stone/50">
+                        <h3 class="font-semibold text-charcoal text-xl mb-2">Database Backup & Restore</h3>
+                        <p class="text-stone mb-3">These tools are for maintaining the Firestore database, typically used by developers or for initial setup.</p>
+                        <p class="text-sm text-red-600 font-semibold mb-4">WARNING: Only run these scripts from a secure local environment. They overwrite data.</p>
+                        
+                        <div class="space-y-3">
+                            <p class="text-sm text-charcoal font-medium">1. **Export Database (Backup)**</p>
+                            <div class="flex justify-between items-center bg-white p-3 border rounded">
+                                <code class="text-sm bg-gray-100 p-1 rounded">node export-firestore.mjs</code>
+                                <button onclick="alert('Tool must be executed via local terminal using the specified command. Data integrity is critical.')" class="px-3 py-1 bg-stone text-parchment rounded text-sm hover:bg-stone/80 transition">
+                                    Instructions
+                                </button>
+                            </div>
+                            
+                            <p class="text-sm text-charcoal font-medium pt-2">2. **Import Database (Restore/Bootstrap)**</p>
+                            <div class="flex justify-between items-center bg-white p-3 border rounded">
+                                <code class="text-sm bg-gray-100 p-1 rounded">node import-firestore.mjs</code>
+                                <button onclick="alert('Tool must be executed via local terminal using the specified command. This will overwrite existing Firestore collections.')" class="px-3 py-1 bg-burnt-orange text-parchment rounded text-sm hover:bg-burnt-orange/80 transition">
+                                    Instructions
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

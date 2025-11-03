@@ -1,64 +1,31 @@
-// .eleventy.js
-// This is the configuration file for Eleventy.
-// It tells Eleventy how to build the site.
-
 module.exports = function(eleventyConfig) {
+    // Tell 11ty to use the .eleventy.js in the repo root
 
-    // --- Passthrough Copy: CRITICAL FIX FOR ASSET ROUTING AND MIME TYPE ---
-    // This uses explicit mapping to ensure files are copied to the exact path
-    // expected by your templates, which resolves the 404s and the MIME type error.
-
-    // 1. CSS: Copy 'src/output.css' directly to the site root: /output.css
-    // This is where your HTML looks for the file. The old rules were confused.
-    eleventyConfig.addPassthroughCopy({ "src/output.css": "output.css" });
+    // --- CRITICAL FIX: Passthrough Copy for Static Assets ---
+    // Copy the entire 'src' directory content (JS, CSS, Images, etc.) 
+    // to the output root, preserving the 'src' subdirectory name.
+    // This resolves the 404 errors for /src/output.css, /src/main.js, and /src/*.webp.
+    eleventyConfig.addPassthroughCopy({ 'src': 'src' });
     
-    // 2. JavaScript Modules: Copy modules directly to the site root (e.g., /firebase-loader.js).
-    eleventyConfig.addPassthroughCopy({ "src/firebase-loader.js": "firebase-loader.js" });
-    eleventyConfig.addPassthroughCopy({ "src/main.js": "main.js" });
-    eleventyConfig.addPassthroughCopy({ "src/cart.js": "cart.js" });
-    eleventyConfig.addPassthroughCopy({ "src/auth.js": "auth.js" });
-
-    // 3. Images: Copy ALL .webp images from 'src/' to the site root.
-    // This fixes all image 404s (e.g., /logo.webp, /candles-header.webp).
-    eleventyConfig.addPassthroughCopy({ "src/*.webp": "/" });
+    // --- Existing Configuration ---
     
-    // 4. Generic Passthrough (Catch-all for subfolders like src/js)
-    eleventyConfig.addPassthroughCopy("src/js");
-
-
-    // --- Filters ---
-    eleventyConfig.addFilter("safe", (content) => {
-        if (content) {
-            return content;
-        }
-        return "";
-    });
-
-    
-    // --- Watch Targets ---
-    eleventyConfig.addWatchTarget("src/output.css");
-    eleventyConfig.addWatchTarget("src/**/*.js");
-    eleventyConfig.addWatchTarget("src/*.webp");
-
-
-    // --- Layout Aliasing ---
-    eleventyConfig.addLayoutAlias("layout", "layout.html");
-
-    // --- Base Configuration ---
     return {
+        // Set the input directory to the 'src' folder
         dir: {
             input: "src",
-            output: "_site",
-            includes: "_includes",
-            data: "_data"
+            output: "_site" // Eleventy's default output folder
         },
-        templateFormats: [
-            "html",
-            "liquid",
-            "md"
-        ],
-        htmlTemplateEngine: "liquid",
-        markdownTemplateEngine: "liquid",
-        passthroughFileCopy: true
+        
+        // Use Nunjucks for templates by default
+        templateFormats: ["html", "njk", "md"],
+        
+        // Global data file is src/_data/site.json
+        dataTemplateEngine: "njk",
+        
+        // HTML templates use Nunjucks by default
+        htmlTemplateEngine: "njk",
+        
+        // Markdown files use Liquid by default
+        markdownTemplateEngine: "liquid"
     };
 };

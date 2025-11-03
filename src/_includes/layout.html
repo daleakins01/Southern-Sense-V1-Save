@@ -1,35 +1,28 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>{{ title | default: "Southern Sense" }}</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="/output.css" />
-
-  <style>
-    /* Custom container styling to mimic the previous parchment-wrapped effect */
-    .site-wrap{
-      max-width: 1100px;
-      margin: 32px auto;
-      border: 6px solid rgb(106 74 56 / 0.12); /* Custom border to maintain effect */
-      box-shadow: 0 10px 30px rgba(45,38,33,0.15);
-      padding: 28px;
-      border-radius: 12px;
-    }
-    /* Rest of the footer-link styles are defined in footer.html */
-  </style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Southern Sense</title>
+    
+    <link rel="stylesheet" href="/src/output.css"> 
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link rel="icon" href="/src/logo.webp">
 </head>
-<body class="bg-parchment text-charcoal font-roboto">
-  <div class="site-wrap bg-white">
+<body class="bg-parchment text-charcoal font-roboto min-h-screen flex flex-col">
+
     {% include "header.html" %}
-    <main class="content p-4">
-      {{ content | safe }}
-    </main>
+
+    <div class="flex-grow">
+        {{ content | safe }}
+    </div>
+
     {% include "footer.html" %}
-  </div>
+    
+    <script type="module" src="/src/main.js"></script>
 </body>
 </html>

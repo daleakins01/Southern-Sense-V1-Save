@@ -1,146 +1,122 @@
 ---
-layout: layout.html
-title: Candle Care Guide
+layout: layout
+title: Candle Care
 ---
 
-<div class="container mx-auto p-4 lg:p-8 py-16">
-    
-    <div id="loading-spinner" class="text-center py-20">
-        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-burnt-orange mx-auto"></div>
-        <p class="mt-4 text-lg font-roboto text-stone">Loading Candle Care Guide...</p>
-    </div>
-
-    <div id="care-content" class="hidden max-w-4xl mx-auto">
-        
-        <div class="text-center pt-10 pb-12">
-            <h1 id="care-title" class="font-playfair text-5xl font-extrabold text-charcoal mb-4"></h1>
-            <p id="care-subtitle" class="font-roboto text-xl text-stone max-w-3xl mx-auto"></p>
-        </div>
-
-        <div id="care-intro" class="font-roboto text-lg text-charcoal leading-relaxed mb-10 p-6 bg-stone/5 rounded-lg border-l-4 border-burnt-orange shadow-md space-y-4">
-            </div>
-
-        <div class="mb-12">
-            <h2 id="core-tips-title" class="font-playfair text-3xl font-bold text-charcoal mb-6 border-b pb-2 border-stone/10"></h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="flex items-start space-x-4">
-                    <i class="fas fa-cut text-2xl text-burnt-orange flex-shrink-0"></i>
-                    <div class="space-y-1">
-                        <h3 id="tip-1-heading" class="font-playfair text-xl font-bold text-charcoal"></h3>
-                        <p id="tip-1-text" class="font-roboto text-lg text-charcoal"></p>
-                    </div>
-                </div>
-
-                <div class="flex items-start space-x-4">
-                    <i class="fas fa-fire-extinguisher text-2xl text-burnt-orange flex-shrink-0"></i>
-                    <div class="space-y-1">
-                        <h3 id="tip-2-heading" class="font-playfair text-xl font-bold text-charcoal"></h3>
-                        <p id="tip-2-text" class="font-roboto text-lg text-charcoal"></p>
-                    </div>
-                </div>
-
-                <div class="flex items-start space-x-4">
-                    <i class="fas fa-ruler-combined text-2xl text-burnt-orange flex-shrink-0"></i>
-                    <div class="space-y-1">
-                        <h3 id="tip-3-heading" class="font-playfair text-xl font-bold text-charcoal"></h3>
-                        <p id="tip-3-text" class="font-roboto text-lg text-charcoal"></p>
-                    </div>
-                </div>
-
-                <div class="flex items-start space-x-4">
-                    <i class="fas fa-temperature-low text-2xl text-burnt-orange flex-shrink-0"></i>
-                    <div class="space-y-1">
-                        <h3 id="tip-4-heading" class="font-playfair text-xl font-bold text-charcoal"></h3>
-                        <p id="tip-4-text" class="font-roboto text-lg text-charcoal"></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="mb-12 pt-6 border-t border-stone/10">
-            <h2 id="safety-title" class="font-playfair text-3xl font-bold text-charcoal mb-6"></h2>
-            <div id="safety-content" class="space-y-4 font-roboto text-lg text-charcoal p-4 bg-red-50/50 rounded-lg border-l-4 border-red-200">
-                </div>
-        </div>
-    </div>
-</div>
-
 <script type="module">
-    // --- Firestore Imports ---
-    import { db } from '/firebase-loader.js';
-    import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+    import { db, doc, getDoc } from '/firebase-loader.js';
 
     // --- DOM Elements ---
-    const loadingSpinner = document.getElementById('loading-spinner');
-    const contentContainer = document.getElementById('care-content');
+    const contentLoader = document.getElementById('content-loader');
+    const careContent = document.getElementById('care-content');
+    const introSection = document.getElementById('intro-section');
+    const coreTipsContainer = document.getElementById('core-tips-container');
+    const safetyHeading = document.getElementById('safety-heading');
+    const safetyContent = document.getElementById('safety-content');
+    
+    // Structure of the core tips for dynamic injection
+    const TIP_ELEMENT_IDS = [
+        { heading: 'tip1Heading', text: 'tip1Text' },
+        { heading: 'tip2Heading', text: 'tip2Text' },
+        { heading: 'tip3Heading', text: 'tip3Text' },
+        { heading: 'tip4Heading', text: 'tip4Text' }
+    ];
 
     /**
-     * Renders the fetched content onto the page.
-     * @param {Object} content - The data retrieved from the /siteContent/candleCare document.
-     */
-    function renderContent(content) {
-        // --- Header ---
-        document.getElementById('care-title').textContent = content.careTitle || 'Mastering the Art of the Burn';
-        document.getElementById('care-subtitle').textContent = content.careSubtitle || 'Ensure the longevity and purity of your Southern Sense candle with these essential care tips.';
-
-        // --- Intro ---
-        document.getElementById('care-intro').innerHTML = content.careIntro || '<p>A well-maintained candle burns cleanly, smells better, and lasts longer. Follow these simple steps to get the most luxurious experience from your hand-poured candle.</p>';
-
-        // --- Core Tips ---
-        document.getElementById('core-tips-title').textContent = content.coreTipsTitle || 'Core Care Tips';
-        
-        document.getElementById('tip-1-heading').textContent = content.tip1Heading || 'Trim Your Wick';
-        document.getElementById('tip-1-text').textContent = content.tip1Text || 'Always trim the cotton wick to 1/4 inch before each burn. This prevents mushrooming, excessive soot, and an unstable flame.';
-        
-        document.getElementById('tip-2-heading').textContent = content.tip2Heading || 'The First Burn';
-        document.getElementById('tip-2-text').textContent = content.tip2Text || 'Allow the first burn to create a full melt pool—wax melted completely across the jar\'s diameter. This prevents tunneling on future burns.';
-        
-        document.getElementById('tip-3-heading').textContent = content.tip3Heading || 'Mind the Time';
-        document.getElementById('tip-3-text').textContent = content.tip3Text || 'Burn for a maximum of 4 hours at a time. This keeps the jar from overheating and preserves the longevity of the fragrance oil.';
-        
-        document.getElementById('tip-4-heading').textContent = content.tip4Heading || 'Store Safely';
-        document.getElementById('tip-4-text').textContent = content.tip4Text || 'Store your candles in a cool, dry place away from direct sunlight, which can cause the natural wax to discolor or melt.';
-
-        // --- Safety Section ---
-        document.getElementById('safety-title').textContent = content.safetyTitle || 'Crucial Safety Warnings';
-        document.getElementById('safety-content').innerHTML = content.safetyContent || '<ul><li>Never leave a burning candle unattended.</li><li>Keep out of reach of children and pets.</li><li>Place on a stable, heat-resistant surface away from drafts and flammable items.</li><li>Discontinue use when only 1/2 inch of wax remains.</li></ul>';
-        
-
-        // Show content
-        loadingSpinner.classList.add('hidden');
-        contentContainer.classList.remove('hidden');
-    }
-
-    /**
-     * Fetches the 'candleCare' document from the /siteContent collection.
+     * Fetches the 'candleCare' document from Firestore and injects content into the page.
      */
     async function loadCandleCareContent() {
+        // Show loader while fetching
+        contentLoader.classList.remove('hidden');
+        careContent.classList.add('hidden');
+
         try {
             const careRef = doc(db, 'siteContent', 'candleCare');
             const docSnap = await getDoc(careRef);
 
             if (docSnap.exists()) {
-                renderContent(docSnap.data());
+                const data = docSnap.data();
+
+                // 1. Inject Introduction (Main Heading and Intro)
+                introSection.innerHTML = `
+                    <h1 class="text-5xl font-playfair text-charcoal mb-4">${data.heading || 'Candle Care 101'}</h1>
+                    <div class="text-lg text-stone leading-relaxed">${data.careIntro || '<p>Content missing: Intro paragraph.</p>'}</div>
+                `;
+
+                // 2. Inject Core Tips
+                let coreTipsHtml = `
+                    <h2 class="text-4xl font-playfair text-charcoal mb-8 text-center">${data.coreTipsTitle || 'Core Care Tips'}</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                `;
+
+                TIP_ELEMENT_IDS.forEach((tip, index) => {
+                    const tipHeading = data[tip.heading] || `Tip ${index + 1} Heading`;
+                    const tipText = data[tip.text] || 'Tip content is missing. Update via Admin CMS.';
+
+                    coreTipsHtml += `
+                        <div class="p-6 bg-parchment rounded-lg shadow-md border-l-4 border-burnt-orange">
+                            <h3 class="text-2xl font-playfair text-charcoal mb-2">${tipHeading}</h3>
+                            <p class="text-stone leading-relaxed">${tipText}</p>
+                        </div>
+                    `;
+                });
+
+                coreTipsHtml += `</div>`;
+                coreTipsContainer.innerHTML = coreTipsHtml;
+
+
+                // 3. Inject Safety Warnings
+                safetyHeading.textContent = data.safetyTitle || 'Crucial Safety Warnings';
+                // Use innerHTML for safety content as it's typically an un-ordered list (<ul>)
+                safetyContent.innerHTML = data.safetyContent || '<ul><li class="text-red-600">Safety content is missing. Please ensure safety warnings are populated via the Admin CMS.</li></ul>';
+                
             } else {
-                console.warn("No 'candleCare' content found in siteContent. Using hardcoded defaults.");
-                renderContent({}); // Render with defaults
+                // Document not found
+                introSection.innerHTML = '<h1 class="text-5xl font-playfair text-charcoal">Content Missing</h1>';
+                coreTipsContainer.innerHTML = '<p class="text-red-600 mt-4">The core "candleCare" document could not be found in the database. Please check Firestore.</p>';
+                safetyHeading.textContent = 'Safety Warnings';
+                safetyContent.innerHTML = '';
             }
 
         } catch (error) {
             console.error("Error loading Candle Care content:", error);
-            // Fallback to error state
-            loadingSpinner.classList.add('hidden');
-            contentContainer.innerHTML = '<div class="text-center text-red-700 py-20 font-roboto">An error occurred while loading this page\'s content. Please refresh.</div>';
-            contentContainer.classList.remove('hidden');
+            introSection.innerHTML = '<h1 class="text-5xl font-playfair text-charcoal">Error Loading Page</h1>';
+            coreTipsContainer.innerHTML = '<p class="text-red-600 mt-4">A network error occurred while fetching content. Please try again later.</p>';
+        } finally {
+            // Hide loader and show content
+            contentLoader.classList.add('hidden');
+            careContent.classList.remove('hidden');
         }
     }
 
-    // --- Main Initialization ---
-    
-    // FIX (Race Condition): Wait for firebase-loader.js to dispatch its signal
-    document.addEventListener('firebase-ready', () => {
-        loadCandleCareContent();
-    });
+    document.addEventListener('DOMContentLoaded', loadCandleCareContent);
 
 </script>
+
+<main class="container mx-auto px-4 py-12 min-h-screen">
+    
+    <div id="content-loader" class="flex justify-center items-center h-64">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-charcoal"></div>
+    </div>
+
+    <div id="care-content" class="hidden">
+        
+        <div id="intro-section" class="max-w-3xl mx-auto text-center mb-12">
+            </div>
+
+        <section class="mb-16" id="core-tips-container">
+            </section>
+
+        <section class="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-xl border-t-4 border-red-600">
+            <h2 id="safety-heading" class="text-3xl font-playfair text-red-600 mb-6 text-center">
+                Crucial Safety Warnings
+            </h2>
+            <div id="safety-content" class="text-lg text-stone space-y-3 list-disc list-inside">
+                </div>
+        </section>
+
+        <div class="mt-16 text-center">
+            <p class="text-sm font-semibold uppercase tracking-wider text-stone">VISUAL GUIDE COMING SOON</p>
+        </div>
+    </div>
+</main>

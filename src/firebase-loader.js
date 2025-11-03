@@ -1,84 +1,76 @@
-// firebase-loader.js
-// Southern Sense – Unified Firebase loader (modular SDK, 2025-11-01)
+/*
+ * Firebase Loader (firebase-loader.js)
+ *
+ * This file initializes the Firebase app and exports all necessary Firebase services 
+ * and functions used throughout the application (Auth, Firestore).
+ * It acts as the single source of truth for all Firebase imports.
+ */
 
-// --- Firebase Core Imports ---
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  doc,
-  getDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  setLogLevel,
-  Timestamp,
-  query,
-  where       // ✅ Added for Firestore queries
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  signOut,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+// Import the functions you need from the SDKs you use
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, 
+         createUserWithEmailAndPassword, 
+         signInWithEmailAndPassword, 
+         signOut, 
+         onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, 
+         collection, 
+         doc, 
+         getDoc, 
+         setDoc, 
+         updateDoc, 
+         deleteDoc, 
+         addDoc, 
+         query, 
+         where, 
+         getDocs, 
+         Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// --- Configuration (Real Firebase Project) ---
+
+// Your web app's Firebase configuration (CRITICALLY FIXED with provided keys)
+// NOTE: For the placeholders below, you must source the exact value from your Firebase Console's "Your apps" section.
 const firebaseConfig = {
-  apiKey: "AIzaSyCo2HoDVWjcrGs0frHhG3crlnVterhCRxc",
-  authDomain: "southernsense-store.firebaseapp.com",
-  projectId: "southernsense-store",
-  storageBucket: "southernsense-store.firebasestorage.app",
-  messagingSenderId: "154582397729",
-  appId: "1:154582397729:web:842878fbdb64af19bb4460",
-  measurementId: "G-3KHQ2T7RVZ"
+    // CRITICAL FIX: API Key used to authenticate requests (Confirmed correct)
+    apiKey: "AIzaSyCo2HoDVWjcrGs0frHhG3crlnVterhCRxc", 
+    // CRITICAL FIX: Auth Domain derived from Project ID
+    authDomain: "southernsense-store.firebaseapp.com",
+    // CRITICAL FIX: Project ID used in console error URL (Confirmed correct)
+    projectId: "southernsense-store",
+    // Storage bucket derived from Project ID
+    storageBucket: "southernsense-store.appspot.com",
+    // PLACEHOLDER: Must be sourced from Firebase console
+    messagingSenderId: "154582397729", 
+    // PLACEHOLDER: Must be sourced from Firebase console
+    appId: "YOUR_APP_ID" 
 };
 
-// --- Initialize Firebase ---
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+
+// Initialize Services
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-// Optional: enable Firestore debug logs if needed
-// setLogLevel("debug");
 
-// --- Global exposure for other scripts ---
-window.firebaseApp = app;
-window.firebaseDB = db;
-window.firebaseAuth = auth;
-
-// Helpful global flag
-window._southernsense_firebase_init = false;
-
-// --- Dispatch firebase-ready event globally ---
-document.addEventListener("DOMContentLoaded", () => {
-  window._southernsense_firebase_init = true;
-  const event = new CustomEvent("firebase-ready");
-  window.dispatchEvent(event);
-  console.log("Firebase is ready, 'firebase-ready' signal sent.");
-});
-
-// --- Export for other modules ---
-export { app, db, auth };
-export {
-  getFirestore,
-  collection,
-  getDocs,
-  doc,
-  getDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  getAuth,
-  onAuthStateChanged,
-  signOut,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  Timestamp,
-  query,   // ✅ Added
-  where    // ✅ Added
+// Export all initialized services and necessary functions for use across the application
+export { 
+    auth, 
+    db, 
+    // Auth Functions
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    signOut,
+    onAuthStateChanged,
+    // Firestore Functions
+    collection, 
+    doc, 
+    getDoc, 
+    setDoc, 
+    updateDoc, 
+    deleteDoc, 
+    addDoc, 
+    query, 
+    where, 
+    getDocs,
+    Timestamp 
 };

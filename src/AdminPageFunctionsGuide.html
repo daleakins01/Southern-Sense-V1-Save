@@ -1,80 +1,96 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Functions Guide</title>
-    <link rel="stylesheet" href="/output.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap"
-      rel="stylesheet"
-    />
-    <!-- 
-      NOTE: This is a standalone app. 
-      It does NOT use Eleventy layouts.
-    -->
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-        }
-        h1, h2, h3 {
-            font-family: 'Playfair Display', serif;
-        }
-        .content {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        code {
-            background: #f4f4f4;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', Courier, monospace;
-        }
-    </style>
-</head>
-<body class="bg-gray-100 text-charcoal">
-    <header class="bg-charcoal text-white p-6 shadow-lg">
-        <h1 class="text-3xl font-bold">Admin Panel Functions Guide</h1>
-    </header>
+---
+layout: layout
+title: Admin Panel User Guide
+permalink: /admin-guide/
+eleventyExcludeFromCollections: true
+---
 
-    <div class="content">
-        <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Overview</h2>
-        <p class="mb-4">This guide explains the functions of the Admin Panel. The panel is connected directly to the Firestore database. All changes are <strong class="text-red-600">live and permanent</strong>.</p>
+<main class="container mx-auto px-4 py-16 min-h-screen">
+    <div class="w-full max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-xl">
+        
+        <h1 class="text-4xl font-playfair text-charcoal mb-4 border-b pb-2">
+            Southern Sense Admin Panel User Guide
+        </h1>
+        
+        <p class="text-lg text-stone leading-relaxed mb-8">
+            This panel gives you full control over the e-commerce operations, product catalog, and public-facing content. All changes are saved instantly to the database.
+        </p>
 
-        <section class="mb-6">
-            <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Products Tab</h2>
-            
-            <h3 class="text-xl font-semibold mt-4">Add New Product</h3>
-            <p>Click the "Add New Product" button to open the form. Fill in all fields. The <code>imageUrl</code> must match a file name in the <code>/src/</code> folder (e.g., <code>my-new-candle.webp</code>). The <code>longDescription</code> field can accept basic HTML like <code>&lt;p&gt;</code> tags.</p>
+        <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
+            1. Orders Tab (Order Management)
+        </h2>
+        <div class="text-charcoal mb-8 space-y-3">
+            <p><strong>Purpose:</strong> Track all sales and monitor shipping status.</p>
+            <ul class="list-disc list-inside ml-4">
+                <li><strong>Data Source:</strong> Reads all documents from the <code>/orders</code> collection.</li>
+                <li><strong>Functionality:</strong> Lists orders, sorted newest first. Displays Order # (truncated), Date, Total, Status (Paid, Pending, etc.), and Customer (Guest or Authenticated).</li>
+                <li><strong>Action:</strong> The "Details" button provides a popup with full customer shipping information and itemized line items.</li>
+            </ul>
+        </div>
+        
+        <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
+            2. Products Tab (Catalog & Inventory)
+        </h2>
+        <div class="text-charcoal mb-8 space-y-3">
+            <p><strong>Purpose:</strong> Manage inventory, pricing, and product visibility.</p>
+            <ul class="list-disc list-inside ml-4">
+                <li><strong>Data Source:</strong> Reads and writes to the <code>/products</code> collection.</li>
+                <li><strong>Functionality:</strong> Lists all products with their Scent Family, Price, Stock Level, and **Featured** status.</li>
+                <li><strong>Action:</strong> The "Edit" button opens a modal allowing instantaneous updates to `name`, `price`, `stock`, `scentFamily`, `category`, and the critical `featured: boolean` flag (used on the Homepage).</li>
+            </ul>
+        </div>
 
-            <h3 class="text-xl font-semibold mt-4">Edit Product</h3>
-            <p>Click the "Edit" button on any product row. The form will be pre-filled with that product's data. You can change any value and click "Save Product" to update it.</p>
-
-            <h3 class="text-xl font-semibold mt-4">Delete Product</h3>
-            <p>After clicking "Edit", a "Delete Product" button will appear. This will <strong class="text-red-600">permanently delete</strong> the product from the database. This action cannot be undone.</p>
-        </section>
-
-        <section class="mb-6">
-            <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Orders Tab</h2>
-            <p>This tab displays all customer orders, sorted by the most recent. You can view the Order ID, date, customer name/email, total, and current status.</p>
-            <p class="mt-2"><strong>(Future Feature)</strong>: Clicking "View" will open a detailed modal to update the order status (e.g., from "processing" to "shipped") and see the items purchased.</p>
-        </section>
-
-        <section class="mb-6">
-            <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Reviews Tab</h2>
-            <p><strong>(Pillar 2 - Not Implemented)</strong>: This panel will allow you to approve or deny new customer reviews before they appear on the product pages.</p>
-        </section>
-
-        <section>
-            <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Site Content Tab</h2>
-            <p><strong>(Pillar 2 - Not Implemented)</strong>: This panel will allow you to edit text on pages like "About Us" or "Refill Program" without needing to deploy new code.</p>
-        </section>
+        <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
+            3. Reviews Tab (Social Proof Moderation)
+        </h2>
+        <div class="text-charcoal mb-8 space-y-3">
+            <p><strong>Purpose:</strong> Moderate and approve customer feedback before it appears on product pages.</p>
+            <ul class="list-disc list-inside ml-4">
+                <li><strong>Data Source:</strong> Reads and writes to the <code>/reviews</code> collection.</li>
+                <li><strong>Functionality:</strong> Fetches all reviews, prioritizing those with <code>approved: false</code> (Pending).</li>
+                <li><strong>Actions:</strong>
+                    <ul>
+                        <li>**Approve:** Sets `approved: true`. Review immediately appears on the corresponding product page.</li>
+                        <li>**Unapprove:** Sets `approved: false`. Hides the review.</li>
+                        <li>**Delete Permanently:** Removes the review from the database entirely.</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        
+        <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
+            4. Stock Alerts Tab (Pillar 3 Management)
+        </h2>
+        <div class="text-charcoal mb-8 space-y-3">
+            <p><strong>Purpose:</strong> View and clear back-in-stock requests from customers.</p>
+            <ul class="list-disc list-inside ml-4">
+                <li><strong>Data Source:</strong> Reads and deletes from the <code>/backInStockRequests</code> collection.</li>
+                <li><strong>Functionality:</strong> Lists all unresolved requests (those still in the database).</li>
+                <li><strong>Actions:</strong>
+                    <ul>
+                        <li>**Email Customer:** Provides a quick `mailto:` link to notify the customer of restock.</li>
+                        <li>**Mark as Resolved:** Deletes the request from the database, clearing the alert from the Admin queue.</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        
+        <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
+            5. Site Content Tab (CMS)
+        </h2>
+        <div class="text-charcoal mb-8 space-y-3">
+            <p><strong>Purpose:</strong> Update static content pages without touching code.</p>
+            <ul class="list-disc list-inside ml-4">
+                <li><strong>Data Source:</strong> Reads and writes to the <code>/siteContent</code> collection (documents: <code>about</code>, <code>candleCare</code>, <code>refillProgram</code>).</li>
+                <li><strong>Functionality:</strong> Dynamically loads all text fields from the selected document and allows the Admin to edit and save changes instantly. Public pages automatically reflect these updates.</li>
+            </ul>
+        </div>
+        
+        <div class="mt-10 border-t pt-6 text-center">
+            <a href="/admin/" class="px-8 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
+                Go to the Admin Panel
+            </a>
+        </div>
+        
     </div>
-</body>
-</html>
+</main>

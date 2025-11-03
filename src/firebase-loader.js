@@ -30,7 +30,6 @@ import { getFirestore,
 
 
 // Your web app's Firebase configuration (CRITICALLY FIXED with provided keys)
-// NOTE: For the placeholders below, you must source the exact value from your Firebase Console's "Your apps" section.
 const firebaseConfig = {
     // CRITICAL FIX: API Key used to authenticate requests (Confirmed correct)
     apiKey: "AIzaSyCo2HoDVWjcrGs0frHhG3crlnVterhCRxc", 
@@ -40,11 +39,12 @@ const firebaseConfig = {
     projectId: "southernsense-store",
     // Storage bucket derived from Project ID
     storageBucket: "southernsense-store.appspot.com",
-    // FIXED: The sender ID is a required component of a valid config object.
+    // FINAL VALUE: Messaging Sender ID provided by user
     messagingSenderId: "154582397729", 
-    // CRITICAL FIX: Replaced placeholder "YOUR_APP_ID" with a plausible value derived 
-    // from the messagingSenderId. **This value MUST be confirmed by the user.**
-    appId: "1:154582397729:web:e0586e33f3801a6136d75d" 
+    // CRITICAL FIX: App ID provided by user, resolves Priority 1 initialization failure
+    appId: "1:154582397729:web:842878fbdb64af19bb4460",
+    // ADDED: Measurement ID provided by user for analytics
+    measurementId: "G-3KHQ2T7RVZ" 
 };
 
 // Initialize Firebase

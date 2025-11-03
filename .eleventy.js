@@ -1,7 +1,19 @@
 module.exports = function(eleventyConfig) {
     // Tell 11ty to use the .eleventy.js in the repo root
 
-    // --- CRITICAL FIX: Passthrough Copy for Static Assets ---
+    // --- CRITICAL FIX 1: Fixes the "undefined filter: safe" error for Liquid templates ---
+    // This adds the "safe" filter to the Liquid engine, which is necessary when 
+    // Markdown files (which use Liquid) inject raw HTML (like page content) into a layout.
+    eleventyConfig.setLiquidOptions({
+        // Define the safe filter to prevent HTML escaping
+        filters: {
+            safe: (input) => {
+                return input; 
+            }
+        }
+    });
+
+    // --- CRITICAL FIX 2: Passthrough Copy for Static Assets ---
     // Copy the entire 'src' directory content (JS, CSS, Images, etc.) 
     // to the output root, preserving the 'src' subdirectory name.
     // This resolves the 404 errors for /src/output.css, /src/main.js, and /src/*.webp.

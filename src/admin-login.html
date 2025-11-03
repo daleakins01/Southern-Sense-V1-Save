@@ -34,7 +34,7 @@ title: Admin Login
 
 <script type="module">
     // --- Firebase Imports ---
-    // Refactored to import all necessary functions from the central loader
+    // FIX: Corrected path to include /src/ directory to match Eleventy configuration
     import { 
         db, 
         auth, 
@@ -43,7 +43,7 @@ title: Admin Login
         signOut,
         doc,
         getDoc,
-    } from '/firebase-loader.js';
+    } from '/src/firebase-loader.js';
     
     // --- DOM Elements ---
     const loginForm = document.getElementById('admin-login-form');

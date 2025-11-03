@@ -58,12 +58,12 @@ title: Product Name
 
 
 <script type="module">
-    // FIX: Import all required Firestore functions from the central loader
+    // FIX: Corrected import path to include /src/ directory to match Eleventy configuration
     import { 
         db, 
         doc, 
         getDoc
-    } from '/firebase-loader.js'; 
+    } from '/src/firebase-loader.js'; 
 
     // Helper function to extract a query parameter from the URL
     function getQueryParam(param) {
@@ -86,7 +86,7 @@ title: Product Name
         if (!productId) {
             loadingIndicator.classList.add('hidden');
             productError.classList.remove('hidden');
-            document.title = "Product Not Found | {{ site.title }}";
+            document.title = "Product Not Found | Southern Sense";
             return;
         }
 
@@ -116,8 +116,8 @@ title: Product Name
                 document.getElementById('product-strength').innerHTML = `<strong class="font-bold">Intensity:</strong> ${intensity}`;
                 document.getElementById('product-pairing').innerHTML = `<strong class="font-bold">Best Paired With:</strong> ${product.pairing || 'Any cozy moment.'}`;
 
-                // Set image (use fallback URL if missing, though it should be populated from Firestore)
-                const imageUrl = product.imageUrl ? product.imageUrl : 'https://placehold.co/800x800/FBF9F6/3D352E?text=Image+Missing';
+                // Set image (prefix with /src/ for correct local pathing)
+                const imageUrl = product.imageUrl ? `/src/${product.imageUrl}` : 'https://placehold.co/800x800/FBF9F6/3D352E?text=Image+Missing';
                 const mainImage = document.getElementById('product-main-image');
                 mainImage.src = imageUrl;
                 mainImage.alt = product.name;
@@ -140,11 +140,18 @@ title: Product Name
                 
                 // Add to cart functionality (Placeholder - assumes cart.js handles logic)
                 cartButton.addEventListener('click', () => {
-                    // This assumes a global cart system (likely in cart.js) that can be called
-                    // If cart.js uses modules, this needs further refinement/eventing.
-                    // For now, this is a placeholder to show successful data loading.
-                    console.log(`Added ${document.getElementById('quantity').value} of ${product.name} to cart.`);
-                    alert(`Added ${document.getElementById('quantity').value} of ${product.name} to cart.`);
+                    // Assuming a global addToCart function is available via cart.js module
+                    if (window.addToCart) {
+                        window.addToCart(
+                            productId, 
+                            product.name, 
+                            parseFloat(product.price), 
+                            imageUrl
+                        );
+                        alert(`Added ${document.getElementById('quantity').value} of ${product.name} to cart.`);
+                    } else {
+                        alert("Cart system not loaded. Product data is correct.");
+                    }
                 });
                 
                 // Final State: Hide loading, show content
@@ -163,8 +170,8 @@ title: Product Name
             // Database connection or script error
             loadingIndicator.classList.add('hidden');
             productError.classList.remove('hidden');
-            productError.querySelector('h2').textContent = 'An Error Occurred';
-            productError.querySelector('p').textContent = `Could not load data: ${error.message}`;
+            productError.querySelector('h2').textContent = 'A Critical Error Occurred';
+            productError.querySelector('p').textContent = `Could not load data: Verify Firebase configuration in firebase-loader.js or check network.`;
         }
     }
 

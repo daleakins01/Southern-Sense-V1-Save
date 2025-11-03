@@ -1,10 +1,11 @@
 ---
-layout: layout
+layout: layout.html
 title: Southern Sense - Hand Poured Luxury Candles
 ---
 
 <script type="module">
-    import { db, collection, query, where, getDocs } from '/firebase-loader.js';
+    // FIX: Changed import path to /src/firebase-loader.js and /src/cart.js
+    import { db, collection, query, where, getDocs } from '/src/firebase-loader.js';
     import { addToCart } from '/src/cart.js';
 
     // --- DOM Elements ---
@@ -66,13 +67,15 @@ title: Southern Sense - Hand Poured Luxury Candles
             const docSnap = querySnapshot.docs[0];
             const data = docSnap.data();
             featuredProduct = {
-                id: data.id,
+                id: docSnap.id, // Use docSnap.id instead of data.id for consistency
                 name: data.name,
                 // CRITICAL CHECK: Ensure price is correctly read and parsed
                 price: parseFloat(data.price), 
                 stock: parseInt(data.stock, 10) || 0, // Ensure stock is an integer
-                imageUrl: `/src/${data.imageUrl}`, // Prepend path for local file structure
-                shortDescription: data.shortDescription
+                // FIX: Ensure the image path is prefixed with /src/ for the final path
+                imageUrl: data.imageUrl ? `/src/${data.imageUrl}` : '/src/aloha-luxe-candle.webp', 
+                shortDescription: data.shortDescription,
+                featured: data.featured // Get featured flag for display logic below
             };
 
             // 3. Update DOM with product data
@@ -103,12 +106,17 @@ title: Southern Sense - Hand Poured Luxury Candles
             // 5. Success: Show the content
             featuredProductLoader.classList.add('hidden');
             featuredProductSection.classList.remove('hidden');
-            featuredMessage.classList.remove('hidden'); // Ensure the "FEATURED" badge shows
+            // Show FEATURED badge only if flag is true (redundant, but safe)
+            if (featuredProduct.featured) {
+                featuredMessage.classList.remove('hidden'); 
+            } else {
+                featuredMessage.classList.add('hidden');
+            }
             
         } catch (error) {
             console.error("CRITICAL ERROR: Failed to load featured product:", error);
             // Show a specific error based on the root cause being Firebase/Network
-            renderUnavailable("Database Connection Error. Please verify Firebase Project ID.");
+            renderUnavailable("Database Connection Error. Please verify Firebase Project ID and network connection.");
         }
     }
 

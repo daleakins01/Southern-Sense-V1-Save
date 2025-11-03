@@ -2,7 +2,7 @@
 // This script is loaded only by the homepage (index.html)
 
 // Import Firestore services
-// NOTE: Refactored to import all necessary functions from the central loader for consistency.
+// FIX: Corrected import path to reference the file in the new /src/ directory
 import { 
     db, 
     doc, 
@@ -12,7 +12,7 @@ import {
     where, 
     getDocs, 
     limit // This function is used for fetching the featured product query.
-} from '../firebase-loader.js'; 
+} from '/src/firebase-loader.js'; 
 
 /**
  * Loads all dynamic content for the homepage from Firestore.
@@ -20,7 +20,6 @@ import {
 async function loadHomepageContent() {
     console.log("Homepage: Loading content from Firestore...");
     try {
-        // Fetching the homepage content configuration document
         const docRef = doc(db, "siteContent", "homepage");
         const docSnap = await getDoc(docRef);
 
@@ -86,8 +85,8 @@ async function loadFeaturedProduct(id) {
         const product = docSnap.data();
         
         // Check for image URL
-        // Use relative path since assets are copied to root
-        const validImageUrl = product.imageUrl ? product.imageUrl : 'https://placehold.co/600x400/FBF9F6/3D352E?text=Image+Not+Found';
+        // FIX: Ensure image URL uses /src/ prefix to match Eleventy configuration
+        const validImageUrl = product.imageUrl ? `/src/${product.imageUrl}` : 'https://placehold.co/600x400/FBF9F6/3D352E?text=Image+Not+Found';
 
         featuredContent.innerHTML = `
             <div class="grid md:grid-cols-2 gap-8 items-center bg-white/60 backdrop-blur-sm p-8 rounded-lg shadow-xl">
@@ -104,7 +103,7 @@ async function loadFeaturedProduct(id) {
         `;
     } catch (error) {
         console.error("Error loading featured product:", error);
-        featuredContent.innerHTML = `<p class="text-red-600">Error loading featured product: ${error.message}</p>`;
+        featuredContent.innerHTML = `<p class="text-red-600">Error loading content: ${error.message}</p>`;
     }
 }
 

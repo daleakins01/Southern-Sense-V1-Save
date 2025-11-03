@@ -1,142 +1,154 @@
 ---
-layout: layout.html
+layout: layout
 title: Admin Login
 ---
 
-<div class="container mx-auto p-4 lg:p-8 py-16">
-    <div class="max-w-md mx-auto">
-        <h1 class="font-playfair text-3xl font-extrabold text-charcoal mb-4 text-center">Administrator Sign In</h1>
-        <div class="bg-parchment p-6 rounded-xl shadow-2xl border border-stone/10 space-y-6">
-
-            <p id="login-status" class="hidden font-roboto text-sm p-3 rounded-lg"></p>
-
-            <form id="admin-login-form" class="space-y-4">
-                <div>
-                    <label for="email" class="block font-roboto text-sm font-medium text-charcoal">Email</label>
-                    <input type="email" id="email" name="email" required class="w-full p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
-                </div>
-                <div>
-                    <label for="password" class="block font-roboto text-sm font-medium text-charcoal">Password</label>
-                    <input type="password" id="password" name="password" required class="w-full p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
-                </div>
-                
-                <button type="submit" id="login-button" class="w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg shadow-md hover:bg-opacity-90 transition duration-150">
-                    Login
-                </button>
-            </form>
-            
-            <p class="font-roboto text-sm text-stone/80 text-center">
-                Need an account? <a href="/register/" class="text-burnt-orange hover:underline">Register Here</a>
-            </p>
-        </div>
-    </div>
-</div>
-
 <script type="module">
-    // --- Firebase Imports ---
-    // FIX: Corrected path to include /src/ directory to match Eleventy configuration
     import { 
-        db, 
         auth, 
+        db, 
         signInWithEmailAndPassword, 
-        onAuthStateChanged, 
-        signOut,
-        doc,
+        doc, 
         getDoc,
-    } from '/src/firebase-loader.js';
-    
-    // --- DOM Elements ---
-    const loginForm = document.getElementById('admin-login-form');
-    const loginButton = document.getElementById('login-button');
-    const loginStatus = document.getElementById('login-status');
-    
-    let redirectSuccess = false; 
+        onAuthStateChanged 
+    // FIX: Corrected import path to include /src/ directory
+    } from '/src/firebase-loader.js'; 
 
-    async function isAdminUser(uid) {
-        if (!uid) return false;
+    // --- DOM Elements ---
+    const adminLoginForm = document.getElementById('admin-login-form');
+    const emailInput = document.getElementById('email-input');
+    const passwordInput = document.getElementById('password-input');
+    const loginMessage = document.getElementById('login-message');
+
+    // --- Core Logic ---
+
+    /**
+     * Handles the Admin login form submission.
+     */
+    async function handleAdminLogin(e) {
+        e.preventDefault();
+        
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+        const submitButton = e.submitter;
+        
+        if (!email || !password) {
+            showMessage("Please enter both email and password.", 'error');
+            return;
+        }
+
+        submitButton.disabled = true;
+        submitButton.textContent = 'Authenticating...';
+        showMessage("Attempting to log in...", 'info');
+
         try {
-            // Using the initialized db instance from the loader
-            const adminRef = doc(db, 'admins', uid);
-            const docSnap = await getDoc(adminRef);
-            return docSnap.exists();
-        } catch (e) {
-            console.error("Error checking admin status:", e);
-            return false;
+            // 1. Authenticate user using standard login
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            
+            // 2. CRITICAL STEP: Check if the authenticated user is listed as an admin in Firestore
+            const adminDocRef = doc(db, 'admins', user.uid);
+            const adminDocSnap = await getDoc(adminDocRef);
+
+            if (adminDocSnap.exists()) {
+                showMessage("Admin Login successful! Redirecting to dashboard...", 'success');
+                // Success: Redirect to the main admin panel
+                window.location.href = '/admin.html';
+            } else {
+                // Failure: User is authenticated but is NOT an admin.
+                // Log them out immediately for security and proper session management.
+                await signOut(auth);
+                showMessage("Login failed. Your account is not authorized as an administrator.", 'error');
+            }
+
+        } catch (error) {
+            console.error("Admin Login Error:", error);
+            let message = "Login failed. Invalid credentials or no user found.";
+
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                message = "Invalid email or password. Please try again.";
+            } else if (error.code === 'auth/too-many-requests') {
+                 message = "Access temporarily blocked due to too many failed attempts.";
+            }
+
+            showMessage(message, 'error');
+
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Login as Admin';
         }
     }
 
-    function initializeLogin() {
-        // Defensive check: If user is already logged in (due to a previous successful login) 
-        // and is on this page, immediately route them to the correct dashboard.
-        // Use the initialized auth instance from the loader
-        onAuthStateChanged(auth, async (user) => { 
-            if (user && (window.location.pathname.endsWith('/admin-login/') || window.location.pathname.endsWith('/admin-login.html'))) {
-                const isAdmin = await isAdminUser(user.uid);
-                if (isAdmin) {
-                    window.location.href = '/admin.html';
-                } else {
-                    // Route non-admins to their account page
-                    window.location.href = '/account/';
-                }
-            }
-        });
-
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            // Set initial state
-            loginButton.disabled = true;
-            loginButton.textContent = 'Authenticating...';
-            loginStatus.classList.add('hidden');
-            redirectSuccess = false; // Reset flag
-
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                // Core authentication using the initialized auth instance
-                await signInWithEmailAndPassword(auth, email, password);
-                
-                const isAdmin = await isAdminUser(auth.currentUser.uid);
-
-                if (isAdmin) {
-                    loginStatus.textContent = 'Success! Routing to Dashboard...';
-                    loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-green-100 text-green-700';
-                    loginStatus.classList.remove('hidden');
-                    redirectSuccess = true; // Flag success
-                } else {
-                    // Log out non-admin users immediately
-                    await signOut(auth);
-                    throw new Error("Invalid access: User is not registered as an administrator.");
-                }
-
-            } catch (error) {
-                // Guaranteed error feedback
-                let message = error.message;
-                if (message.includes('auth/invalid-credential') || message.includes('auth/wrong-password') || message.includes('auth/user-not-found')) {
-                    message = 'Invalid email or password.';
-                } else if (message.includes('Invalid access')) {
-                    message = error.message.replace('Invalid access: ', '');
-                } else {
-                    message = `Login Failed: ${error.message.replace('Firebase: ', '')}`;
-                }
-
-                loginStatus.textContent = message;
-                loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-red-100 text-red-700';
-                loginStatus.classList.remove('hidden');
-                
-            } finally {
-                if (redirectSuccess) {
-                    // SUCCESS PATH: Trigger the routing check
-                    window.location.href = '/admin.html'; 
-                } else {
-                    // FAILURE PATH: Reset button state
-                    loginButton.disabled = false;
-                    loginButton.textContent = 'Login';
-                }
-            }
-        });
+    /**
+     * Displays a message to the user.
+     * @param {string} message - The message content.
+     * @param {string} type - 'success', 'error', or 'info'.
+     */
+    function showMessage(message, type) {
+        loginMessage.textContent = message;
+        loginMessage.classList.remove('hidden', 'text-green-600', 'text-red-600', 'text-stone');
+        
+        if (type === 'success') {
+            loginMessage.classList.add('text-green-600');
+        } else if (type === 'error') {
+            loginMessage.classList.add('text-red-600');
+        } else {
+            loginMessage.classList.add('text-stone');
+        }
     }
 
-    document.addEventListener('DOMContentLoaded', initializeLogin);
+    // --- Initialization ---
+
+    document.addEventListener('DOMContentLoaded', () => {
+        adminLoginForm.addEventListener('submit', handleAdminLogin);
+        
+        // Security Check: If a user is already logged in, check their admin status and redirect
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const adminDocRef = doc(db, 'admins', user.uid);
+                const adminDocSnap = await getDoc(adminDocRef);
+                
+                if (adminDocSnap.exists()) {
+                    window.location.href = '/admin.html'; // Redirect existing admin
+                } else {
+                    // Log out non-admin users who land on this page while authenticated
+                    await signOut(auth);
+                }
+            }
+        });
+    });
+
 </script>
+
+<main class="container mx-auto px-4 py-12 min-h-screen flex items-start justify-center">
+    
+    <div class="w-full max-w-md bg-white p-8 rounded-lg shadow-xl border border-stone/10 mt-12">
+        <h1 class="text-4xl font-playfair text-charcoal mb-6 text-center">Admin Access</h1>
+        <p class="text-stone text-center mb-6">Enter credentials to access the Southern Sense dashboard.</p>
+        
+        <form id="admin-login-form" class="space-y-6">
+            
+            <div>
+                <label for="email-input" class="block text-sm font-medium text-stone mb-1">Email Address</label>
+                <input type="email" id="email-input" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
+            </div>
+
+            <div>
+                <label for="password-input" class="block text-sm font-medium text-stone mb-1">Password</label>
+                <input type="password" id="password-input" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
+            </div>
+            
+            <div id="login-message" class="hidden text-sm font-medium p-3 rounded-lg bg-parchment/50"></div>
+
+            <button type="submit" class="w-full px-4 py-3 bg-stone text-parchment font-bold rounded-lg shadow-md hover:bg-charcoal transition duration-300">
+                Login as Admin
+            </button>
+            
+            <div class="text-center pt-4 border-t">
+                <p class="text-sm text-stone">Looking for the customer login?</p>
+                <a href="/login.html" class="text-burnt-orange font-semibold hover:underline transition">Go to Customer Login</a>
+            </div>
+            
+        </form>
+    </div>
+</main>

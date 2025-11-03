@@ -1,237 +1,222 @@
 ---
-layout: layout.html
-title: Southern Sense - Hand Poured Luxury Candles
+layout: layout
+title: Southern Sense - Hand-Poured Luxury Candles
 ---
 
 <script type="module">
-    // FIX: Changed import path to /src/firebase-loader.js and /src/cart.js
-    import { db, collection, query, where, getDocs } from '/src/firebase-loader.js';
-    import { addToCart } from '/src/cart.js';
+    // CRITICAL FIX: Corrected import path to include /src/ directory and ensured all required Firestore functions are imported
+    import { 
+        db, 
+        collection, 
+        query, 
+        where, 
+        getDocs 
+    } from '/src/firebase-loader.js';
+    import { addToCart, updateCartDisplay } from '/src/cart.js'; // Ensure cart functions are correctly imported
 
     // --- DOM Elements ---
-    const featuredProductLoader = document.getElementById('featured-product-loader');
-    const featuredProductSection = document.getElementById('featured-product-section');
-    const heroImage = document.getElementById('hero-image');
-    const productTitle = document.getElementById('product-title');
-    const productPrice = document.getElementById('product-price');
-    const shortDescription = document.getElementById('short-description');
-    const productLink = document.getElementById('product-link');
-    const productUrlInput = document.getElementById('product-url');
-    const buyButton = document.getElementById('buy-button');
-    const outOfStockMessage = document.getElementById('out-of-stock-message');
-    const featuredMessage = document.getElementById('featured-message');
-    
-    let featuredProduct = null; // Store product data globally for use with the Add to Cart button
+    const featuredProductsGrid = document.getElementById('featured-products-grid');
+    const featuredLoader = document.getElementById('featured-loader');
+
+    // --- Utility Functions ---
 
     /**
-     * Renders the out of stock state or an error state.
-     * @param {string} message - The message to display.
+     * Renders a single product card HTML specifically for the homepage layout.
+     * @param {Object} product - The product data.
+     * @returns {string} The product card HTML string.
      */
-    function renderUnavailable(message) {
-        featuredProductLoader.classList.add('hidden');
-        featuredProductSection.classList.remove('hidden');
+    function renderProductCard(product) {
+        const isOutOfStock = product.stock <= 0;
+        const price = parseFloat(product.price).toFixed(2); 
+        const scentFamily = product.scentFamily.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
+        // Button or Link
+        const actionButtonHtml = isOutOfStock
+            ? `<a href="/product/?id=${product.id}" class="w-full px-4 py-2 border border-stone/30 text-stone rounded-lg text-center cursor-not-allowed">View Details</a>`
+            : `<button data-id="${product.id}" 
+                      data-name="${product.name}"
+                      data-price="${price}"
+                      data-image="${product.imageUrl}"
+                      class="add-to-cart-button w-full px-4 py-2 bg-burnt-orange text-parchment font-bold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
+                Add to Cart
+              </button>`;
         
-        // Hide commerce elements
-        buyButton.classList.add('hidden');
-        productPrice.classList.add('hidden');
-        
-        // Show an alternative message
-        productTitle.textContent = "Luxury Awaits";
-        outOfStockMessage.classList.remove('hidden');
-        outOfStockMessage.textContent = message;
-        shortDescription.textContent = "Explore our full collection and find your next signature scent.";
-        productLink.href = "/shop/";
-        productLink.textContent = "Shop All Candles";
-        featuredMessage.classList.add('hidden'); // Hide the featured badge if content fails
+        return `
+            <div class="product-card bg-white rounded-lg shadow-xl overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
+                <a href="/product/?id=${product.id}" class="block">
+                    <img src="/src/${product.imageUrl || 'logo.webp'}" alt="${product.name}" class="w-full h-72 object-cover">
+                </a>
+                <div class="p-5">
+                    <p class="text-sm font-medium text-stone mb-1">${scentFamily}</p>
+                    <h3 class="text-xl font-playfair text-charcoal mb-3 truncate">${product.name}</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="text-lg font-bold text-burnt-orange">$${price}</p>
+                        ${isOutOfStock ? '<p class="text-sm font-semibold text-red-600">SOLD OUT</p>' : ''}
+                    </div>
+                    ${actionButtonHtml}
+                </div>
+            </div>
+        `;
     }
 
     /**
-     * Fetches and displays the single featured product.
+     * Attaches click listeners to all new "Add to Cart" buttons.
      */
-    async function loadFeaturedProduct() {
-        featuredProductLoader.classList.remove('hidden');
-        featuredProductSection.classList.add('hidden');
+    function attachCartListeners() {
+        document.querySelectorAll('.add-to-cart-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const { id, name, price, image } = e.currentTarget.dataset;
+                
+                // Construct the product object as expected by cart.js
+                const product = {
+                    id: id,
+                    name: name,
+                    price: price, 
+                    imageUrl: image
+                };
+                
+                addToCart(product, 1); 
+                updateCartDisplay(); 
+                
+                // Provide visual feedback
+                e.currentTarget.textContent = 'Added!';
+                setTimeout(() => {
+                    e.currentTarget.textContent = 'Add to Cart';
+                }, 1000);
+            });
+        });
+    }
+
+    // --- Main Logic ---
+
+    /**
+     * Fetches up to 4 featured products from Firestore and renders them.
+     */
+    async function fetchFeaturedProducts() {
+        featuredLoader.classList.remove('hidden');
+        featuredProductsGrid.innerHTML = '';
 
         try {
-            // 1. Query Firestore for the product where featured is true
             const productsRef = collection(db, 'products');
-            const q = query(productsRef, where('featured', '==', true));
+            // Query for products where 'featured' is true and there is stock
+            const q = query(productsRef, 
+                            where('featured', '==', true), 
+                            where('stock', '>', 0) 
+                            // Note: Firebase requires an index for chained queries like this
+                        );
+                            
             const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
-                renderUnavailable("The featured product is currently being updated or is not set.");
-                return;
-            }
+                // Fallback: If no featured products found, show latest 4 products (no featured status needed)
+                const fallbackQ = query(productsRef);
+                const fallbackSnapshot = await getDocs(fallbackQ);
 
-            // 2. Process the featured product (we assume only one product is set to featured)
-            const docSnap = querySnapshot.docs[0];
-            const data = docSnap.data();
-            featuredProduct = {
-                id: docSnap.id, // Use docSnap.id instead of data.id for consistency
-                name: data.name,
-                // CRITICAL CHECK: Ensure price is correctly read and parsed
-                price: parseFloat(data.price), 
-                stock: parseInt(data.stock, 10) || 0, // Ensure stock is an integer
-                // FIX: Ensure the image path is prefixed with /src/ for the final path
-                imageUrl: data.imageUrl ? `/src/${data.imageUrl}` : '/src/aloha-luxe-candle.webp', 
-                shortDescription: data.shortDescription,
-                featured: data.featured // Get featured flag for display logic below
-            };
-
-            // 3. Update DOM with product data
-            productTitle.textContent = featuredProduct.name;
-            productPrice.textContent = `$${featuredProduct.price.toFixed(2)}`;
-            shortDescription.textContent = featuredProduct.shortDescription;
-            productLink.href = `/product/?id=${featuredProduct.id}`;
-            heroImage.src = featuredProduct.imageUrl;
-            heroImage.alt = featuredProduct.name;
-
-            // Store ID for quick navigation/cart actions
-            productUrlInput.value = featuredProduct.id;
-
-            // 4. Handle Stock Status
-            if (featuredProduct.stock > 0) {
-                // In Stock: Show Buy Button, hide Out of Stock message
-                buyButton.classList.remove('hidden', 'opacity-50', 'cursor-not-allowed');
-                buyButton.disabled = false;
-                outOfStockMessage.classList.add('hidden');
+                if (fallbackSnapshot.empty) {
+                    featuredProductsGrid.innerHTML = '<p class="text-lg text-stone col-span-full text-center py-10">No products available at this time.</p>';
+                    return;
+                }
+                
+                // Use the first 4 products found as a last resort
+                const fallbackProducts = fallbackSnapshot.docs.slice(0, 4).map(doc => ({ id: doc.id, ...doc.data() }));
+                fallbackProducts.forEach(product => {
+                    featuredProductsGrid.innerHTML += renderProductCard(product);
+                });
+                
             } else {
-                // Out of Stock: Disable Buy Button, show message
-                buyButton.classList.add('hidden'); // Hide the buy button entirely
-                buyButton.disabled = true;
-                outOfStockMessage.classList.remove('hidden');
-                outOfStockMessage.textContent = "Currently Sold Out. View details to sign up for stock alerts!";
+                // Render featured products
+                querySnapshot.docs.slice(0, 4).forEach(doc => {
+                    const data = doc.data();
+                    const product = { 
+                        id: doc.id, 
+                        ...data, 
+                        price: parseFloat(data.price),
+                        stock: parseInt(data.stock, 10) || 0
+                    };
+                    featuredProductsGrid.innerHTML += renderProductCard(product);
+                });
             }
 
-            // 5. Success: Show the content
-            featuredProductLoader.classList.add('hidden');
-            featuredProductSection.classList.remove('hidden');
-            // Show FEATURED badge only if flag is true (redundant, but safe)
-            if (featuredProduct.featured) {
-                featuredMessage.classList.remove('hidden'); 
-            } else {
-                featuredMessage.classList.add('hidden');
-            }
-            
+            attachCartListeners();
+
         } catch (error) {
-            console.error("CRITICAL ERROR: Failed to load featured product:", error);
-            // Show a specific error based on the root cause being Firebase/Network
-            renderUnavailable("Database Connection Error. Please verify Firebase Project ID and network connection.");
+            console.error("Error fetching featured products:", error);
+            featuredProductsGrid.innerHTML = `<p class="text-red-600 col-span-full text-center py-10">Failed to load products. Check console for database connection errors.</p>`;
+        } finally {
+            featuredLoader.classList.add('hidden');
         }
     }
 
-    /**
-     * Handles the click event for the Add to Cart button.
-     */
-    function handleAddToCart() {
-        if (!featuredProduct || featuredProduct.stock <= 0) {
-            return; // Prevent action if product is null or out of stock
-        }
-        
-        // Pass the product details to the global cart logic
-        addToCart(
-            featuredProduct.id, 
-            featuredProduct.name, 
-            featuredProduct.price, 
-            featuredProduct.imageUrl
-        );
-    }
-
-    // --- Initialization ---
-
-    document.addEventListener('DOMContentLoaded', () => {
-        // Load the featured product data
-        loadFeaturedProduct();
-        
-        // Attach event listener for the Add to Cart button
-        buyButton.addEventListener('click', handleAddToCart);
-    });
-
+    // --- Initialization Trigger ---
+    document.addEventListener('DOMContentLoaded', fetchFeaturedProducts);
 </script>
 
 <main class="min-h-screen">
     
-    <section class="relative bg-parchment/70 pt-20 pb-20 md:pt-32 md:pb-32 overflow-hidden">
+    <div class="relative w-full bg-parchment py-24 md:py-32">
+        <div class="container mx-auto px-4 text-center">
+            <p class="font-great-vibes text-4xl text-burnt-orange mb-4">Welcome Home</p>
+            <h1 class="text-7xl md:text-8xl font-playfair text-charcoal font-bold mb-6 drop-shadow-lg">
+                Southern Sense
+            </h1>
+            <p class="text-xl text-stone max-w-2xl mx-auto mb-8">
+                Experience the warmth and charm of the South with our hand-poured, luxury soy-blend candles. Clean, comforting, and crafted for your home.
+            </p>
+            <a href="/shop.html" class="px-10 py-4 bg-burnt-orange text-parchment text-lg font-bold rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
+                Shop Our Scents
+            </a>
+        </div>
+    </div>
+    
+    <section class="container mx-auto px-4 py-20">
+        <h2 class="text-4xl font-playfair text-charcoal text-center mb-12">Featured Scents</h2>
         
-        <div class="absolute inset-0 z-0 bg-cover bg-center opacity-30" 
-             style="background-image: url('/src/background-parchment.webp');">
+        <div id="featured-loader" class="flex justify-center items-center h-48">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-burnt-orange"></div>
         </div>
 
-        <div class="container mx-auto px-4 relative z-10">
-            <div id="featured-product-loader" class="flex justify-center items-center h-64">
-                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-burnt-orange"></div>
+        <div id="featured-products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             </div>
 
-            <div id="featured-product-section" class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center hidden">
-                
-                <div class="order-2 lg:order-1 relative p-4 bg-white rounded-xl shadow-2xl">
-                    <span id="featured-message" class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-burnt-orange text-parchment text-xs font-bold uppercase tracking-wider rounded-full shadow-lg hidden">
-                        FEATURED SCENT
-                    </span>
-                    <img id="hero-image" src="/src/aloha-luxe-candle.webp" alt="Featured Southern Sense Candle" 
-                         class="w-full h-auto object-cover rounded-lg">
-                </div>
-
-                <div class="order-1 lg:order-2">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-stone mb-2">LIMITED TIME OFFER</p>
-                    <h1 id="product-title" class="text-6xl font-playfair text-charcoal mb-4 leading-tight">
-                        Aloha Luxe
-                    </h1>
-                    
-                    <p id="short-description" class="text-xl text-stone mb-6">
-                        An exotic escape with notes of fresh coconut and tropical blooms.
-                    </p>
-
-                    <p id="product-price" class="text-3xl font-bold text-burnt-orange mb-8">
-                        $20.00
-                    </p>
-                    
-                    <p id="out-of-stock-message" class="text-lg text-red-600 font-semibold mb-6 hidden">
-                        </p>
-
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <input type="hidden" id="product-url" value="">
-                        <button id="buy-button" 
-                                class="w-full sm:w-auto px-10 py-4 bg-burnt-orange text-parchment font-bold text-lg rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
-                            Add to Cart
-                        </button>
-                        <a id="product-link" href="#"
-                           class="w-full sm:w-auto px-10 py-4 text-center border-2 border-stone text-charcoal font-semibold text-lg rounded-lg hover:bg-stone/10 transition duration-300">
-                            View Details
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="container mx-auto px-4 py-16 text-center">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <div class="p-6">
-                <h3 class="text-2xl font-playfair text-charcoal mb-3">Hand-Poured Luxury</h3>
-                <p class="text-stone">Every candle is meticulously hand-poured in small batches, guaranteeing a flawless, slow burn and maximum scent throw.</p>
-            </div>
-            <div class="p-6">
-                <h3 class="text-2xl font-playfair text-charcoal mb-3">Find Your Signature Scent</h3>
-                <p class="text-stone">Take our quick Scent Quiz to discover the perfect fragrance family tailored to your preferences.</p>
-                <a href="/scent-quiz.html" class="text-burnt-orange font-semibold hover:underline mt-2 inline-block">Start Quiz &rarr;</a>
-            </div>
-            <div class="p-6">
-                <h3 class="text-2xl font-playfair text-charcoal mb-3">Conscious Consumption</h3>
-                <p class="text-stone">Learn about our Refill Program designed to reduce waste and keep your favorite vessels in circulation.</p>
-                <a href="/refill-program.html" class="text-burnt-orange font-semibold hover:underline mt-2 inline-block">Learn More &rarr;</a>
-            </div>
-        </div>
-    </section>
-
-    <section class="bg-charcoal text-parchment py-20">
-        <div class="container mx-auto px-4 text-center max-w-3xl">
-            <h2 class="text-5xl font-playfair mb-4">Master Your Olfactory Journey</h2>
-            <p class="text-stone text-lg mb-8">Dive into our Glossary to explore the full depth of our fragrance notes and learn how scent families harmonize.</p>
-            <a href="/scent-glossary.html" class="px-8 py-4 bg-burnt-orange text-parchment font-bold text-lg rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
-                Explore the Glossary
+        <div class="text-center mt-12">
+            <a href="/shop.html" class="px-8 py-3 border border-stone/30 text-charcoal font-bold rounded-lg hover:bg-parchment/70 transition duration-300">
+                View All Candles & Melts
             </a>
         </div>
     </section>
 
+    <section class="bg-parchment py-20 border-t border-b border-stone/10">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-playfair text-charcoal text-center mb-12">The Southern Sense Promise</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
+                <div class="p-6 bg-white rounded-lg shadow-md">
+                    <img src="/src/finest-wax.webp" alt="Finest Wax" class="w-20 h-20 mx-auto mb-4">
+                    <h3 class="text-2xl font-playfair text-charcoal mb-2">Finest Wax Blends</h3>
+                    <p class="text-stone">We use a premium soy-coconut wax blend that ensures a clean, slow, and even burn every time.</p>
+                </div>
+                <div class="p-6 bg-white rounded-lg shadow-md">
+                    <img src="/src/clean-oils.webp" alt="Clean Oils" class="w-20 h-20 mx-auto mb-4">
+                    <h3 class="text-2xl font-playfair text-charcoal mb-2">Clean Fragrance Oils</h3>
+                    <p class="text-stone">Our oils are 100% phthalate-free and safe, providing a rich scent throw without harmful chemicals.</p>
+                </div>
+                <div class="p-6 bg-white rounded-lg shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-burnt-orange mx-auto mb-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM6.293 8.293a1 1 0 011.414 0L10 10.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    <h3 class="text-2xl font-playfair text-charcoal mb-2">Hand-Poured Quality</h3>
+                    <p class="text-stone">Each candle is hand-poured in small batches in the South, guaranteeing attention to detail and superior quality.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container mx-auto px-4 py-20 text-center">
+        <h2 class="text-4xl font-playfair text-charcoal mb-4">Can't Decide? Try Our Scent Quiz!</h2>
+        <p class="text-lg text-stone max-w-xl mx-auto mb-8">Answer a few quick questions and we'll match you with the perfect Southern Sense fragrance for your home and mood.</p>
+        <a href="/scent-quiz.html" class="px-8 py-3 bg-stone text-parchment font-bold rounded-lg shadow-lg hover:bg-charcoal transition duration-300">
+            Take the Quiz Now
+        </a>
+    </section>
 </main>

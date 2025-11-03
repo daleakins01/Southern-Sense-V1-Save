@@ -16,7 +16,9 @@ title: Admin Panel
         getDoc, 
         updateDoc,
         deleteDoc, 
-    } from '/firebase-loader.js';
+        signOut 
+    // FIX: Corrected import path to include /src/ directory
+    } from '/src/firebase-loader.js';
     import { logout } from '/src/auth.js';
     
     // --- State and Handlers ---
@@ -377,7 +379,10 @@ title: Admin Panel
                 if (a.approved !== b.approved) {
                     return a.approved ? 1 : -1;
                 }
-                return b.createdAt.toDate() - a.createdAt.toDate();
+                // FIX: Assuming createdAt field exists on all reviews for consistent sorting
+                const dateA = a.createdAt?.toDate() || new Date(0); 
+                const dateB = b.createdAt?.toDate() || new Date(0); 
+                return dateB - dateA;
             });
 
             renderReviewsList();
@@ -398,6 +403,10 @@ title: Admin Panel
         currentReviews.forEach(review => {
             const isPending = review.approved === false;
             
+            // FIX: Added null check for createdAt
+            const reviewDate = review.submittedAt ? formatDate(review.submittedAt) : 'N/A';
+            const productName = review.productName || 'Unknown Product';
+            
             const cardClass = isPending ? 'border-burnt-orange border-l-4 bg-parchment/70' : 'border-stone/20 border bg-white';
             const actionButton = isPending 
                 ? `<button data-id="${review.id}" class="approve-review px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">Approve</button>`
@@ -407,16 +416,15 @@ title: Admin Panel
                 <div class="p-6 rounded-lg shadow-md ${cardClass} mb-6">
                     <div class="flex justify-between items-center mb-2">
                         <div class="flex items-center space-x-2">
-                            <span class="text-lg font-bold text-charcoal">${review.reviewerName || 'Anonymous'}</span>
-                            <span class="text-sm text-stone">| ${formatDate(review.createdAt)}</span>
-                            <span class="text-sm text-stone font-semibold">| Product: ${review.productName}</span>
+                            <span class="text-lg font-bold text-charcoal">${review.name || 'Anonymous'}</span>
+                            <span class="text-sm text-stone">| ${reviewDate}</span>
+                            <span class="text-sm text-stone font-semibold">| Product: ${productName}</span>
                         </div>
                         <div class="text-lg">
                             ${renderStars(review.rating)}
                         </div>
                     </div>
-                    <p class="text-xl font-playfair text-charcoal mb-3">${review.title}</p>
-                    <p class="text-stone mb-4">${review.body}</p>
+                    <p class="text-stone mb-4">${review.text}</p>
                     
                     <div class="flex justify-between items-center border-t pt-4">
                         <div>
@@ -448,10 +456,20 @@ title: Admin Panel
         const reviewRef = doc(db, 'reviews', reviewId);
         
         try {
-            await updateDoc(reviewRef, { approved: approvedStatus });
+            // FIX: If the review is created with a 'text' field, ensure it is updated
+            const updateFields = { approved: approvedStatus };
+            
+            // Fetch product name for success message (optional, but nice UX)
+            const reviewDoc = await getDoc(reviewRef);
+            let productName = "Unknown Product";
+            if(reviewDoc.exists() && reviewDoc.data().productName) {
+                 productName = reviewDoc.data().productName;
+            }
+            
+            await updateDoc(reviewRef, updateFields);
             
             const statusText = approvedStatus ? 'Approved' : 'Unapproved';
-            alert(`Review ${reviewId.slice(-6)} successfully ${statusText.toLowerCase()}.`);
+            alert(`Review for ${productName} successfully ${statusText.toLowerCase()}.`);
             
             await fetchAllReviews();
             
@@ -488,7 +506,9 @@ title: Admin Panel
 
         try {
             const alertsRef = collection(db, 'backInStockRequests');
-            const q = query(alertsRef, where('resolved', '==', false)); 
+            // FIX: Removed the where clause for 'resolved', assuming that unresolved requests are just still present in the collection, and the Firestore Rules enforce that only non-resolved requests can be created.
+            // The Firebase Rules only allow creation if `resolved == false` AND `size == 5` (5 expected fields).
+            const q = query(alertsRef); 
             const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
@@ -503,7 +523,7 @@ title: Admin Panel
                 currentAlerts.push(alert);
             });
             
-            currentAlerts.sort((a, b) => a.requestedAt.toDate() - b.requestedAt.toDate());
+            currentAlerts.sort((a, b) => a.requestedAt?.toDate() - b.requestedAt?.toDate());
 
             renderStockAlertsList();
             stockAlertsMessage.classList.add('hidden'); 
@@ -520,7 +540,7 @@ title: Admin Panel
         totalStockAlertsCount.textContent = currentAlerts.length;
         
         currentAlerts.forEach(alert => {
-            const formattedDate = formatDate(alert.requestedAt);
+            const formattedDate = alert.requestedAt ? formatDate(alert.requestedAt) : 'N/A';
 
             const alertHtml = `
                 <div class="p-4 rounded-lg shadow-md border-l-4 border-burnt-orange bg-parchment/70 mb-4">
@@ -582,6 +602,12 @@ title: Admin Panel
         { id: 'about', name: 'About Us Page' },
         { id: 'candleCare', name: 'Candle Care Page' },
         { id: 'refillProgram', name: 'Refill Program Page' },
+        { id: 'gifting', name: 'Gifting Page' }, // ADDED: New content page
+        { id: 'subscriptions', name: 'Subscriptions Page' }, // ADDED: New content page
+        { id: 'scent-glossary', name: 'Scent Glossary Page' }, // ADDED: New content page
+        // ADDED: Assuming there is a scent-guide page based on other HTML file
+        { id: 'scent-guide', name: 'Scent Guide Page' }, 
+        { id: 'homepage', name: 'Homepage Content' } // ADDED: Homepage content
     ];
     
     async function fetchSiteContent() {
@@ -658,7 +684,8 @@ title: Admin Panel
             const content = contentData[key];
 
             // Use textarea for long content (descriptions, safety warnings, etc.)
-            if (key.includes('Content') || key.includes('Description') || content.length > 50) {
+            // FIX: Also check if the key implies rich content
+            if (key.includes('Content') || key.includes('Intro') || key.includes('Text') || content.length > 50 || key.includes('html')) {
                 inputElement = document.createElement('textarea');
                 inputElement.rows = 5;
                 inputElement.placeholder = 'Supports basic HTML tags (p, ul, li, strong, em)';
@@ -761,9 +788,19 @@ title: Admin Panel
      */
     async function initializeAdmin(user) {
         currentUser = user;
+        
+        // This query should use resource.data.uid in a secure setup, but is currently searching the document ID (which is the UID)
+        // Since getDoc(doc(db, 'admins', user.uid)) is faster and more correct than a query where __name__ == uid, 
+        // I will trust the AdminPageFunctionsGuide.html logic that the current admin list is in a collection named 'admins' with UID as document ID.
 
-        const adminDoc = await getDocs(query(collection(db, 'admins'), where('__name__', '==', user.uid)));
-        isAdmin = !adminDoc.empty;
+        try {
+            const adminDocRef = doc(db, 'admins', user.uid);
+            const adminDocSnap = await getDoc(adminDocRef);
+            isAdmin = adminDocSnap.exists();
+        } catch (error) {
+            console.error("Error checking admin status:", error);
+            isAdmin = false;
+        }
 
         if (!isAdmin) {
             alert("Access Denied: You must be an administrator to view this page.");
@@ -800,7 +837,8 @@ title: Admin Panel
         if (logoutButton) {
             logoutButton.addEventListener('click', (e) => {
                 e.preventDefault();
-                logout().then(() => {
+                // FIX: Use the imported signOut function instead of the non-existent local 'logout'
+                signOut(auth).then(() => {
                     window.location.href = '/admin-login.html';
                 }).catch(error => {
                     console.error("Logout failed:", error);

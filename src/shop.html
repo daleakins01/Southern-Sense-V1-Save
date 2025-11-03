@@ -4,10 +4,17 @@ title: Shop All Candles & Melts
 ---
 
 <script type="module">
-    // FIX: Corrected import path to include /src/ directory and added required Firestore functions
-    import { db, collection, query, where, getDocs, orderBy } from '/src/firebase-loader.js';
-    import { addToCart } from '/src/cart.js';
-    
+    // CRITICAL FIX: Corrected import path to include /src/ directory and ensured all required Firestore functions are imported
+    import { 
+        db, 
+        collection, 
+        query, 
+        where, 
+        getDocs, 
+        orderBy 
+    } from '/src/firebase-loader.js';
+    import { addToCart, updateCartDisplay } from '/src/cart.js'; // Ensure updateCartDisplay is available
+
     // --- DOM Elements ---
     const shopHeading = document.getElementById('shop-heading');
     const shopIntro = document.getElementById('shop-intro');
@@ -100,8 +107,22 @@ title: Shop All Candles & Melts
                 e.preventDefault();
                 const { id, name, price, image } = e.currentTarget.dataset;
                 
-                // Use the imported addToCart function
-                addToCart(id, name, parseFloat(price), image);
+                // Construct the product object as expected by cart.js
+                const product = {
+                    id: id,
+                    name: name,
+                    price: price, // Passed as string from data-attribute, parseFloat is handled in cart.js
+                    imageUrl: image
+                };
+                
+                addToCart(product, 1); // Add one item
+                updateCartDisplay(); // Update the cart count in the header
+                
+                // Provide visual feedback
+                e.currentTarget.textContent = 'Added!';
+                setTimeout(() => {
+                    e.currentTarget.textContent = 'Add to Cart';
+                }, 1000);
             });
         });
     }
@@ -133,7 +154,6 @@ title: Shop All Candles & Melts
         }
 
         // Sort: Featured first, then by stock (in-stock first), then by name
-        // FIX: orderBy is imported and used here for initial fetching, but the client-side sort handles the display order
         filteredProducts.sort((a, b) => {
             // Featured priority
             if (a.featured && !b.featured) return -1;

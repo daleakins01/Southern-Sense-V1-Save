@@ -10,7 +10,8 @@ title: Order Confirmed
         getDoc, 
         auth, 
         onAuthStateChanged 
-    } from '/firebase-loader.js';
+    // FIX: Corrected dependency path to /src/firebase-loader.js
+    } from '/src/firebase-loader.js';
 
     // --- DOM Elements ---
     const confirmationLoader = document.getElementById('confirmation-loader');
@@ -207,7 +208,7 @@ title: Order Confirmed
                     </div>
                     <div class="flex justify-between text-xl font-bold text-burnt-orange pt-2 border-t">
                         <span>GRAND TOTAL:</span>
-                        <span id="order-total-display-footer"></span>
+                        <span id="order-total-display"></span> 
                     </div>
                 </div>
                 

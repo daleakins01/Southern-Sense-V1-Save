@@ -1,122 +1,121 @@
 ---
-layout: layout
-title: Candle Care
+layout: layout.html
+title: Candle Care Guide
 ---
 
+<header class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
+    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+        <h1 id="care-header-title" class="font-playfair text-6xl font-extrabold text-parchment drop-shadow-lg">Candle Care Guide</h1>
+    </div>
+</header>
+
+<main class="container mx-auto p-4 lg:p-8 py-16">
+
+    <div id="loading-state" class="text-center p-12 bg-parchment rounded-xl shadow-lg border border-stone/10">
+        <p class="font-playfair text-2xl text-stone">Loading best practices for longevity...</p>
+        <div class="mt-4 animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
+    </div>
+
+    <section id="care-section" class="max-w-4xl mx-auto space-y-12 hidden">
+
+        <div class="text-center mb-10">
+            <h2 class="font-playfair text-4xl font-bold text-charcoal mb-4">Extend the Life of Your Scent</h2>
+            <div id="care-overview-content" class="prose max-w-none text-stone font-roboto text-lg mx-auto">
+                <p>Care overview loading...</p>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+                <h3 id="tip-1-title" class="font-playfair text-2xl font-bold text-burnt-orange">The First Burn</h3>
+                <p id="tip-1-text" class="text-stone">Text loading...</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+                <h3 id="tip-2-title" class="font-playfair text-2xl font-bold text-burnt-orange">Wick Trimming</h3>
+                <p id="tip-2-text" class="text-stone">Text loading...</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+                <h3 id="tip-3-title" class="font-playfair text-2xl font-bold text-burnt-orange">Optimal Burn Time</h3>
+                <p id="tip-3-text" class="text-stone">Text loading...</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+                <h3 id="tip-4-title" class="font-playfair text-2xl font-bold text-burnt-orange">Safety First</h3>
+                <p id="tip-4-text" class="text-stone">Text loading...</p>
+            </div>
+        </div>
+
+    </section>
+
+</main>
+
 <script type="module">
-    import { db, doc, getDoc } from '/firebase-loader.js';
+    // FIX: Corrected import path to include /src/ directory
+    import { db, doc, getDoc } from '/src/firebase-loader.js'; 
 
     // --- DOM Elements ---
-    const contentLoader = document.getElementById('content-loader');
-    const careContent = document.getElementById('care-content');
-    const introSection = document.getElementById('intro-section');
-    const coreTipsContainer = document.getElementById('core-tips-container');
-    const safetyHeading = document.getElementById('safety-heading');
-    const safetyContent = document.getElementById('safety-content');
+    const loadingState = document.getElementById('loading-state');
+    const careSection = document.getElementById('care-section');
+    const careHeaderTitle = document.getElementById('care-header-title');
+    const careOverviewContent = document.getElementById('care-overview-content');
     
-    // Structure of the core tips for dynamic injection
-    const TIP_ELEMENT_IDS = [
-        { heading: 'tip1Heading', text: 'tip1Text' },
-        { heading: 'tip2Heading', text: 'tip2Text' },
-        { heading: 'tip3Heading', text: 'tip3Text' },
-        { heading: 'tip4Heading', text: 'tip4Text' }
-    ];
+    // Tip Elements
+    const tip1Title = document.getElementById('tip-1-title');
+    const tip1Text = document.getElementById('tip-1-text');
+    const tip2Title = document.getElementById('tip-2-title');
+    const tip2Text = document.getElementById('tip-2-text');
+    const tip3Title = document.getElementById('tip-3-title');
+    const tip3Text = document.getElementById('tip-3-text');
+    const tip4Title = document.getElementById('tip-4-title');
+    const tip4Text = document.getElementById('tip-4-text');
+
 
     /**
-     * Fetches the 'candleCare' document from Firestore and injects content into the page.
+     * Loads dynamic content for the Candle Care page from Firestore.
      */
-    async function loadCandleCareContent() {
-        // Show loader while fetching
-        contentLoader.classList.remove('hidden');
-        careContent.classList.add('hidden');
+    async function loadCareContent() {
+        console.log("Candle Care Page: Loading content from Firestore...");
+        
+        loadingState.classList.remove('hidden');
+        careSection.classList.add('hidden');
 
         try {
-            const careRef = doc(db, 'siteContent', 'candleCare');
-            const docSnap = await getDoc(careRef);
+            // Document reference for the 'candle-care' page content
+            const docRef = doc(db, "siteContent", "candle-care");
+            const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
                 const data = docSnap.data();
-
-                // 1. Inject Introduction (Main Heading and Intro)
-                introSection.innerHTML = `
-                    <h1 class="text-5xl font-playfair text-charcoal mb-4">${data.heading || 'Candle Care 101'}</h1>
-                    <div class="text-lg text-stone leading-relaxed">${data.careIntro || '<p>Content missing: Intro paragraph.</p>'}</div>
-                `;
-
-                // 2. Inject Core Tips
-                let coreTipsHtml = `
-                    <h2 class="text-4xl font-playfair text-charcoal mb-8 text-center">${data.coreTipsTitle || 'Core Care Tips'}</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                `;
-
-                TIP_ELEMENT_IDS.forEach((tip, index) => {
-                    const tipHeading = data[tip.heading] || `Tip ${index + 1} Heading`;
-                    const tipText = data[tip.text] || 'Tip content is missing. Update via Admin CMS.';
-
-                    coreTipsHtml += `
-                        <div class="p-6 bg-parchment rounded-lg shadow-md border-l-4 border-burnt-orange">
-                            <h3 class="text-2xl font-playfair text-charcoal mb-2">${tipHeading}</h3>
-                            <p class="text-stone leading-relaxed">${tipText}</p>
-                        </div>
-                    `;
-                });
-
-                coreTipsHtml += `</div>`;
-                coreTipsContainer.innerHTML = coreTipsHtml;
-
-
-                // 3. Inject Safety Warnings
-                safetyHeading.textContent = data.safetyTitle || 'Crucial Safety Warnings';
-                // Use innerHTML for safety content as it's typically an un-ordered list (<ul>)
-                safetyContent.innerHTML = data.safetyContent || '<ul><li class="text-red-600">Safety content is missing. Please ensure safety warnings are populated via the Admin CMS.</li></ul>';
                 
-            } else {
-                // Document not found
-                introSection.innerHTML = '<h1 class="text-5xl font-playfair text-charcoal">Content Missing</h1>';
-                coreTipsContainer.innerHTML = '<p class="text-red-600 mt-4">The core "candleCare" document could not be found in the database. Please check Firestore.</p>';
-                safetyHeading.textContent = 'Safety Warnings';
-                safetyContent.innerHTML = '';
-            }
+                // 1. Header and Overview
+                careHeaderTitle.textContent = data.careHeaderTitle || "Candle Care Guide";
+                careOverviewContent.innerHTML = data.careOverviewContent || "<p>Care overview not set.</p>";
+                
+                // 2. Care Tips
+                tip1Title.textContent = data.tip1Title || "First Burn";
+                tip1Text.textContent = data.tip1Text || "Details about first burn loading...";
+                tip2Title.textContent = data.tip2Title || "Wick Trimming";
+                tip2Text.textContent = data.tip2Text || "Details about trimming loading...";
+                tip3Title.textContent = data.tip3Title || "Optimal Burn Time";
+                tip3Text.textContent = data.tip3Text || "Details about burn time loading...";
+                tip4Title.textContent = data.tip4Title || "Safety First";
+                tip4Text.textContent = data.tip4Text || "Details about safety loading...";
+                
+                // Success: Hide loading, show content
+                loadingState.classList.add('hidden');
+                careSection.classList.remove('hidden');
 
+            } else {
+                console.warn("Candle Care Page: Document 'siteContent/candle-care' does not exist.");
+                loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Error: Candle Care configuration document not found.</p>`;
+            }
         } catch (error) {
-            console.error("Error loading Candle Care content:", error);
-            introSection.innerHTML = '<h1 class="text-5xl font-playfair text-charcoal">Error Loading Page</h1>';
-            coreTipsContainer.innerHTML = '<p class="text-red-600 mt-4">A network error occurred while fetching content. Please try again later.</p>';
-        } finally {
-            // Hide loader and show content
-            contentLoader.classList.add('hidden');
-            careContent.classList.remove('hidden');
+            console.error("Error fetching Candle Care content:", error);
+            loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Error loading content: ${error.message}</p>`;
         }
     }
 
-    document.addEventListener('DOMContentLoaded', loadCandleCareContent);
-
+    document.addEventListener('DOMContentLoaded', loadCareContent);
 </script>
-
-<main class="container mx-auto px-4 py-12 min-h-screen">
-    
-    <div id="content-loader" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-charcoal"></div>
-    </div>
-
-    <div id="care-content" class="hidden">
-        
-        <div id="intro-section" class="max-w-3xl mx-auto text-center mb-12">
-            </div>
-
-        <section class="mb-16" id="core-tips-container">
-            </section>
-
-        <section class="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-xl border-t-4 border-red-600">
-            <h2 id="safety-heading" class="text-3xl font-playfair text-red-600 mb-6 text-center">
-                Crucial Safety Warnings
-            </h2>
-            <div id="safety-content" class="text-lg text-stone space-y-3 list-disc list-inside">
-                </div>
-        </section>
-
-        <div class="mt-16 text-center">
-            <p class="text-sm font-semibold uppercase tracking-wider text-stone">VISUAL GUIDE COMING SOON</p>
-        </div>
-    </div>
-</main>

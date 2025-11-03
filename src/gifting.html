@@ -1,66 +1,129 @@
 ---
-layout: layout
-title: The Art of Gifting
+layout: layout.html
+title: Thoughtful Gifting
 ---
 
-<main class="container mx-auto px-4 py-12 min-h-screen">
-    
-    <header class="max-w-4xl mx-auto text-center mb-16">
-        <p class="text-sm font-semibold uppercase tracking-wider text-burnt-orange mb-3">Perfect Presents</p>
-        <h1 class="text-5xl font-playfair text-charcoal mb-4">
-            The Art of Gifting Southern Sense
-        </h1>
-        <p class="text-xl text-stone leading-relaxed">
-            Give the gift of luxury, warmth, and memory. Our candles are an elegant way to celebrate any occasion.
-        </p>
-    </header>
+<header class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
+    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+        <h1 id="gifting-header-title" class="font-playfair text-6xl font-extrabold text-parchment drop-shadow-lg">The Art of Gifting</h1>
+    </div>
+</header>
 
-    <section class="max-w-4xl mx-auto mb-16">
-        <h2 class="text-4xl font-playfair text-charcoal mb-8 text-center">Our Curated Gifting Options</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            
-            <div class="p-8 bg-parchment rounded-lg shadow-xl border-t-4 border-burnt-orange">
-                <h3 class="text-3xl font-playfair text-burnt-orange mb-3">Digital Gift Cards</h3>
-                <p class="text-stone mb-4">
-                    The simplest way to ensure they get the perfect scent. Sent instantly via email, our digital cards are available in any denomination.
-                </p>
-                <ul class="text-sm text-stone list-disc list-inside space-y-1 mb-6">
-                    <li>Instant Delivery</li>
-                    <li>No Expiration Date</li>
-                    <li>Perfect for Last-Minute Gifts</li>
-                </ul>
-                <a href="#" class="inline-block px-6 py-3 bg-charcoal text-parchment font-bold rounded-lg hover:bg-stone transition duration-300">
-                    Purchase Now (Placeholder)
-                </a>
+<main class="container mx-auto p-4 lg:p-8 py-16">
+
+    <div id="loading-state" class="text-center p-12 bg-parchment rounded-xl shadow-lg border border-stone/10">
+        <p class="font-playfair text-2xl text-stone">Loading personalized gift options...</p>
+        <div class="mt-4 animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
+    </div>
+
+    <section id="gifting-section" class="max-w-5xl mx-auto space-y-12 hidden">
+
+        <div class="text-center mb-10">
+            <h2 class="font-playfair text-4xl font-bold text-charcoal mb-4">Gifts That Impress</h2>
+            <div id="gifting-overview-content" class="prose max-w-none text-stone font-roboto text-lg mx-auto">
+                <p>Overview loading...</p>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8 text-center">
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+                <h3 id="option-1-title" class="font-playfair text-2xl font-bold text-burnt-orange">Curated Gift Sets</h3>
+                <p id="option-1-text" class="text-stone">Text loading...</p>
+                <a href="/shop/?filter=sets" class="text-burnt-orange font-semibold hover:underline mt-2 inline-block">Shop Sets &rarr;</a>
             </div>
 
-            <div class="p-8 bg-parchment rounded-lg shadow-xl border-t-4 border-stone">
-                <h3 class="text-3xl font-playfair text-charcoal mb-3">Curated Gift Sets</h3>
-                <p class="text-stone mb-4">
-                    Choose from our best-selling duos and trios, or mix and match any three candles to create a personalized collection, all elegantly boxed.
-                </p>
-                <ul class="text-sm text-stone list-disc list-inside space-y-1 mb-6">
-                    <li>Complimentary Gift Wrapping</li>
-                    <li>Option to Include a Personalized Note</li>
-                    <li>Exclusive Set Pricing</li>
-                </ul>
-                <a href="/shop/" class="inline-block px-6 py-3 bg-burnt-orange text-parchment font-bold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
-                    Build a Set
-                </a>
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+                <h3 id="option-2-title" class="font-playfair text-2xl font-bold text-burnt-orange">Luxury Gift Wrapping</h3>
+                <p id="option-2-text" class="text-stone">Text loading...</p>
             </div>
-            
+
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+                <h3 id="option-3-title" class="font-playfair text-2xl font-bold text-burnt-orange">E-Gift Cards</h3>
+                <p id="option-3-text" class="text-stone">Text loading...</p>
+                <a href="/gift-cards/" class="text-burnt-orange font-semibold hover:underline mt-2 inline-block">Purchase Now &rarr;</a>
+            </div>
+        </div>
+
+        <div class="bg-parchment p-8 rounded-xl shadow-2xl border border-stone/10 text-center mt-12">
+            <h2 id="corporate-title" class="font-playfair text-3xl font-bold text-charcoal mb-4">Corporate & Bulk Orders</h2>
+            <p id="corporate-text" class="text-stone text-lg max-w-3xl mx-auto mb-6">Text loading...</p>
+            <a href="/contact/?subject=Wholesale Inquiry" class="inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150">
+                Inquire Today
+            </a>
         </div>
     </section>
 
-    <section class="max-w-3xl mx-auto text-center py-12 bg-white rounded-lg shadow-2xl">
-        <h2 class="text-4xl font-playfair text-charcoal mb-4">Unsure Which Scent to Choose?</h2>
-        <p class="text-lg text-stone mb-6">
-            Let us help! Our Scent Quiz will guide you to the perfect fragrance family for the recipient's personality.
-        </p>
-        <a href="/scent-quiz.html" class="px-8 py-4 bg-burnt-orange text-parchment font-bold text-lg rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
-            Take the Gifting Quiz &rarr;
-        </a>
-    </section>
-
 </main>
+
+<script type="module">
+    // FIX: Corrected import path to include /src/ directory
+    import { db, doc, getDoc } from '/src/firebase-loader.js'; 
+
+    // --- DOM Elements ---
+    const loadingState = document.getElementById('loading-state');
+    const giftingSection = document.getElementById('gifting-section');
+    const giftingHeaderTitle = document.getElementById('gifting-header-title');
+    const giftingOverviewContent = document.getElementById('gifting-overview-content');
+    
+    // Option Elements
+    const option1Title = document.getElementById('option-1-title');
+    const option1Text = document.getElementById('option-1-text');
+    const option2Title = document.getElementById('option-2-title');
+    const option2Text = document.getElementById('option-2-text');
+    const option3Title = document.getElementById('option-3-title');
+    const option3Text = document.getElementById('option-3-text');
+    
+    // Corporate Elements
+    const corporateTitle = document.getElementById('corporate-title');
+    const corporateText = document.getElementById('corporate-text');
+
+
+    /**
+     * Loads dynamic content for the Gifting page from Firestore.
+     */
+    async function loadGiftingContent() {
+        console.log("Gifting Page: Loading content from Firestore...");
+        
+        loadingState.classList.remove('hidden');
+        giftingSection.classList.add('hidden');
+
+        try {
+            // Document reference for the 'gifting' page content
+            const docRef = doc(db, "siteContent", "gifting");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                // 1. Header and Overview
+                giftingHeaderTitle.textContent = data.giftingHeaderTitle || "The Art of Gifting";
+                giftingOverviewContent.innerHTML = data.giftingOverviewContent || "<p>Gifting overview not set.</p>";
+                
+                // 2. Gift Options Grid
+                option1Title.textContent = data.option1Title || "Curated Gift Sets";
+                option1Text.textContent = data.option1Text || "Details about sets loading...";
+                option2Title.textContent = data.option2Title || "Luxury Gift Wrapping";
+                option2Text.textContent = data.option2Text || "Details about wrapping loading...";
+                option3Title.textContent = data.option3Title || "E-Gift Cards";
+                option3Text.textContent = data.option3Text || "Details about gift cards loading...";
+
+                // 3. Corporate Section
+                corporateTitle.textContent = data.corporateTitle || "Corporate & Bulk Orders";
+                corporateText.textContent = data.corporateText || "Corporate text loading...";
+                
+                // Success: Hide loading, show content
+                loadingState.classList.add('hidden');
+                giftingSection.classList.remove('hidden');
+
+            } else {
+                console.warn("Gifting Page: Document 'siteContent/gifting' does not exist.");
+                loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Error: Gifting configuration document not found.</p>`;
+            }
+        } catch (error) {
+            console.error("Error fetching Gifting page content:", error);
+            loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Error loading content: ${error.message}</p>`;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadGiftingContent);
+</script>

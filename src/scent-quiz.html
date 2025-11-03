@@ -1,254 +1,217 @@
 ---
-layout: layout
-title: Scent Quiz
+layout: layout.html
+title: Find Your Perfect Scent
 ---
 
-<script type="module">
-    // The quiz logic runs purely client-side; no Firestore import needed here.
+<header class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
+    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+        <h1 class="font-playfair text-6xl font-extrabold text-parchment drop-shadow-lg">Find Your Perfect Scent</h1>
+    </div>
+</header>
 
-    // --- DOM Elements ---
+<main class="container mx-auto p-4 lg:p-8 py-16">
+    <div class="max-w-3xl mx-auto bg-parchment p-8 rounded-xl shadow-2xl border border-stone/10">
+
+        <div id="quiz-container">
+            <h2 id="quiz-title" class="font-playfair text-4xl font-bold text-charcoal text-center mb-6">Let's Begin</h2>
+            <p id="progress-text" class="text-center font-roboto text-sm text-stone mb-8">Step 0 of 4</p>
+
+            <form id="scent-quiz-form">
+                
+                <div id="step-0" class="quiz-step">
+                    <p class="text-center text-lg text-stone mb-8">Answer a few quick questions to discover the scent family that best matches your personal sanctuary.</p>
+                    <button type="button" data-next-step="1" class="w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg shadow-md hover:bg-opacity-90 transition duration-150 start-quiz-button">
+                        Start Quiz
+                    </button>
+                </div>
+
+                <div id="step-1" class="quiz-step hidden">
+                    <h3 class="font-playfair text-2xl font-bold text-charcoal mb-4">1. How do you want to feel right now?</h3>
+                    <div class="space-y-3">
+                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q1" value="calm" class="mr-3 accent-burnt-orange" required> Cozy & Calm (E.g., Sunday morning)</label>
+                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q1" value="uplifted" class="mr-3 accent-burnt-orange"> Refreshed & Uplifted (E.g., Spring break)</label>
+                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q1" value="warm" class="mr-3 accent-burnt-orange"> Warm & Inviting (E.g., Dinner party)</label>
+                    </div>
+                    <button type="button" data-next-step="2" class="mt-6 w-full py-3 bg-burnt-orange text-parchment font-bold rounded-lg transition duration-150 next-step-button">Next &rarr;</button>
+                </div>
+
+                <div id="step-2" class="quiz-step hidden">
+                    <h3 class="font-playfair text-2xl font-bold text-charcoal mb-4">2. Which environment do you prefer?</h3>
+                    <div class="space-y-3">
+                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q2" value="nature" class="mr-3 accent-burnt-orange" required> A deep forest after the rain</label>
+                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q2" value="bakery" class="mr-3 accent-burnt-orange"> A gourmet bakery full of fresh pastry</label>
+                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q2" value="patio" class="mr-3 accent-burnt-orange"> A sun-drenched coastal patio</label>
+                    </div>
+                    <button type="button" data-next-step="3" class="mt-6 w-full py-3 bg-burnt-orange text-parchment font-bold rounded-lg transition duration-150 next-step-button">Next &rarr;</button>
+                </div>
+
+                <div id="step-3" class="quiz-step hidden">
+                    <h3 class="font-playfair text-2xl font-bold text-charcoal mb-4">3. What's your ideal dessert?</h3>
+                    <div class="space-y-3">
+                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q3" value="citrus" class="mr-3 accent-burnt-orange" required> Bright, fresh lemon meringue pie</label>
+                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q3" value="wood" class="mr-3 accent-burnt-orange"> A rich, dark chocolate truffle</label>
+                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q3" value="spice" class="mr-3 accent-burnt-orange"> Gingerbread cookies with cinnamon frosting</label>
+                    </div>
+                    <button type="submit" id="submit-quiz-button" class="mt-6 w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg transition duration-150">
+                        Show My Scent
+                    </button>
+                </div>
+            </form>
+
+            <div id="result-step" class="quiz-step hidden text-center">
+                <h2 class="font-playfair text-3xl font-bold text-charcoal mb-4">Your Perfect Match:</h2>
+                <div id="result-display" class="bg-white p-6 rounded-lg shadow-inner mb-6 space-y-3">
+                    <div id="loading-result" class="space-y-3">
+                        <p class="font-roboto text-stone text-lg">Analyzing your preferences...</p>
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
+                    </div>
+                    <h3 id="result-family-title" class="font-playfair text-4xl font-extrabold text-burnt-orange hidden"></h3>
+                    <p id="result-description" class="font-roboto text-lg text-stone hidden"></p>
+                </div>
+                <a id="result-link" href="/shop/" class="inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150 hidden">
+                    Shop This Scent Family &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script type="module">
+    // FIX: Corrected import path to include /src/ directory
+    import { db, collection, query, where, getDocs } from '/src/firebase-loader.js'; 
+
+    // --- State & DOM ---
+    let currentStep = 0;
+    const TOTAL_STEPS = 4;
     const quizContainer = document.getElementById('quiz-container');
-    const questionContainer = document.getElementById('question-container');
-    const resultContainer = document.getElementById('result-container');
-    const resultHeading = document.getElementById('result-heading');
+    const quizTitle = document.getElementById('quiz-title');
+    const progressText = document.getElementById('progress-text');
+    const form = document.getElementById('scent-quiz-form');
+    const resultStep = document.getElementById('result-step');
+    const loadingResult = document.getElementById('loading-result');
+    const resultFamilyTitle = document.getElementById('result-family-title');
     const resultDescription = document.getElementById('result-description');
     const resultLink = document.getElementById('result-link');
-    const progressText = document.getElementById('progress-text');
-
-    // --- Quiz State ---
-    let currentQuestionIndex = 0;
-    // Score tracks votes for each scent family
-    const score = {
-        'fresh-clean': 0,
-        'woody-earthy': 0,
-        'spicy-warm': 0,
-        'fruity-sweet': 0,
-        'floral-herbal': 0
+    
+    // Maps quiz answers to weighted scent family preferences
+    const scentWeights = {
+        'calm': { 'woodsy': 2, 'fresh-clean': 1, 'spicy': 1 },
+        'uplifted': { 'citrus': 3, 'floral': 2, 'fresh-clean': 1 },
+        'warm': { 'spicy': 3, 'gourmand': 2, 'woodsy': 1 },
+        'nature': { 'fresh-clean': 3, 'woodsy': 2, 'green': 1 },
+        'bakery': { 'gourmand': 4, 'spicy': 2, 'vanilla': 1 },
+        'patio': { 'aquatic': 3, 'citrus': 2, 'floral': 1 },
+        'citrus': { 'citrus': 4, 'fruity-sweet': 2, 'fresh-clean': 1 },
+        'wood': { 'woodsy': 4, 'spicy': 2, 'leather': 1 },
+        'spice': { 'spicy': 4, 'gourmand': 2, 'warm-amber': 1 }
     };
 
-    // --- Quiz Data ---
-    const quizData = [
-        {
-            question: "What environment do you find most relaxing?",
-            options: [
-                { text: "A freshly cleaned home after a long day.", family: 'fresh-clean' },
-                { text: "A cabin deep in a quiet forest.", family: 'woody-earthy' },
-                { text: "A warm kitchen on a cool, holiday morning.", family: 'spicy-warm' },
-                { text: "A flower market on a warm spring day.", family: 'floral-herbal' }
-            ]
-        },
-        {
-            question: "Which drink is your comfort classic?",
-            options: [
-                { text: "A simple glass of iced water or a clear spirit.", family: 'fresh-clean' },
-                { text: "A dark coffee or a rich, aged whiskey.", family: 'woody-earthy' },
-                { text: "Spiced chai or mulled wine.", family: 'spicy-warm' },
-                { text: "Sweet lemonade or a vibrant fruity cocktail.", family: 'fruity-sweet' }
-            ]
-        },
-        {
-            question: "What is your preferred clothing style?",
-            options: [
-                { text: "Minimalist, crisp, and always linen or cotton.", family: 'fresh-clean' },
-                { text: "Rugged, leather-accented, and earthy tones.", family: 'woody-earthy' },
-                { text: "Velvet, deep colors, and layered textures.", family: 'spicy-warm' },
-                { text: "Bright, airy, and bohemian floral prints.", family: 'floral-herbal' }
-            ]
-        },
-        {
-            question: "If you were to bake something, what would it be?",
-            options: [
-                { text: "Lemon meringue pie or simple, unflavored bread.", family: 'fresh-clean' },
-                { text: "Rich chocolate cake with nuts and espresso.", family: 'woody-earthy' },
-                { text: "Pumpkin spice bread or gingerbread cookies.", family: 'spicy-warm' },
-                { text: "A bright berry tart or peach cobbler.", family: 'fruity-sweet' }
-            ]
-        },
-        {
-            question: "What type of vacation destination appeals most?",
-            options: [
-                { text: "The breezy, open coastline.", family: 'fresh-clean' },
-                { text: "An autumn trip to the mountains.", family: 'woody-earthy' },
-                { text: "A bustling, exotic marketplace abroad.", family: 'spicy-warm' },
-                { text: "A vibrant garden or orchard estate.", family: 'fruity-sweet' }
-            ]
-        }
-    ];
+    let answerTally = {};
 
-    // --- Logic Functions ---
+    // --- Quiz Navigation ---
 
     /**
-     * Renders the current question and updates the progress.
+     * Hides all steps and shows the current step.
      */
-    function renderQuestion() {
-        if (currentQuestionIndex >= quizData.length) {
-            showResults();
+    function showStep(stepNumber) {
+        document.querySelectorAll('.quiz-step').forEach(step => {
+            step.classList.add('hidden');
+        });
+        document.getElementById(`step-${stepNumber}`).classList.remove('hidden');
+        
+        currentStep = stepNumber;
+        progressText.textContent = `Step ${currentStep} of ${TOTAL_STEPS - 1}`;
+        
+        if (stepNumber === 0) {
+            quizTitle.textContent = "Let's Begin";
+        } else if (stepNumber > 0 && stepNumber < TOTAL_STEPS) {
+            quizTitle.textContent = "Find Your Perfect Scent";
+        }
+    }
+
+    /**
+     * Collects answers from the current step and moves to the next.
+     */
+    function handleNextStep(e) {
+        const currentStepEl = document.getElementById(`step-${currentStep}`);
+        const checkedInput = currentStepEl.querySelector('input[type="radio"]:checked');
+
+        if (!checkedInput) {
+            alert('Please select an option to continue.');
             return;
         }
 
-        const currentQuestion = quizData[currentQuestionIndex];
-        questionContainer.innerHTML = ''; // Clear previous question
-
-        const questionHtml = `
-            <h2 class="text-3xl font-playfair text-charcoal mb-8 text-center">${currentQuestion.question}</h2>
-            <div class="space-y-4">
-                ${currentQuestion.options.map((option, index) => `
-                    <button data-family="${option.family}" 
-                            class="quiz-option w-full p-4 bg-white border-2 border-stone/30 rounded-lg text-lg text-charcoal text-left hover:border-burnt-orange hover:shadow-md transition duration-200">
-                        ${option.text}
-                    </button>
-                `).join('')}
-            </div>
-        `;
-        questionContainer.innerHTML = questionHtml;
-
-        // Update progress text
-        progressText.textContent = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
-        
-        // Attach listeners to new options
-        document.querySelectorAll('.quiz-option').forEach(button => {
-            button.addEventListener('click', handleAnswer);
-        });
-    }
-
-    /**
-     * Handles the user clicking an answer option.
-     */
-    function handleAnswer(e) {
-        const familyVoted = e.currentTarget.dataset.family;
-        
-        // Update score
-        if (score[familyVoted] !== undefined) {
-            score[familyVoted] += 1;
+        // Tally the answer weight
+        const answerValue = checkedInput.value;
+        const weights = scentWeights[answerValue];
+        for (const scent in weights) {
+            answerTally[scent] = (answerTally[scent] || 0) + weights[scent];
         }
 
-        // Move to the next question
-        currentQuestionIndex++;
-        renderQuestion();
-    }
-
-    /**
-     * Determines the final result and updates the UI.
-     */
-    function showResults() {
-        quizContainer.classList.add('hidden');
-        resultContainer.classList.remove('hidden');
-
-        // Find the family with the highest score
-        let topFamily = 'fresh-clean';
-        let maxScore = -1;
-
-        for (const family in score) {
-            if (score[family] > maxScore) {
-                maxScore = score[family];
-                topFamily = family;
-            }
-        }
-
-        // --- Result Mapping ---
-        const resultsMap = {
-            'fresh-clean': {
-                name: 'Fresh & Clean',
-                description: 'You prefer light, airy, and revitalizing scents. Notes like cotton, ocean mist, and crisp citrus will bring you peace and clarity.',
-                linkText: 'Explore Clean & Fresh Scents'
-            },
-            'woody-earthy': {
-                name: 'Woody & Earthy',
-                description: 'You are drawn to rich, grounding, and masculine notes. Scents of sandalwood, cedar, vetiver, and leather provide comfort and depth.',
-                linkText: 'Explore Woody & Earthy Scents'
-            },
-            'spicy-warm': {
-                name: 'Spicy & Warm',
-                description: 'Your ideal scent is rich, comforting, and nostalgic. Look for notes of cinnamon, clove, ginger, vanilla, and pumpkin spice.',
-                linkText: 'Explore Spicy & Warm Scents'
-            },
-            'fruity-sweet': {
-                name: 'Fruity & Sweet',
-                description: 'You enjoy vibrant, uplifting, and lively fragrances. Scents like tropical coconut, ripe berry, melon, and sweet sugar energize your space.',
-                linkText: 'Explore Fruity & Sweet Scents'
-            },
-            'floral-herbal': {
-                name: 'Floral & Herbal',
-                description: 'You are a lover of nature and gentle, soothing aromas. Notes of lavender, rose, jasmine, and chamomile create a calming, natural environment.',
-                linkText: 'Explore Floral & Herbal Scents'
-            }
-        };
-
-        const result = resultsMap[topFamily];
-
-        // Update results display
-        resultHeading.textContent = `Your Scent Match: ${result.name}`;
-        resultDescription.textContent = result.description;
-        resultLink.href = `/shop/?family=${topFamily}`; // Link to the filtered shop page
-        resultLink.textContent = result.linkText;
+        const nextStep = parseInt(e.target.dataset.nextStep);
+        showStep(nextStep);
     }
     
-    /**
-     * Resets the quiz state and starts over.
-     */
-    function resetQuiz() {
-        currentQuestionIndex = 0;
-        for (const family in score) {
-            score[family] = 0;
-        }
-        resultContainer.classList.add('hidden');
-        quizContainer.classList.remove('hidden');
-        renderQuestion();
-    }
+    // --- Result Calculation ---
 
+    /**
+     * Determines the top-voted scent family and fetches a product recommendation.
+     */
+    async function calculateResult(e) {
+        e.preventDefault();
+        
+        // Show result step and loading state
+        showStep(TOTAL_STEPS);
+        loadingResult.classList.remove('hidden');
+        resultFamilyTitle.classList.add('hidden');
+        resultDescription.classList.add('hidden');
+        resultLink.classList.add('hidden');
+
+        // 1. Determine the top scent family
+        let topScent = null;
+        let maxWeight = 0;
+        for (const scent in answerTally) {
+            if (answerTally[scent] > maxWeight) {
+                maxWeight = answerTally[scent];
+                topScent = scent;
+            }
+        }
+
+        // Handle fallback if no answers were tallied (shouldn't happen)
+        if (!topScent) {
+            topScent = 'woodsy'; // Default recommendation
+        }
+
+        // Display results
+        const readableScent = topScent.charAt(0).toUpperCase() + topScent.slice(1).replace(/-/g, ' ');
+        resultFamilyTitle.textContent = readableScent;
+        resultLink.href = `/shop/?family=${topScent}`;
+
+        // 2. Fetch data (Optional: Can fetch from a separate Firestore document for description/image)
+        // For simplicity, we'll use a hardcoded description
+        resultDescription.textContent = `Based on your answers, the ${readableScent} family, known for its strong connection to nature and comforting notes, is your ideal match. Click below to explore all scents in this family!`;
+        
+        // 3. Final Display
+        loadingResult.classList.add('hidden');
+        resultFamilyTitle.classList.remove('hidden');
+        resultDescription.classList.remove('hidden');
+        resultLink.classList.remove('hidden');
+    }
 
     // --- Initialization ---
     document.addEventListener('DOMContentLoaded', () => {
-        // Attach listener for the restart button
-        document.getElementById('restart-button').addEventListener('click', resetQuiz);
+        // Initial setup
+        showStep(0); 
         
-        // Start the quiz
-        renderQuestion();
+        // Attach listeners for next buttons
+        document.querySelectorAll('.next-step-button').forEach(button => {
+            button.addEventListener('click', handleNextStep);
+        });
+
+        // Attach listener for the start button
+        document.querySelector('.start-quiz-button').addEventListener('click', handleNextStep);
+
+        // Attach listener for the final form submission
+        form.addEventListener('submit', calculateResult);
     });
-
 </script>
-
-<main class="container mx-auto px-4 py-12 min-h-screen">
-    
-    <header class="max-w-3xl mx-auto text-center mb-12">
-        <p class="text-sm font-semibold uppercase tracking-wider text-burnt-orange mb-3">Discovery Tool</p>
-        <h1 class="text-5xl font-playfair text-charcoal mb-4">
-            The Southern Sense Scent Quiz
-        </h1>
-        <p class="text-lg text-stone leading-relaxed">
-            Answer five simple questions to discover the perfect fragrance family tailored to your personality and space.
-        </p>
-    </header>
-
-    <section id="quiz-container" class="max-w-2xl mx-auto p-8 bg-parchment rounded-lg shadow-xl">
-        
-        <div class="mb-8 flex justify-between items-center border-b pb-4">
-            <p id="progress-text" class="text-charcoal font-semibold"></p>
-            <button id="restart-button" class="text-sm text-stone hover:text-burnt-orange transition">Restart Quiz</button>
-        </div>
-        
-        <div id="question-container">
-            </div>
-    </section>
-
-    <section id="result-container" class="max-w-3xl mx-auto text-center py-16 hidden">
-        <h2 class="text-5xl font-playfair text-burnt-orange mb-4" id="result-heading">
-            Your Scent Match: Loading...
-        </h2>
-        <p class="text-xl text-stone leading-relaxed mb-8" id="result-description">
-            Your perfect fragrance family is being calculated based on your preferences.
-        </p>
-        
-        <a id="result-link" href="/shop/" 
-           class="px-8 py-4 bg-charcoal text-parchment font-bold text-lg rounded-lg shadow-xl hover:bg-stone transition duration-300">
-            Explore Scents
-        </a>
-        
-        <div class="mt-8">
-            <button id="restart-button" class="text-sm text-stone hover:text-burnt-orange transition">
-                Take the quiz again
-            </button>
-        </div>
-    </section>
-
-</main>

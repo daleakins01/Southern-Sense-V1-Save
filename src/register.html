@@ -1,150 +1,52 @@
 ---
-layout: layout
+layout: layout.html
 title: Create Account
 ---
 
-<script type="module">
-    import { registerUser } from '/src/auth.js';
-    import { onAuthStateChanged } from '/firebase-loader.js';
-    
-    // --- DOM Elements ---
-    const registrationForm = document.getElementById('registration-form');
-    const registerMessage = document.getElementById('register-message');
-    const submitButton = document.getElementById('submit-button');
-    
-    // --- Handlers ---
-
-    /**
-     * Handles the form submission for user registration.
-     */
-    async function handleRegistration(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(registrationForm);
-        const firstName = formData.get('firstName').trim();
-        const lastName = formData.get('lastName').trim();
-        const email = formData.get('email').trim();
-        const password = formData.get('password');
-        const confirmPassword = formData.get('confirmPassword');
-
-        // Reset message
-        registerMessage.classList.add('hidden');
-        registerMessage.classList.remove('text-red-600', 'text-green-600');
-
-        if (!firstName || !lastName || !email || !password || !confirmPassword) {
-            registerMessage.textContent = 'Please fill out all fields.';
-            registerMessage.classList.remove('hidden');
-            registerMessage.classList.add('text-red-600');
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            registerMessage.textContent = 'Passwords do not match.';
-            registerMessage.classList.remove('hidden');
-            registerMessage.classList.add('text-red-600');
-            return;
-        }
-
-        if (password.length < 6) {
-            registerMessage.textContent = 'Password must be at least 6 characters long.';
-            registerMessage.classList.remove('hidden');
-            registerMessage.classList.add('text-red-600');
-            return;
-        }
-
-        submitButton.disabled = true;
-        submitButton.textContent = 'Creating Account...';
-
-        try {
-            // Use the updated registerUser function
-            await registerUser(email, password, firstName, lastName);
-            
-            // Redirect to the account page on successful registration
-            window.location.href = '/account/';
-
-        } catch (error) {
-            console.error("Registration Error:", error);
-            
-            let message = 'Registration failed. Please check your network or try again.';
-            if (error.code === 'auth/email-already-in-use') {
-                message = 'This email address is already registered.';
-            } else if (error.code === 'auth/weak-password') {
-                message = 'Password is too weak. Choose a stronger one.';
-            }
-            
-            registerMessage.textContent = message;
-            registerMessage.classList.remove('hidden');
-            registerMessage.classList.add('text-red-600');
-
-        } finally {
-            submitButton.disabled = false;
-            submitButton.textContent = 'Create Account';
-        }
-    }
-
-    // --- Initialization ---
-    document.addEventListener('DOMContentLoaded', () => {
-        registrationForm.addEventListener('submit', handleRegistration);
-        
-        // Redirect if user is already logged in
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // If user is already logged in, redirect them away from register page
-                window.location.href = '/account/'; 
-            }
-        });
-    });
-
-</script>
-
-<main class="container mx-auto px-4 py-16 min-h-screen flex items-center justify-center">
-    <div class="w-full max-w-lg bg-white p-8 rounded-lg shadow-xl">
-        <h1 class="text-4xl font-playfair text-charcoal mb-8 text-center">Create Your Account</h1>
-
-        <form id="registration-form" class="space-y-6">
-            
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label for="firstName" class="block text-sm font-medium text-stone mb-1">First Name</label>
-                    <input type="text" id="firstName" name="firstName" required 
-                           class="w-full p-3 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
-                </div>
-                <div>
-                    <label for="lastName" class="block text-sm font-medium text-stone mb-1">Last Name</label>
-                    <input type="text" id="lastName" name="lastName" required 
-                           class="w-full p-3 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
-                </div>
-            </div>
-
-            <div>
-                <label for="email" class="block text-sm font-medium text-stone mb-1">Email Address</label>
-                <input type="email" id="email" name="email" required 
-                       class="w-full p-3 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
-            </div>
-
-            <div>
-                <label for="password" class="block text-sm font-medium text-stone mb-1">Password (min 6 characters)</label>
-                <input type="password" id="password" name="password" required 
-                       class="w-full p-3 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
-            </div>
-
-            <div>
-                <label for="confirmPassword" class="block text-sm font-medium text-stone mb-1">Confirm Password</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" required 
-                       class="w-full p-3 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
-            </div>
-
-            <p id="register-message" class="text-sm font-semibold hidden"></p>
-
-            <button type="submit" id="submit-button"
-                    class="w-full px-4 py-3 bg-burnt-orange text-parchment font-bold text-lg rounded-lg shadow-lg hover:bg-burnt-orange/80 transition duration-300">
-                Create Account
-            </button>
-        </form>
-
-        <p class="mt-6 text-center text-sm text-stone">
-            Already have an account? 
-            <a href="/login/" class="font-semibold text-burnt-orange hover:text-charcoal transition">Log In Here</a>
-        </p>
+<header class="relative w-full h-48 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
+    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+        <h1 class="font-playfair text-5xl font-extrabold text-parchment drop-shadow-lg">Create Account</h1>
     </div>
-</main>
+</header>
+
+<div class="container mx-auto p-4 lg:p-8 py-12">
+    <div class="max-w-md mx-auto">
+        
+        <div class="bg-parchment p-6 rounded-xl shadow-2xl border border-stone/10 space-y-6">
+
+            <p id="register-status" class="hidden font-roboto text-sm p-3 rounded-lg"></p>
+
+            <form id="register-form" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="firstName" class="block font-roboto text-sm font-medium text-charcoal">First Name</label>
+                        <input type="text" id="firstName" name="firstName" required class="w-full p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
+                    </div>
+                    <div>
+                        <label for="lastName" class="block font-roboto text-sm font-medium text-charcoal">Last Name</label>
+                        <input type="text" id="lastName" name="lastName" required class="w-full p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="email" class="block font-roboto text-sm font-medium text-charcoal">Email Address</label>
+                    <input type="email" id="email" name="email" required class="w-full p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
+                </div>
+                <div>
+                    <label for="password" class="block font-roboto text-sm font-medium text-charcoal">Password (Min 6 chars)</label>
+                    <input type="password" id="password" name="password" required class="w-full p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
+                </div>
+                
+                <button type="submit" id="register-button" class="w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg shadow-md hover:bg-opacity-90 transition duration-150">
+                    Register
+                </button>
+            </form>
+            
+            <p class="font-roboto text-sm text-stone/80 text-center">
+                Already have an account? <a href="/login/" class="text-burnt-orange hover:underline">Sign In Here</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="/src/auth.js"></script>

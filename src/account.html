@@ -1,214 +1,133 @@
 ---
-layout: layout
+layout: layout.html
 title: My Account
 ---
 
-<script type="module">
-    import { 
-        auth, 
-        db, 
-        onAuthStateChanged, 
-        collection, 
-        query, 
-        where, 
-        getDocs 
-    } from '/firebase-loader.js';
-    import { logout } from '/src/auth.js';
+<header class="relative w-full h-48 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
+    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+        <h1 class="font-playfair text-5xl font-extrabold text-parchment drop-shadow-lg">My Account</h1>
+    </div>
+</header>
 
-    // --- State and Handlers ---
-    let currentUser = null;
-    let isAdmin = false;
-    let userProfile = null; // To store /users/ profile data
+<main class="container mx-auto p-4 lg:p-8 py-12">
+    <div id="loading-message" class="text-center p-12 bg-parchment rounded-xl shadow-lg border border-stone/10">
+        <p class="font-playfair text-2xl text-stone">Verifying account access...</p>
+        <div class="mt-4 animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
+    </div>
+
+    <div id="account-dashboard" class="max-w-4xl mx-auto space-y-10 hidden">
+        
+        <div class="bg-white p-8 rounded-xl shadow-2xl border border-stone/10">
+            <h2 class="font-playfair text-4xl font-bold text-charcoal mb-4">Welcome Back, <span id="user-first-name" class="text-burnt-orange">User</span>!</h2>
+            <p class="text-stone">Manage your profile, view order history, and control your subscriptions.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-parchment p-6 rounded-xl shadow-lg border border-stone/10 space-y-4">
+                <h3 class="font-playfair text-2xl font-bold text-charcoal border-b pb-2">Profile Details</h3>
+                <div class="space-y-3">
+                    <p class="font-roboto text-sm"><strong class="font-bold text-charcoal">Name:</strong> <span id="profile-name">Loading...</span></p>
+                    <p class="font-roboto text-sm"><strong class="font-bold text-charcoal">Email:</strong> <span id="profile-email">Loading...</span></p>
+                    <p class="font-roboto text-sm"><strong class="font-bold text-charcoal">Member Since:</strong> <span id="member-since">Loading...</span></p>
+                </div>
+                <button class="w-full py-2 bg-stone/10 text-charcoal font-semibold rounded-lg hover:bg-stone/20 transition duration-150">Edit Profile</button>
+            </div>
+
+            <div class="bg-parchment p-6 rounded-xl shadow-lg border border-stone/10 space-y-4">
+                <h3 class="font-playfair text-2xl font-bold text-charcoal border-b pb-2">Quick Actions</h3>
+                <nav class="space-y-2">
+                    <a href="/order-history/" class="block text-burnt-orange hover:text-charcoal transition duration-150">View Order History &rarr;</a>
+                    <a href="/subscriptions/" class="block text-burnt-orange hover:text-charcoal transition duration-150">Manage Subscriptions &rarr;</a>
+                    <a href="/address-book/" class="block text-burnt-orange hover:text-charcoal transition duration-150">Update Shipping Addresses &rarr;</a>
+                    <button id="logout-button-local" class="text-red-500 hover:text-red-700 transition duration-150 pt-2">Sign Out</button>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="bg-white p-8 rounded-xl shadow-2xl border border-stone/10">
+            <h3 class="font-playfair text-3xl font-bold text-charcoal mb-4">Recent Orders (Placeholder)</h3>
+            <p class="text-stone">Order history loading...</p>
+        </div>
+    </div>
+</main>
+
+<script type="module">
+    // FIX: Corrected import path to include /src/ directory
+    import { auth, onAuthStateChanged, signOut, db, doc, getDoc } from '/src/firebase-loader.js'; 
 
     // --- DOM Elements ---
-    const accountLoader = document.getElementById('account-loader');
-    const accountContent = document.getElementById('account-content');
-    const userDisplayName = document.getElementById('user-display-name');
-    const adminLink = document.getElementById('admin-link');
-    const orderHistoryContainer = document.getElementById('order-history-container');
-    const logoutButton = document.getElementById('logout-button');
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
+    const loadingMessage = document.getElementById('loading-message');
+    const dashboard = document.getElementById('account-dashboard');
+    const userFirstNameElement = document.getElementById('user-first-name');
+    const profileNameElement = document.getElementById('profile-name');
+    const profileEmailElement = document.getElementById('profile-email');
+    const memberSinceElement = document.getElementById('member-since');
+    const logoutButtonLocal = document.getElementById('logout-button-local');
 
-    // --- Utility Functions ---
 
     /**
-     * Formats a Firebase Timestamp object into a readable date string.
-     * @param {Object} timestamp - The Firestore Timestamp object.
-     * @returns {string} The formatted date string.
+     * Fetches user data from Firestore and populates the dashboard.
+     * @param {string} uid - The authenticated user's UID.
      */
-    function formatDate(timestamp) {
-        if (!timestamp || !timestamp.toDate) return 'N/A';
-        return timestamp.toDate().toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-    }
-
-    // --- Core Logic ---
-
-    /**
-     * Fetches and renders the authenticated user's order history.
-     * This is the critical function that relies on the 'userId' field
-     * added in the updated src/cart.js.
-     */
-    async function loadOrderHistory() {
-        if (!currentUser) return; // Should not happen if guard works, but as a safeguard
-
-        orderHistoryContainer.innerHTML = '<p class="text-stone animate-pulse">Loading orders...</p>';
-
+    async function loadUserData(uid) {
         try {
-            // 1. Query orders collection where 'userId' matches the current user's UID
-            const ordersRef = collection(db, 'orders');
-            const q = query(ordersRef, where('userId', '==', currentUser.uid));
-            const querySnapshot = await getDocs(q);
+            const userRef = doc(db, "users", uid);
+            const docSnap = await getDoc(userRef);
 
-            if (querySnapshot.empty) {
-                orderHistoryContainer.innerHTML = `
-                    <p class="text-stone">You have not placed any orders yet.</p>
-                    <a href="/shop/" class="mt-4 inline-block px-6 py-2 bg-burnt-orange text-parchment font-bold rounded-lg hover:bg-burnt-orange/80 transition duration-300">Start Shopping</a>
-                `;
-                return;
-            }
-
-            // 2. Build the orders list HTML
-            let orderHtml = `
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-stone/30">
-                        <thead>
-                            <tr class="text-left text-sm font-medium text-charcoal uppercase tracking-wider">
-                                <th class="px-6 py-3">Order #</th>
-                                <th class="px-6 py-3">Date</th>
-                                <th class="px-6 py-3 text-right">Total</th>
-                                <th class="px-6 py-3">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-stone/20">
-            `;
-
-            querySnapshot.forEach((doc) => {
-                const order = doc.data();
-                const orderId = doc.id;
+            if (docSnap.exists()) {
+                const data = docSnap.data();
                 
-                // Get display values
-                const formattedDate = formatDate(order.createdAt);
-                const total = order.totals.total.toFixed(2);
-                const status = order.status; // e.g., 'Paid', 'Pending', 'Shipped'
-
-                // Determine status color
-                let statusColor = 'text-stone';
-                if (status === 'Paid' || status === 'Shipped') {
-                    statusColor = 'text-green-600';
-                } else if (status === 'Pending') {
-                    statusColor = 'text-burnt-orange';
+                // Populate Profile Details
+                const fullName = `${data.firstName || ''} ${data.lastName || ''}`;
+                userFirstNameElement.textContent = data.firstName || 'User';
+                profileNameElement.textContent = fullName.trim() || 'N/A';
+                profileEmailElement.textContent = data.email || 'N/A';
+                
+                // Handle creation date if available (Firestore timestamp)
+                if (data.createdAt && data.createdAt.toDate) {
+                    memberSinceElement.textContent = data.createdAt.toDate().toLocaleDateString();
+                } else {
+                    memberSinceElement.textContent = 'Unknown';
                 }
 
-                orderHtml += `
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <a href="/order-confirmation/?orderId=${orderId}" class="text-charcoal hover:text-burnt-orange font-medium">...${orderId.slice(-6)}</a>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-stone">${formattedDate}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-charcoal font-semibold text-right">$${total}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-parchment ${statusColor}">
-                                ${status}
-                            </span>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            orderHtml += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            orderHistoryContainer.innerHTML = orderHtml;
-
+                // Show Dashboard
+                loadingMessage.classList.add('hidden');
+                dashboard.classList.remove('hidden');
+            } else {
+                // Should not happen if user successfully registered, but handles missing profile doc
+                alert("User profile data not found. Please contact support.");
+                signOut(auth); // Force log out
+            }
         } catch (error) {
-            console.error("Error loading order history:", error);
-            orderHistoryContainer.innerHTML = '<p class="text-red-600">Could not load order history. Please try again.</p>';
+            console.error("Error loading user data:", error);
+            // Fallback for loading error
+            loadingMessage.innerHTML = `<p class="font-playfair text-2xl text-red-600">Error loading data. <a href="/login/" class="text-burnt-orange hover:underline">Try logging in again.</a></p>`;
+            loadingMessage.classList.remove('hidden');
+            dashboard.classList.add('hidden');
         }
     }
 
 
     /**
-     * Initializes the account page after authentication.
-     * @param {Object} user - The Firebase Auth user object.
+     * Initializes the account page, guarding access with Firebase Auth.
      */
-    async function initializeAccount(user) {
-        currentUser = user;
-
-        // 1. Check Admin Status from the /admins collection
-        const adminDoc = await getDocs(query(collection(db, 'admins'), where('__name__', '==', user.uid)));
-        isAdmin = !adminDoc.empty;
-
-        // 2. Fetch User Profile for display name
-        const userDoc = await getDocs(query(collection(db, 'users'), where('__name__', '==', user.uid)));
-        if (!userDoc.empty) {
-            userProfile = userDoc.docs[0].data();
-        }
-        
-        // 3. Update Display
-        const name = userProfile?.firstName || 'Customer'; // Use firstName if available
-        userDisplayName.textContent = `Welcome back, ${name}.`;
-
-        if (isAdmin) {
-            // Show Admin link
-            adminLink.classList.remove('hidden');
-        }
-
-        // 4. Load Order History (The core feature fix)
-        loadOrderHistory();
-
-        // 5. Hide loader and show content
-        accountLoader.classList.add('hidden');
-        accountContent.classList.remove('hidden');
-    }
-
-    /**
-     * Handles tab switching logic.
-     * @param {string} targetId - The ID of the tab content to show.
-     */
-    function switchTab(targetId) {
-        tabContents.forEach(content => {
-            content.classList.add('hidden');
-            if (content.id === targetId) {
-                content.classList.remove('hidden');
+    function initializeAccountPage() {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is logged in, load their data
+                loadUserData(user.uid);
+            } else {
+                // User is NOT logged in, redirect to login page
+                alert("You must be logged in to view your account.");
+                window.location.href = '/login/';
             }
         });
 
-        tabButtons.forEach(button => {
-            button.classList.remove('bg-burnt-orange', 'text-parchment');
-            button.classList.add('text-charcoal', 'hover:bg-parchment/70');
-            if (button.getAttribute('data-tab') === targetId) {
-                button.classList.add('bg-burnt-orange', 'text-parchment');
-                button.classList.remove('text-charcoal', 'hover:bg-parchment/70');
-            }
-        });
-    }
-
-    // --- Event Listeners and Initializers ---
-
-    document.addEventListener('DOMContentLoaded', () => {
-        // Tab switching setup
-        tabButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                const targetId = e.target.getAttribute('data-tab');
-                switchTab(targetId);
-            });
-        });
-        
-        // Initial state: show the first tab (Dashboard)
-        switchTab('tab-dashboard');
-
-        // Logout listener
-        if (logoutButton) {
-            logoutButton.addEventListener('click', (e) => {
+        // Local logout button listener (in case user clicks this one instead of the header one)
+        if (logoutButtonLocal) {
+            logoutButtonLocal.addEventListener('click', (e) => {
                 e.preventDefault();
-                logout().then(() => {
+                signOut(auth).then(() => {
                     window.location.href = '/login/';
                 }).catch(error => {
                     console.error("Logout failed:", error);
@@ -216,113 +135,7 @@ title: My Account
                 });
             });
         }
+    }
 
-        // Authentication State Listener (Security Guard)
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // User is signed in. Proceed to initialize.
-                initializeAccount(user);
-            } else {
-                // User is signed out. Redirect to login.
-                window.location.href = '/login/';
-            }
-        });
-    });
-
+    document.addEventListener('DOMContentLoaded', initializeAccountPage);
 </script>
-
-<main class="container mx-auto px-4 py-12 min-h-screen">
-    <div id="account-loader" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-charcoal"></div>
-    </div>
-
-    <div id="account-content" class="hidden">
-        <h1 class="text-4xl font-playfair text-charcoal mb-8" id="user-display-name">Welcome back.</h1>
-
-        <div class="flex flex-col lg:flex-row gap-8">
-            <div class="lg:w-1/4">
-                <nav class="bg-parchment p-4 rounded-lg shadow-md sticky top-6">
-                    <button data-tab="tab-dashboard" class="tab-button w-full text-left p-3 rounded-lg font-medium transition duration-150 ease-in-out bg-burnt-orange text-parchment">
-                        Account Dashboard
-                    </button>
-                    <button data-tab="tab-orders" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
-                        Order History
-                    </button>
-                    <button data-tab="tab-settings" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
-                        Account Settings
-                    </button>
-                    <a id="admin-link" href="/admin/" class="hidden w-full text-left p-3 mt-4 rounded-lg font-bold text-parchment bg-stone hover:bg-stone/80 transition duration-150 ease-in-out block">
-                        Admin Panel Access &rarr;
-                    </a>
-                    <button id="logout-button" class="w-full text-left p-3 mt-4 rounded-lg font-medium text-red-600 hover:bg-red-50/50 transition duration-150 ease-in-out">
-                        Log Out
-                    </button>
-                </nav>
-            </div>
-
-            <div class="lg:w-3/4 bg-white p-6 rounded-lg shadow-md">
-                
-                <div id="tab-dashboard" class="tab-content">
-                    <h2 class="text-3xl font-playfair text-charcoal mb-4 border-b pb-2">Your Dashboard</h2>
-                    <p class="text-stone mb-6">A quick overview of your account activity.</p>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                            <h3 class="text-xl font-medium text-charcoal">Total Orders</h3>
-                            <p id="total-orders-count" class="text-4xl font-bold text-burnt-orange mt-2">--</p>
-                            <p class="text-sm text-stone mt-1">Orders placed to date.</p>
-                        </div>
-                        
-                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                            <h3 class="text-xl font-medium text-charcoal">Last Order</h3>
-                            <p id="last-order-date" class="text-2xl font-bold text-stone mt-2">N/A</p>
-                            <p class="text-sm text-burnt-orange mt-1">
-                                <a href="#" class="hover:underline">View details</a>
-                            </p>
-                        </div>
-
-                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                            <h3 class="text-xl font-medium text-charcoal">Loyalty Tier</h3>
-                            <p class="text-2xl font-bold text-stone mt-2">Bronze</p>
-                            <p class="text-sm text-burnt-orange mt-1">50 points until Silver.</p>
-                        </div>
-                    </div>
-
-                    <div class="mt-8">
-                        <h3 class="text-2xl font-playfair text-charcoal mb-3">Quick Links</h3>
-                        <ul class="list-disc list-inside text-stone space-y-2">
-                            <li><a href="/shop/" class="text-burnt-orange hover:text-charcoal transition">Shop All Products</a></li>
-                            <li><a href="/scent-quiz/" class="text-burnt-orange hover:text-charcoal transition">Take the Scent Quiz</a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div id="tab-orders" class="tab-content hidden">
-                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Your Order History</h2>
-                    <div id="order-history-container">
-                        </div>
-                </div>
-
-                <div id="tab-settings" class="tab-content hidden">
-                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Account Settings</h2>
-                    <form id="profile-update-form" class="space-y-6">
-                        <div class="bg-parchment p-4 rounded-lg">
-                            <p class="text-stone italic">Profile update functionality is coming soon. For now, this section serves as a placeholder for managing your personal details, shipping addresses, and communication preferences.</p>
-                        </div>
-                        
-                        <div>
-                            <label for="current-email" class="block text-sm font-medium text-stone mb-1">Registered Email Address</label>
-                            <input type="email" id="current-email" value="loading..." readonly class="w-full p-3 border border-stone/30 rounded-lg bg-gray-50 text-charcoal">
-                        </div>
-                        
-                        <div>
-                            <button type="button" class="px-4 py-2 bg-stone text-parchment font-semibold rounded-lg hover:bg-stone/80 transition duration-300">
-                                Change Password
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</main>

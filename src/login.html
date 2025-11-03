@@ -1,119 +1,41 @@
 ---
-layout: layout
-title: Customer Login
+layout: layout.html
+title: Sign In
 ---
 
-<script type="module">
-    import { loginUser } from '/src/auth.js';
-    import { auth, onAuthStateChanged } from '/firebase-loader.js';
-    
-    // --- DOM Elements ---
-    const loginForm = document.getElementById('login-form');
-    const loginMessage = document.getElementById('login-message');
-    const submitButton = document.getElementById('submit-button');
-    
-    // --- Handlers ---
-
-    /**
-     * Handles the form submission for user login.
-     */
-    async function handleLogin(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(loginForm);
-        const email = formData.get('email').trim();
-        const password = formData.get('password');
-
-        // Reset message
-        loginMessage.classList.add('hidden');
-        loginMessage.classList.remove('text-red-600');
-
-        if (!email || !password) {
-            loginMessage.textContent = 'Please enter both email and password.';
-            loginMessage.classList.remove('hidden');
-            loginMessage.classList.add('text-red-600');
-            return;
-        }
-
-        submitButton.disabled = true;
-        submitButton.textContent = 'Logging In...';
-
-        try {
-            await loginUser(email, password);
-            
-            // Success: Redirect to the user's account page
-            window.location.href = '/account/';
-
-        } catch (error) {
-            console.error("Login Error:", error);
-            
-            let message = 'Login failed. Please check your credentials or network.';
-            
-            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                message = 'Incorrect email or password.';
-            } else if (error.code === 'auth/too-many-requests') {
-                message = 'Access temporarily blocked due to too many failed attempts. Try again later.';
-            }
-            
-            loginMessage.textContent = message;
-            loginMessage.classList.remove('hidden');
-            loginMessage.classList.add('text-red-600');
-
-        } finally {
-            submitButton.disabled = false;
-            submitButton.textContent = 'Log In';
-        }
-    }
-
-    // --- Initialization ---
-    document.addEventListener('DOMContentLoaded', () => {
-        loginForm.addEventListener('submit', handleLogin);
-        
-        // Redirect if user is already logged in
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Check for admin-specific login attempts here if necessary, 
-                // but standard users go straight to /account/.
-                window.location.href = '/account/'; 
-            }
-        });
-    });
-
-</script>
-
-<main class="container mx-auto px-4 py-16 min-h-screen flex items-center justify-center">
-    <div class="w-full max-w-sm bg-white p-8 rounded-lg shadow-xl">
-        <h1 class="text-4xl font-playfair text-charcoal mb-8 text-center">Customer Login</h1>
-
-        <form id="login-form" class="space-y-6">
-            
-            <div>
-                <label for="email" class="block text-sm font-medium text-stone mb-1">Email Address</label>
-                <input type="email" id="email" name="email" required 
-                       class="w-full p-3 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
-            </div>
-
-            <div>
-                <label for="password" class="block text-sm font-medium text-stone mb-1">Password</label>
-                <input type="password" id="password" name="password" required 
-                       class="w-full p-3 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
-            </div>
-            
-            <p class="text-right text-sm">
-                <a href="#" class="font-medium text-stone hover:text-burnt-orange transition">Forgot Password? (Feature Placeholder)</a>
-            </p>
-
-            <p id="login-message" class="text-sm font-semibold hidden"></p>
-
-            <button type="submit" id="submit-button"
-                    class="w-full px-4 py-3 bg-burnt-orange text-parchment font-bold text-lg rounded-lg shadow-lg hover:bg-burnt-orange/80 transition duration-300">
-                Log In
-            </button>
-        </form>
-
-        <p class="mt-6 text-center text-sm text-stone">
-            Don't have an account? 
-            <a href="/register/" class="font-semibold text-burnt-orange hover:text-charcoal transition">Create One</a>
-        </p>
+<header class="relative w-full h-48 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
+    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+        <h1 class="font-playfair text-5xl font-extrabold text-parchment drop-shadow-lg">Sign In</h1>
     </div>
-</main>
+</header>
+
+<div class="container mx-auto p-4 lg:p-8 py-12">
+    <div class="max-w-md mx-auto">
+        
+        <div class="bg-parchment p-6 rounded-xl shadow-2xl border border-stone/10 space-y-6">
+
+            <p id="login-status" class="hidden font-roboto text-sm p-3 rounded-lg"></p>
+
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="email" class="block font-roboto text-sm font-medium text-charcoal">Email Address</label>
+                    <input type="email" id="email" name="email" required class="w-full p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
+                </div>
+                <div>
+                    <label for="password" class="block font-roboto text-sm font-medium text-charcoal">Password</label>
+                    <input type="password" id="password" name="password" required class="w-full p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
+                </div>
+                
+                <button type="submit" id="login-button" class="w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg shadow-md hover:bg-opacity-90 transition duration-150">
+                    Sign In
+                </button>
+            </form>
+            
+            <p class="font-roboto text-sm text-stone/80 text-center">
+                Don't have an account? <a href="/register/" class="text-burnt-orange hover:underline">Register Here</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="/src/auth.js"></script>

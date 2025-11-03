@@ -1,137 +1,138 @@
 ---
-layout: layout
+layout: layout.html
 title: Refill Program
 ---
 
-<script type="module">
-    import { db, doc, getDoc } from '/firebase-loader.js';
+<header class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
+    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+        <h1 id="header-title" class="font-playfair text-6xl font-extrabold text-parchment drop-shadow-lg">Refill Program</h1>
+    </div>
+</header>
 
-    // --- DOM Elements ---
-    const contentLoader = document.getElementById('content-loader');
-    const refillContent = document.getElementById('refill-content');
-    const mainHeading = document.getElementById('main-heading');
-    const mainIntro = document.getElementById('main-intro');
-    const stepsContainer = document.getElementById('steps-container');
-    const faqSection = document.getElementById('faq-section');
+<main class="container mx-auto p-4 lg:p-8 py-16">
+
+    <section class="max-w-4xl mx-auto mb-16">
+        <h2 class="font-playfair text-4xl font-bold text-charcoal text-center mb-6">Sustainable Scents</h2>
+        <div id="refill-content" class="prose max-w-none text-stone font-roboto text-lg text-center mx-auto">
+            <p>Loading program overview...</p>
+        </div>
+    </section>
+
+    <section class="mb-16">
+        <h2 id="how-it-works-title" class="font-playfair text-4xl font-bold text-charcoal text-center mb-10">How It Works</h2>
+        <div class="max-w-4xl mx-auto grid md:grid-cols-5 gap-8">
+            <div class="col-span-1 text-center space-y-2">
+                <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3">1</div>
+                <p id="refill-step-1" class="text-stone">Loading step 1...</p>
+            </div>
+            <div class="hidden md:flex items-center justify-center text-burnt-orange text-2xl font-bold">
+                &rarr;
+            </div>
+            <div class="col-span-1 text-center space-y-2">
+                <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3">2</div>
+                <p id="refill-step-2" class="text-stone">Loading step 2...</p>
+            </div>
+            <div class="hidden md:flex items-center justify-center text-burnt-orange text-2xl font-bold">
+                &rarr;
+            </div>
+            <div class="col-span-1 text-center space-y-2">
+                <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3">3</div>
+                <p id="refill-step-3" class="text-stone">Loading step 3...</p>
+            </div>
+             </div>
+
+        <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8 mt-12">
+            <div class="text-center space-y-2 border-t pt-6 border-stone/10">
+                <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3">4</div>
+                <p id="refill-step-4" class="text-stone">Loading step 4...</p>
+            </div>
+            <div class="text-center space-y-2 border-t pt-6 border-stone/10">
+                <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3">5</div>
+                <p id="refill-step-5" class="text-stone">Loading step 5...</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="max-w-5xl mx-auto bg-parchment p-8 rounded-xl shadow-2xl border border-stone/10">
+        <h2 id="pricing-title" class="font-playfair text-4xl font-bold text-charcoal text-center mb-8">Refill Pricing Structure</h2>
+        <div class="grid md:grid-cols-3 gap-8 text-center">
+            
+            <div class="p-4 border-r md:border-r-0 md:border-b-0 border-stone/20">
+                <h3 class="text-2xl font-playfair font-bold text-burnt-orange mb-2">1 Refill</h3>
+                <p id="refill-price-1" class="text-stone text-lg">Loading price 1...</p>
+            </div>
+
+            <div class="p-4 border-r md:border-r-0 md:border-b-0 border-stone/20">
+                <h3 class="text-2xl font-playfair font-bold text-burnt-orange mb-2">2 Refills</h3>
+                <p id="refill-price-2" class="text-stone text-lg">Loading price 2...</p>
+            </div>
+
+            <div class="p-4">
+                <h3 class="text-2xl font-playfair font-bold text-burnt-orange mb-2">3+ Refills</h3>
+                <p id="refill-price-3" class="text-stone text-lg">Loading price 3...</p>
+            </div>
+        </div>
+        
+        <h3 id="policies-title" class="font-playfair text-3xl font-bold text-charcoal text-center mt-12 mb-6">Important Policies</h3>
+        <ul class="list-disc list-inside space-y-3 max-w-2xl mx-auto text-stone">
+            <li id="refill-policy-1">Loading policy 1...</li>
+            <li id="refill-policy-2">Loading policy 2...</li>
+        </ul>
+    </section>
+
+</main>
+
+<script type="module">
+    // FIX: Corrected import path to include /src/ directory
+    import { db, doc, getDoc } from '/src/firebase-loader.js'; 
 
     /**
-     * Fetches the 'refillProgram' document from Firestore and injects content into the page.
+     * Loads dynamic content for the Refill Program page from Firestore.
      */
-    async function loadRefillProgramContent() {
-        // Show loader while fetching
-        contentLoader.classList.remove('hidden');
-        refillContent.classList.add('hidden');
-
+    async function loadRefillContent() {
+        console.log("Refill Program Page: Loading content from Firestore...");
         try {
-            const refillRef = doc(db, 'siteContent', 'refillProgram');
-            const docSnap = await getDoc(refillRef);
+            // Document reference for the 'refill-program' page content
+            const docRef = doc(db, "siteContent", "refill-program");
+            const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
                 const data = docSnap.data();
-
-                // 1. Inject Main Heading and Introduction
-                mainHeading.textContent = data.heading || 'The Southern Sense Refill Program';
-                mainIntro.innerHTML = data.intro || '<p>Content missing: Intro paragraph for Refill Program.</p>';
-
-                // 2. Inject Step-by-Step Guide
-                const steps = [
-                    { number: 1, title: data.step1Title, text: data.step1Text },
-                    { number: 2, title: data.step2Title, text: data.step2Text },
-                    { number: 3, title: data.step3Title, text: data.step3Text },
-                ];
                 
-                let stepsHtml = '';
-                steps.forEach(step => {
-                    const stepTitle = step.title || `Step ${step.number}: Title Missing`;
-                    const stepText = step.text || 'Step description is missing. Update via Admin CMS.';
-
-                    stepsHtml += `
-                        <div class="flex flex-col md:flex-row items-start space-y-4 md:space-y-0 md:space-x-6 p-6 bg-parchment rounded-lg shadow-md">
-                            <div class="flex-shrink-0 w-12 h-12 bg-burnt-orange text-parchment rounded-full flex items-center justify-center text-xl font-bold font-playfair shadow-lg">
-                                ${step.number}
-                            </div>
-                            <div class="flex-grow">
-                                <h3 class="text-2xl font-playfair text-charcoal mb-2">${stepTitle}</h3>
-                                <p class="text-stone leading-relaxed">${stepText}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-                stepsContainer.innerHTML = stepsHtml;
-
-                // 3. Inject FAQ (This assumes FAQ is stored as a structured array or string with HTML)
-                // For simplicity, we assume the Admin CMS stores the FAQ content as formatted HTML text.
-                faqSection.querySelector('h2').textContent = data.faqHeading || 'Frequently Asked Questions';
-                faqSection.querySelector('#faq-body').innerHTML = data.faqContent || '<p>FAQ content is missing. Please add common questions and answers.</p>';
+                // 1. Header Title
+                document.getElementById('header-title').textContent = data.refillHeaderTitle || "Refill Program";
                 
+                // 2. Overview Content (HTML)
+                document.getElementById('refill-content').innerHTML = data.refillContent || "<p class='text-center'>Program overview not set in Firestore.</p>";
+                
+                // 3. How It Works Steps
+                document.getElementById('how-it-works-title').textContent = data.refillHowItWorksTitle || "How It Works";
+                document.getElementById('refill-step-1').textContent = data.refillStep1Text || "Step 1 not found.";
+                document.getElementById('refill-step-2').textContent = data.refillStep2Text || "Step 2 not found.";
+                document.getElementById('refill-step-3').textContent = data.refillStep3Text || "Step 3 not found.";
+                document.getElementById('refill-step-4').textContent = data.refillStep4Text || "Step 4 not found.";
+                document.getElementById('refill-step-5').textContent = data.refillStep5Text || "Step 5 not found.";
+                
+                // 4. Pricing
+                document.getElementById('pricing-title').textContent = data.refillPriceTitle || "Pricing";
+                document.getElementById('refill-price-1').textContent = data.refillPrice1Text || "Price 1 not found.";
+                document.getElementById('refill-price-2').textContent = data.refillPrice2Text || "Price 2 not found.";
+                document.getElementById('refill-price-3').textContent = data.refillPrice3Text || "Price 3 not found.";
+
+                // 5. Policies
+                document.getElementById('policies-title').textContent = data.refillPoliciesTitle || "Policies";
+                document.getElementById('refill-policy-1').textContent = data.refillPolicy1Text || "Policy 1 not found.";
+                document.getElementById('refill-policy-2').textContent = data.refillPolicy2Text || "Policy 2 not found.";
+
             } else {
-                // Document not found
-                mainHeading.textContent = 'Program Details Missing';
-                mainIntro.innerHTML = '<p class="text-red-600">The core "refillProgram" document could not be found in the database. Please check Firestore.</p>';
-                stepsContainer.innerHTML = '';
-                faqSection.querySelector('h2').textContent = 'FAQ';
-                faqSection.querySelector('#faq-body').innerHTML = '';
+                console.warn("Refill Program Page: Document 'siteContent/refill-program' does not exist.");
+                document.getElementById('refill-content').innerHTML = `<p class="text-red-600 text-center">Error: Could not load Refill Program configuration.</p>`;
             }
-
         } catch (error) {
-            console.error("Error loading Refill Program content:", error);
-            mainHeading.textContent = 'Error Loading Page';
-            mainIntro.innerHTML = '<p class="text-red-600">A network error occurred while fetching content. Please try again later.</p>';
-            stepsContainer.innerHTML = '';
-        } finally {
-            // Hide loader and show content
-            contentLoader.classList.add('hidden');
-            refillContent.classList.remove('hidden');
+            console.error("Error fetching Refill Program content:", error);
+            document.getElementById('refill-content').innerHTML = `<p class="text-red-600 text-center">Error loading content: ${error.message}</p>`;
         }
     }
 
-    document.addEventListener('DOMContentLoaded', loadRefillProgramContent);
-
+    document.addEventListener('DOMContentLoaded', loadRefillContent);
 </script>
-
-<main class="container mx-auto px-4 py-12 min-h-screen">
-    
-    <div id="content-loader" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-charcoal"></div>
-    </div>
-
-    <div id="refill-content" class="hidden">
-        
-        <header class="max-w-4xl mx-auto text-center mb-12">
-            <p class="text-sm font-semibold uppercase tracking-wider text-burnt-orange mb-3">Sustainability in Scents</p>
-            <h1 id="main-heading" class="text-5xl font-playfair text-charcoal mb-6">
-                Loading Heading...
-            </h1>
-            <div id="main-intro" class="text-xl text-stone leading-relaxed">
-                </div>
-        </header>
-
-        <section class="max-w-4xl mx-auto mb-16">
-            <h2 class="text-4xl font-playfair text-charcoal mb-10 text-center">How It Works</h2>
-            <div id="steps-container" class="space-y-8">
-                </div>
-        </section>
-
-        <section class="max-w-4xl mx-auto p-10 bg-white rounded-lg shadow-xl border-t-4 border-stone">
-            <h2 class="text-3xl font-playfair text-charcoal mb-4">Why Refill?</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-stone">
-                <div>
-                    <h3 class="font-semibold text-xl mb-2 text-burnt-orange">Eco-Friendly</h3>
-                    <p>Reduce glass waste by reusing your beautiful Southern Sense vessel. It's a small change that makes a significant difference for the planet.</p>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-xl mb-2 text-burnt-orange">Cost-Effective</h3>
-                    <p>Receive a discount on your purchase since you are only paying for the wax and fragrance. It's our thank you for participating in a sustainable practice.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="faq-section" class="max-w-4xl mx-auto mt-16">
-            <h2 class="text-4xl font-playfair text-charcoal mb-8 text-center">
-                Frequently Asked Questions
-            </h2>
-            <div id="faq-body" class="space-y-6 text-stone">
-                </div>
-        </section>
-    </div>
-</main>

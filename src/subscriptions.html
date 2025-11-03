@@ -1,77 +1,145 @@
 ---
-layout: layout
-title: Candle Subscriptions
+layout: layout.html
+title: Subscription Boxes
 ---
 
-<main class="container mx-auto px-4 py-12 min-h-screen">
-    
-    <header class="max-w-4xl mx-auto text-center mb-16">
-        <p class="text-sm font-semibold uppercase tracking-wider text-burnt-orange mb-3">Set It & Forget It</p>
-        <h1 class="text-5xl font-playfair text-charcoal mb-4">
-            The Southern Sense Subscription Box
-        </h1>
-        <p class="text-xl text-stone leading-relaxed">
-            Never run out of your favorite fragrance. Choose your frequency and scent, and we'll handle the rest.
-        </p>
-    </header>
+<header class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
+    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+        <h1 id="sub-header-title" class="font-playfair text-6xl font-extrabold text-parchment drop-shadow-lg">Scent Subscriptions</h1>
+    </div>
+</header>
 
-    <section class="max-w-5xl mx-auto mb-16">
-        <h2 class="text-4xl font-playfair text-charcoal mb-8 text-center">Flexible Subscription Options</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<main class="container mx-auto p-4 lg:p-8 py-16">
+
+    <div id="loading-state" class="text-center p-12 bg-parchment rounded-xl shadow-lg border border-stone/10">
+        <p class="font-playfair text-2xl text-stone">Loading monthly scent boxes...</p>
+        <div class="mt-4 animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
+    </div>
+
+    <section id="subscriptions-section" class="max-w-5xl mx-auto space-y-12 hidden">
+
+        <div class="text-center mb-10">
+            <h2 class="font-playfair text-4xl font-bold text-charcoal mb-4">Never Run Out of Comfort</h2>
+            <div id="sub-overview-content" class="prose max-w-none text-stone font-roboto text-lg mx-auto">
+                <p>Subscription overview loading...</p>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8 text-center">
             
-            <div class="p-8 bg-white border border-stone/30 rounded-lg shadow-lg text-center">
-                <p class="text-sm font-semibold text-burnt-orange mb-2">MOST POPULAR</p>
-                <h3 class="text-4xl font-playfair text-charcoal mb-4">Bi-Monthly</h3>
-                <p class="text-5xl font-bold text-burnt-orange mb-6">10% OFF</p>
-                <p class="text-stone mb-6">Perfect for maintaining a steady scent rotation without overstocking.</p>
-                <ul class="text-sm text-charcoal list-disc list-inside space-y-2 text-left mx-auto max-w-xs mb-8">
-                    <li>1 Candle delivered every 60 days</li>
-                    <li>Free Shipping on every order</li>
-                    <li>Cancel or Pause Anytime</li>
-                </ul>
-                <a href="#" class="w-full px-8 py-3 bg-burnt-orange text-parchment font-bold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
-                    Subscribe Now (Placeholder)
+            <div id="option-1-card" class="bg-white p-6 rounded-xl shadow-2xl border-4 border-transparent hover:border-burnt-orange transition-all duration-300 space-y-3">
+                <h3 id="option-1-title" class="font-playfair text-2xl font-bold text-burnt-orange">The Classic Box</h3>
+                <p id="option-1-price" class="font-playfair text-3xl font-extrabold text-charcoal">$XX/Month</p>
+                <p id="option-1-desc" class="text-stone">Description loading...</p>
+                <a href="/subscribe/?plan=classic" class="inline-block py-2 px-6 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150 mt-4">
+                    Select Plan
                 </a>
             </div>
 
-            <div class="p-8 bg-white border border-stone/30 rounded-lg shadow-lg text-center">
-                <p class="text-sm font-semibold text-stone mb-2">FOR SCENT LOVERS</p>
-                <h3 class="text-4xl font-playfair text-charcoal mb-4">Monthly</h3>
-                <p class="text-5xl font-bold text-burnt-orange mb-6">15% OFF</p>
-                <p class="text-stone mb-6">The ideal choice for those who burn candles frequently and want maximum savings.</p>
-                <ul class="text-sm text-charcoal list-disc list-inside space-y-2 text-left mx-auto max-w-xs mb-8">
-                    <li>1 Candle delivered every 30 days</li>
-                    <li>Free Shipping on every order</li>
-                    <li>Exclusive Early Access to new scents</li>
-                </ul>
-                <a href="#" class="w-full px-8 py-3 bg-charcoal text-parchment font-bold rounded-lg hover:bg-stone transition duration-300">
-                    Subscribe Now (Placeholder)
+            <div id="option-2-card" class="bg-white p-6 rounded-xl shadow-2xl border-4 border-transparent hover:border-burnt-orange transition-all duration-300 space-y-3">
+                <h3 id="option-2-title" class="font-playfair text-2xl font-bold text-burnt-orange">The Luxe Box</h3>
+                <p id="option-2-price" class="font-playfair text-3xl font-extrabold text-charcoal">$XX/Month</p>
+                <p id="option-2-desc" class="text-stone">Description loading...</p>
+                <a href="/subscribe/?plan=luxe" class="inline-block py-2 px-6 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150 mt-4">
+                    Select Plan
                 </a>
             </div>
-            
-            <div class="p-8 bg-white border border-stone/30 rounded-lg shadow-lg text-center">
-                <p class="text-sm font-semibold text-stone mb-2">GENTLE ROTATION</p>
-                <h3 class="text-4xl font-playfair text-charcoal mb-4">Quarterly</h3>
-                <p class="text-5xl font-bold text-burnt-orange mb-6">5% OFF</p>
-                <p class="text-stone mb-6">A great option for gifting or for those who use candles more sparingly.</p>
-                <ul class="text-sm text-charcoal list-disc list-inside space-y-2 text-left mx-auto max-w-xs mb-8">
-                    <li>1 Candle delivered every 90 days</li>
-                    <li>Free Shipping on every order</li>
-                    <li>Seasonal Scent Focus</li>
-                </ul>
-                <a href="#" class="w-full px-8 py-3 bg-charcoal text-parchment font-bold rounded-lg hover:bg-stone transition duration-300">
-                    Subscribe Now (Placeholder)
+
+            <div id="option-3-card" class="bg-white p-6 rounded-xl shadow-2xl border-4 border-transparent hover:border-burnt-orange transition-all duration-300 space-y-3">
+                <h3 id="option-3-title" class="font-playfair text-2xl font-bold text-burnt-orange">The Melt Box</h3>
+                <p id="option-3-price" class="font-playfair text-3xl font-extrabold text-charcoal">$XX/Month</p>
+                <p id="option-3-desc" class="text-stone">Description loading...</p>
+                <a href="/subscribe/?plan=melt" class="inline-block py-2 px-6 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150 mt-4">
+                    Select Plan
                 </a>
             </div>
         </div>
-    </section>
 
-    <section class="max-w-3xl mx-auto text-center py-12 border-t border-stone/30">
-        <p class="text-lg text-charcoal mb-4">Ready to commit to clean, luxurious fragrance?</p>
-        <a href="#faq" class="font-semibold text-burnt-orange hover:underline transition">
-            View Subscription FAQs
-        </a>
+        <div id="sub-faqs-content" class="bg-parchment p-8 rounded-xl shadow-inner border border-stone/10 mt-12">
+            <h2 class="font-playfair text-3xl font-bold text-charcoal mb-6 text-center">Frequently Asked Questions</h2>
+            <p class="text-stone text-center">FAQs loading...</p>
+        </div>
     </section>
 
 </main>
+
+<script type="module">
+    // FIX: Corrected import path to include /src/ directory
+    import { db, doc, getDoc } from '/src/firebase-loader.js'; 
+
+    // --- DOM Elements ---
+    const loadingState = document.getElementById('loading-state');
+    const subscriptionsSection = document.getElementById('subscriptions-section');
+    const subHeaderTitle = document.getElementById('sub-header-title');
+    const subOverviewContent = document.getElementById('sub-overview-content');
+    const subFaqsContent = document.getElementById('sub-faqs-content');
+    
+    // Option 1 Elements
+    const option1Title = document.getElementById('option-1-title');
+    const option1Price = document.getElementById('option-1-price');
+    const option1Desc = document.getElementById('option-1-desc');
+    
+    // Option 2 Elements
+    const option2Title = document.getElementById('option-2-title');
+    const option2Price = document.getElementById('option-2-price');
+    const option2Desc = document.getElementById('option-2-desc');
+    
+    // Option 3 Elements
+    const option3Title = document.getElementById('option-3-title');
+    const option3Price = document.getElementById('option-3-price');
+    const option3Desc = document.getElementById('option-3-desc');
+
+
+    /**
+     * Loads dynamic content for the Subscriptions page from Firestore.
+     */
+    async function loadSubscriptionsContent() {
+        console.log("Subscriptions Page: Loading content from Firestore...");
+        
+        loadingState.classList.remove('hidden');
+        subscriptionsSection.classList.add('hidden');
+
+        try {
+            // Document reference for the 'subscriptions' page content
+            const docRef = doc(db, "siteContent", "subscriptions");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                // 1. Header and Overview
+                subHeaderTitle.textContent = data.subHeaderTitle || "Scent Subscriptions";
+                subOverviewContent.innerHTML = data.subOverviewContent || "<p>Subscription overview not set.</p>";
+                
+                // 2. Subscription Options
+                option1Title.textContent = data.option1Title || "The Classic Box";
+                option1Price.textContent = data.option1Price || "$24.99/Month";
+                option1Desc.textContent = data.option1Desc || "Details loading...";
+                
+                option2Title.textContent = data.option2Title || "The Luxe Box";
+                option2Price.textContent = data.option2Price || "$39.99/Month";
+                option2Desc.textContent = data.option2Desc || "Details loading...";
+                
+                option3Title.textContent = data.option3Title || "The Melt Box";
+                option3Price.textContent = data.option3Price || "$14.99/Month";
+                option3Desc.textContent = data.option3Desc || "Details loading...";
+
+                // 3. FAQs Section (Assumed rich HTML)
+                subFaqsContent.innerHTML = data.subFaqsContent || "<p class='text-center text-stone'>FAQs content not set.</p>";
+                
+                // Success: Hide loading, show content
+                loadingState.classList.add('hidden');
+                subscriptionsSection.classList.remove('hidden');
+
+            } else {
+                console.warn("Subscriptions Page: Document 'siteContent/subscriptions' does not exist.");
+                loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Error: Subscription configuration document not found.</p>`;
+            }
+        } catch (error) {
+            console.error("Error fetching Subscription content:", error);
+            loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Error loading content: ${error.message}</p>`;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadSubscriptionsContent);
+</script>

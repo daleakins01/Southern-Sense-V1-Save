@@ -1,130 +1,104 @@
 ---
-layout: layout
-title: Our Story
+layout: layout.html
+title: Our Story & Values
 ---
 
-<script type="module">
-    import { db, doc, getDoc } from '/firebase-loader.js';
+<header class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/background-parchment.webp');">
+    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+        <h1 class="font-playfair text-6xl font-extrabold text-parchment drop-shadow-lg">Our Story</h1>
+    </div>
+</header>
 
-    // --- DOM Elements ---
-    const contentLoader = document.getElementById('content-loader');
-    const aboutContent = document.getElementById('about-content');
-    const aboutHeading = document.getElementById('about-heading');
-    const aboutBody = document.getElementById('about-body');
-    const portraitImage = document.getElementById('portrait-image');
-    const founderTitle = document.getElementById('founder-title');
-    const founderCaption = document.getElementById('founder-caption');
+<main class="container mx-auto p-4 lg:p-8 py-16">
+    <section id="about-content" class="max-w-4xl mx-auto space-y-12">
+        
+        <div class="grid md:grid-cols-3 gap-8 items-center bg-white p-8 rounded-xl shadow-xl border border-stone/10">
+            <img src="/src/paula-bryan-portrait.webp" alt="Portrait of Founder Paula Bryan" class="w-full h-auto rounded-lg shadow-md md:col-span-1">
+            <div class="md:col-span-2 space-y-4">
+                <h2 id="founder-quote-title" class="font-playfair text-3xl font-bold text-burnt-orange">"Crafted with Integrity, Shared with Love."</h2>
+                <p id="founder-quote-text" class="font-roboto italic text-stone text-lg">
+                    Loading founder story...
+                </p>
+                <p class="font-roboto text-sm text-charcoal font-semibold mt-4">— Paula Bryan, Founder, Southern Sense</p>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <h2 id="values-title" class="font-playfair text-4xl font-bold text-charcoal text-center">Our Commitment to Quality</h2>
+            <div id="values-content" class="prose max-w-none text-stone font-roboto">
+                <p class="text-center text-stone">Loading core values...</p>
+            </div>
+        </div>
+        
+    </section>
+
+    <section class="max-w-4xl mx-auto pt-16">
+        <h3 class="font-playfair text-4xl font-bold text-charcoal text-center mb-8">What Makes Our Candles Different?</h3>
+        <div class="grid md:grid-cols-2 gap-8 text-center">
+            
+            <div class="bg-parchment p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+                <img src="/src/finest-wax.webp" alt="Finest Coconut-Soy Wax Blend" class="w-24 h-24 mx-auto mb-4">
+                <h4 id="diff-wax-title" class="font-playfair text-2xl font-bold text-burnt-orange">Finest Coconut-Soy Wax</h4>
+                <p id="diff-wax-text" class="text-stone">Loading wax details...</p>
+            </div>
+
+            <div class="bg-parchment p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+                <img src="/src/clean-oils.webp" alt="Clean Essential Oils and Phthalate-Free Fragrance" class="w-24 h-24 mx-auto mb-4">
+                <h4 id="diff-oils-title" class="font-playfair text-2xl font-bold text-burnt-orange">Clean, Phthalate-Free Fragrances</h4>
+                <p id="diff-oils-text" class="text-stone">Loading fragrance details...</p>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<script type="module">
+    // FIX: Corrected import path to include /src/ directory
+    import { db, doc, getDoc } from '/src/firebase-loader.js'; 
 
     /**
-     * Fetches the 'about' document from Firestore and injects content into the page.
+     * Loads dynamic content for the About page from Firestore.
      */
-    async function loadAboutPageContent() {
-        // Show loader while fetching
-        contentLoader.classList.remove('hidden');
-        aboutContent.classList.add('hidden');
-
+    async function loadAboutContent() {
+        console.log("About Page: Loading content from Firestore...");
         try {
-            const aboutRef = doc(db, 'siteContent', 'about');
-            const docSnap = await getDoc(aboutRef);
+            // Document reference for the 'about' page content
+            const docRef = doc(db, "siteContent", "about");
+            const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
                 const data = docSnap.data();
-
-                // 1. Inject Main Heading and Body
-                aboutHeading.textContent = data.heading || 'Our Southern Story';
-                // Using innerHTML allows the body content to contain simple HTML tags (like <p>) entered via the Admin CMS
-                aboutBody.innerHTML = data.bodyText || '<p>The story content is currently missing. Please update it via the Admin Content Management System.</p>';
-
-                // 2. Inject Portrait details
-                portraitImage.src = data.imagePath || '/src/paula-bryan-portrait.webp';
-                portraitImage.alt = data.portraitTitle || 'Paula Bryan, Founder';
-                founderTitle.textContent = data.portraitTitle || 'Paula Bryan, Founder';
-                founderCaption.textContent = data.portraitCaption || 'Hand-poured luxury from our home to yours.';
                 
-            } else {
-                // Document not found
-                aboutHeading.textContent = 'Content Missing';
-                aboutBody.innerHTML = '<p class="text-red-600">The core "about" document could not be found in the database. Please check Firestore.</p>';
-            }
+                // 1. Founder Quote Section
+                document.getElementById('founder-quote-title').textContent = data.founderQuoteTitle || "Our Story";
+                document.getElementById('founder-quote-text').textContent = data.founderQuoteText || "No founder quote found.";
+                
+                // 2. Our Values Section
+                document.getElementById('values-title').textContent = data.valuesTitle || "Our Commitment";
+                // Injects the HTML content for the values
+                document.getElementById('values-content').innerHTML = data.valuesContent || "<p>Core values content not set in Firestore.</p>";
+                
+                // 3. What Makes Us Different Section (Reusing data from homepage content for consistency)
+                const homepageRef = doc(db, "siteContent", "homepage");
+                const homepageSnap = await getDoc(homepageRef);
+                
+                if (homepageSnap.exists()) {
+                    const homeData = homepageSnap.data();
+                    document.getElementById('diff-wax-title').textContent = homeData.diffWaxTitle || "Finest Wax";
+                    document.getElementById('diff-wax-text').textContent = homeData.diffWax || "Wax details loading...";
+                    document.getElementById('diff-oils-title').textContent = homeData.diffOilsTitle || "Clean Fragrances";
+                    document.getElementById('diff-oils-text').textContent = homeData.diffOils || "Oil details loading...";
+                }
 
+            } else {
+                console.warn("About Page: Document 'siteContent/about' does not exist.");
+                document.getElementById('values-content').innerHTML = `<p class="text-red-600 text-center">Error: Could not load About page content configuration.</p>`;
+            }
         } catch (error) {
-            console.error("Error loading About page content:", error);
-            aboutHeading.textContent = 'Error Loading Page';
-            aboutBody.innerHTML = '<p class="text-red-600">A network error occurred while fetching content. Please try again later.</p>';
-        } finally {
-            // Hide loader and show content
-            contentLoader.classList.add('hidden');
-            aboutContent.classList.remove('hidden');
+            console.error("Error fetching About page content:", error);
+            document.getElementById('values-content').innerHTML = `<p class="text-red-600 text-center">Error loading content: ${error.message}</p>`;
         }
     }
 
-    document.addEventListener('DOMContentLoaded', loadAboutPageContent);
-
+    document.addEventListener('DOMContentLoaded', loadAboutContent);
 </script>
-
-<main class="container mx-auto px-4 py-12 min-h-screen">
-    
-    <div id="content-loader" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-charcoal"></div>
-    </div>
-
-    <div id="about-content" class="hidden">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            
-            <div class="lg:col-span-2">
-                <p class="text-sm font-semibold uppercase tracking-wider text-burnt-orange mb-3">Our Founding Values</p>
-                <h1 id="about-heading" class="text-5xl font-playfair text-charcoal mb-8">
-                    Loading Heading...
-                </h1>
-
-                <div id="about-body" class="space-y-6 text-lg text-stone leading-relaxed">
-                    </div>
-            </div>
-
-            <div class="lg:col-span-1">
-                <div class="sticky top-12">
-                    <img id="portrait-image" 
-                         src="/src/paula-bryan-portrait.webp" 
-                         alt="Paula Bryan, Founder of Southern Sense" 
-                         class="w-full h-auto object-cover rounded-lg shadow-xl mb-6">
-                    
-                    <div class="border-l-4 border-burnt-orange pl-4">
-                        <h3 id="founder-title" class="text-2xl font-playfair text-charcoal">
-                            Loading Title...
-                        </h3>
-                        <p id="founder-caption" class="text-stone italic mt-1">
-                            Loading Caption...
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="mt-16 pt-12 border-t border-stone/20">
-            <h2 class="text-4xl font-playfair text-charcoal text-center mb-10">
-                The Southern Sense Difference
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                
-                <div class="p-6 bg-parchment rounded-lg shadow-md">
-                    <img src="/src/finest-wax.webp" alt="Finest Wax" class="w-20 h-20 mx-auto mb-4">
-                    <h3 class="text-xl font-playfair text-burnt-orange mb-2">Finest Wax Blend</h3>
-                    <p class="text-stone text-sm">Our proprietary blend ensures a clean, slow burn, free of harmful additives, for a perfect scent throw every time.</p>
-                </div>
-
-                <div class="p-6 bg-parchment rounded-lg shadow-md">
-                    <img src="/src/clean-oils.webp" alt="Clean Oils" class="w-20 h-20 mx-auto mb-4">
-                    <h3 class="text-xl font-playfair text-burnt-orange mb-2">Clean, Safe Oils</h3>
-                    <p class="text-stone text-sm">All fragrance oils are phthalate-free and rigorously tested, meeting the highest standards for safety and purity.</p>
-                </div>
-
-                <div class="p-6 bg-parchment rounded-lg shadow-md">
-                    <img src="/src/logo.webp" alt="Hand Poured" class="w-20 h-20 mx-auto mb-4">
-                    <h3 class="text-xl font-playfair text-burnt-orange mb-2">Hand-Poured Quality</h3>
-                    <p class="text-stone text-sm">Every candle is hand-poured in small batches, guaranteeing meticulous attention to detail and consistent quality.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</main>

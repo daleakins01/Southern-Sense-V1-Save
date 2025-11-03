@@ -1,214 +1,84 @@
 ---
-layout: layout
-title: Scent Glossary & Families
+layout: layout.html
+title: Scent Glossary
 ---
 
-<script type="module">
-    import { db, collection, query, getDocs } from '/firebase-loader.js';
-    
-    // --- DOM Elements ---
-    const glossaryLoader = document.getElementById('glossary-loader');
-    const glossaryContent = document.getElementById('glossary-content');
-    const glossaryContainer = document.getElementById('glossary-container');
-    const familyCountEl = document.getElementById('family-count');
+<header class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
+    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+        <h1 id="glossary-header-title" class="font-playfair text-6xl font-extrabold text-parchment drop-shadow-lg">Scent Glossary</h1>
+    </div>
+</header>
 
-    // --- Utility Functions ---
+<main class="container mx-auto p-4 lg:p-8 py-16">
 
-    /**
-     * Capitalizes the first letter of each word in a hyphenated string.
-     */
-    function formatScentFamily(str) {
-        if (!str) return 'Uncategorized';
-        return str
-            .split('-')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-    }
+    <div id="loading-state" class="text-center p-12 bg-parchment rounded-xl shadow-lg border border-stone/10">
+        <p class="font-playfair text-2xl text-stone">Loading the world of fragrance notes...</p>
+        <div class="mt-4 animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
+    </div>
 
-    /**
-     * Groups products by their scentFamily.
-     * @param {Array} products - Array of product objects.
-     * @returns {Object} An object where keys are scent families and values are arrays of products.
-     */
-    function groupProductsByFamily(products) {
-        const groups = {};
-        products.forEach(product => {
-            const family = product.scentFamily || 'Uncategorized';
-            if (!groups[family]) {
-                groups[family] = [];
-            }
-            groups[family].push(product);
-        });
-        return groups;
-    }
-
-    /**
-     * Renders a single product chip inside a family section.
-     */
-    function renderProductChip(product) {
-        // CRITICAL CHECK: Ensure stock parsing is consistent
-        const stock = parseInt(product.stock, 10) || 0;
-        const isOutOfStock = stock <= 0;
-        const stockClass = isOutOfStock ? 'text-red-600' : 'text-green-600';
-        const stockText = isOutOfStock ? '(Sold Out)' : '(In Stock)';
-
-        return `
-            <a href="/product/?id=${product.id}" class="inline-flex items-center space-x-2 p-3 bg-white rounded-lg shadow-md hover:bg-parchment/70 transition duration-200">
-                <img src="/src/${product.imageUrl || 'logo.webp'}" alt="${product.name}" class="w-12 h-12 object-cover rounded-md">
-                <div>
-                    <span class="text-sm font-semibold text-charcoal">${product.name}</span>
-                    <span class="text-xs ${stockClass}">${stockText}</span>
-                </div>
-            </a>
-        `;
-    }
-
-    // --- Main Logic ---
-
-    /**
-     * Fetches all products and renders the glossary accordion.
-     */
-    async function initializeGlossary() {
-        glossaryLoader.classList.remove('hidden');
-        glossaryContent.classList.add('hidden');
+    <section id="glossary-section" class="max-w-4xl mx-auto hidden">
         
+        <div id="glossary-content" class="prose max-w-none text-stone font-roboto space-y-8">
+            <p>Content loading error: Default text displayed.</p>
+        </div>
+        
+        <div class="mt-12 text-center">
+            <h3 class="font-playfair text-3xl font-bold text-charcoal mb-4">Still need help finding a scent?</h3>
+            <a href="/scent-quiz/" class="inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150">
+                Take the Scent Quiz
+            </a>
+        </div>
+    </section>
+
+</main>
+
+<script type="module">
+    // FIX: Corrected import path to include /src/ directory
+    import { db, doc, getDoc } from '/src/firebase-loader.js'; 
+
+    // --- DOM Elements ---
+    const loadingState = document.getElementById('loading-state');
+    const glossarySection = document.getElementById('glossary-section');
+    const glossaryHeaderTitle = document.getElementById('glossary-header-title');
+    const glossaryContent = document.getElementById('glossary-content');
+
+    /**
+     * Loads dynamic content for the Scent Glossary page from Firestore.
+     */
+    async function loadGlossaryContent() {
+        console.log("Scent Glossary Page: Loading content from Firestore...");
+        
+        // Ensure loading state is visible initially
+        loadingState.classList.remove('hidden');
+        glossarySection.classList.add('hidden');
+
         try {
-            // 1. Fetch All Products
-            const productsRef = collection(db, 'products');
-            const querySnapshot = await getDocs(query(productsRef));
+            // Document reference for the 'scent-glossary' page content
+            const docRef = doc(db, "siteContent", "scent-glossary");
+            const docSnap = await getDoc(docRef);
 
-            if (querySnapshot.empty) {
-                glossaryContainer.innerHTML = '<p class="text-lg text-stone">No products are currently available to categorize.</p>';
-                familyCountEl.textContent = '0 Scent Families';
-                return;
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                // 1. Header Title (Assumed field based on other pages)
+                glossaryHeaderTitle.textContent = data.glossaryHeaderTitle || "Scent Glossary";
+                
+                // 2. Glossary Content (Assumed to be rich HTML/Markdown converted content)
+                glossaryContent.innerHTML = data.glossaryContent || "<p>Glossary content not set in Firestore. Please update the admin panel.</p>";
+                
+                // Success: Hide loading, show content
+                loadingState.classList.add('hidden');
+                glossarySection.classList.remove('hidden');
+
+            } else {
+                console.warn("Scent Glossary Page: Document 'siteContent/scent-glossary' does not exist.");
+                loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Error: Glossary configuration document not found.</p>`;
             }
-
-            const allProducts = querySnapshot.docs.map(doc => {
-                const data = doc.data();
-                return { 
-                    id: doc.id, 
-                    ...data, 
-                    // CRITICAL: Ensure data types are consistent
-                    stock: parseInt(data.stock, 10) || 0 
-                };
-            });
-
-            // 2. Group Products
-            const groupedFamilies = groupProductsByFamily(allProducts);
-            const familyKeys = Object.keys(groupedFamilies).sort(); // Sort families alphabetically
-            
-            familyCountEl.textContent = `${familyKeys.length} Unique Scent Families`;
-
-            // 3. Render Accordion
-            let glossaryHtml = '';
-            familyKeys.forEach((family, index) => {
-                const formattedFamily = formatScentFamily(family);
-                const familyProducts = groupedFamilies[family];
-                const isActive = index === 0 ? 'active' : ''; // Open the first one by default
-
-                // Render product chips for this family
-                const productChips = familyProducts.map(renderProductChip).join('');
-
-                glossaryHtml += `
-                    <div class="accordion-item border-b border-stone/30">
-                        <button class="accordion-header w-full flex justify-between items-center py-4 px-2 text-left font-playfair text-2xl text-charcoal hover:text-burnt-orange transition duration-300 ${isActive ? 'bg-parchment/50' : ''}" 
-                                data-accordion-target="#family-${family}">
-                            <span>${formattedFamily} (${familyProducts.length} Items)</span>
-                            <span class="accordion-icon transform ${isActive ? 'rotate-180' : ''} text-burnt-orange text-3xl transition-transform duration-300">+</span>
-                        </button>
-                        <div id="family-${family}" class="accordion-body ${isActive ? 'h-auto max-h-screen' : 'max-h-0 overflow-hidden'}" style="transition: max-height 0.4s ease-out;">
-                            <div class="p-4 bg-parchment/30">
-                                <p class="text-stone mb-4">
-                                    A brief description of the ${formattedFamily} family. (Placeholder text: This family includes scents that are sweet, refreshing, and reminiscent of natural fruits or light florals.)
-                                </p>
-                                <div class="flex flex-wrap gap-4 pt-2">
-                                    ${productChips}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            glossaryContainer.innerHTML = glossaryHtml;
-            attachAccordionListeners();
-
         } catch (error) {
-            console.error("CRITICAL ERROR: Error loading scent glossary:", error);
-            glossaryContainer.innerHTML = '<p class="text-red-600 text-lg">An error occurred while loading the glossary. Please check your console and database connection.</p>';
-        } finally {
-            glossaryLoader.classList.add('hidden');
-            glossaryContent.classList.remove('hidden');
+            console.error("Error fetching Scent Glossary content:", error);
+            loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Error loading content: ${error.message}</p>`;
         }
     }
 
-    /**
-     * Attaches click handlers to the accordion headers.
-     */
-    function attachAccordionListeners() {
-        document.querySelectorAll('.accordion-header').forEach(header => {
-            header.addEventListener('click', () => {
-                const targetId = header.getAttribute('data-accordion-target');
-                const targetBody = document.querySelector(targetId);
-                const icon = header.querySelector('.accordion-icon');
-                
-                const isOpened = targetBody.classList.contains('max-h-screen');
-
-                // Close all other accordions
-                document.querySelectorAll('.accordion-body').forEach(body => {
-                    body.classList.remove('max-h-screen');
-                    body.classList.add('max-h-0');
-                });
-                document.querySelectorAll('.accordion-header').forEach(h => {
-                    h.classList.remove('bg-parchment/50');
-                    h.querySelector('.accordion-icon').classList.remove('rotate-180');
-                });
-
-                // Toggle the clicked one
-                if (!isOpened) {
-                    targetBody.classList.remove('max-h-0');
-                    targetBody.classList.add('max-h-screen');
-                    header.classList.add('bg-parchment/50');
-                    icon.classList.add('rotate-180');
-                }
-            });
-        });
-    }
-
-    // --- Initialization Trigger ---
-    document.addEventListener('DOMContentLoaded', initializeGlossary);
-
+    document.addEventListener('DOMContentLoaded', loadGlossaryContent);
 </script>
-
-<main class="container mx-auto px-4 py-12 min-h-screen">
-    
-    <header class="max-w-4xl mx-auto text-center mb-12">
-        <p class="text-sm font-semibold uppercase tracking-wider text-burnt-orange mb-3">Discovery Tool</p>
-        <h1 class="text-5xl font-playfair text-charcoal mb-4">
-            The Southern Sense Olfactory Guide
-        </h1>
-        <p class="text-lg text-stone leading-relaxed">
-            Explore our curated selection of fragrances, grouped by their core Scent Family. Click to expand and see all products within that family.
-        </p>
-    </header>
-
-    <div class="text-center text-xl font-medium text-stone mb-8">
-        <span id="family-count">Loading Families...</span>
-    </div>
-    
-    <div id="glossary-loader" class="flex justify-center items-center h-48">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-burnt-orange"></div>
-    </div>
-
-    <div id="glossary-content" class="max-w-4xl mx-auto hidden">
-        <div id="glossary-container" class="border border-stone/30 rounded-lg overflow-hidden">
-            </div>
-        
-        <div class="mt-8 text-center">
-            <a href="/shop/" class="px-8 py-4 bg-burnt-orange text-parchment font-bold text-lg rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
-                Shop All Candles Now
-            </a>
-        </div>
-    </div>
-
-</main>

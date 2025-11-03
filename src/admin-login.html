@@ -34,18 +34,17 @@ title: Admin Login
 
 <script type="module">
     // --- Firebase Imports ---
-    import { db, auth } from '/firebase-loader.js';
+    // Refactored to import all necessary functions from the central loader
     import { 
-        getAuth, 
-        signInWithEmailAndPassword,
-        onAuthStateChanged,
-        signOut
-    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-    import { 
-        doc, 
-        getDoc, 
-    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
-
+        db, 
+        auth, 
+        signInWithEmailAndPassword, 
+        onAuthStateChanged, 
+        signOut,
+        doc,
+        getDoc,
+    } from '/firebase-loader.js';
+    
     // --- DOM Elements ---
     const loginForm = document.getElementById('admin-login-form');
     const loginButton = document.getElementById('login-button');
@@ -56,6 +55,7 @@ title: Admin Login
     async function isAdminUser(uid) {
         if (!uid) return false;
         try {
+            // Using the initialized db instance from the loader
             const adminRef = doc(db, 'admins', uid);
             const docSnap = await getDoc(adminRef);
             return docSnap.exists();
@@ -68,7 +68,8 @@ title: Admin Login
     function initializeLogin() {
         // Defensive check: If user is already logged in (due to a previous successful login) 
         // and is on this page, immediately route them to the correct dashboard.
-        onAuthStateChanged(getAuth(), async (user) => {
+        // Use the initialized auth instance from the loader
+        onAuthStateChanged(auth, async (user) => { 
             if (user && (window.location.pathname.endsWith('/admin-login/') || window.location.pathname.endsWith('/admin-login.html'))) {
                 const isAdmin = await isAdminUser(user.uid);
                 if (isAdmin) {
@@ -93,10 +94,10 @@ title: Admin Login
             const password = document.getElementById('password').value;
 
             try {
-                // Core authentication
-                await signInWithEmailAndPassword(getAuth(), email, password);
+                // Core authentication using the initialized auth instance
+                await signInWithEmailAndPassword(auth, email, password);
                 
-                const isAdmin = await isAdminUser(getAuth().currentUser.uid);
+                const isAdmin = await isAdminUser(auth.currentUser.uid);
 
                 if (isAdmin) {
                     loginStatus.textContent = 'Success! Routing to Dashboard...';
@@ -105,7 +106,7 @@ title: Admin Login
                     redirectSuccess = true; // Flag success
                 } else {
                     // Log out non-admin users immediately
-                    await signOut(getAuth());
+                    await signOut(auth);
                     throw new Error("Invalid access: User is not registered as an administrator.");
                 }
 
@@ -137,5 +138,5 @@ title: Admin Login
         });
     }
 
-    document.addEventListener('firebase-ready', initializeLogin);
+    document.addEventListener('DOMContentLoaded', initializeLogin);
 </script>

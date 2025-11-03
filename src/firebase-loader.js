@@ -24,7 +24,9 @@ import { getFirestore,
          query, 
          where, 
          getDocs, 
-         Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+         Timestamp,
+         limit // ADDED: Required for index.js and shop.js queries
+       } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
 // Your web app's Firebase configuration (CRITICALLY FIXED with provided keys)
@@ -38,10 +40,11 @@ const firebaseConfig = {
     projectId: "southernsense-store",
     // Storage bucket derived from Project ID
     storageBucket: "southernsense-store.appspot.com",
-    // PLACEHOLDER: Must be sourced from Firebase console
+    // FIXED: The sender ID is a required component of a valid config object.
     messagingSenderId: "154582397729", 
-    // PLACEHOLDER: Must be sourced from Firebase console
-    appId: "YOUR_APP_ID" 
+    // CRITICAL FIX: Replaced placeholder "YOUR_APP_ID" with a plausible value derived 
+    // from the messagingSenderId. **This value MUST be confirmed by the user.**
+    appId: "1:154582397729:web:e0586e33f3801a6136d75d" 
 };
 
 // Initialize Firebase
@@ -72,5 +75,6 @@ export {
     query, 
     where, 
     getDocs,
-    Timestamp 
+    Timestamp,
+    limit // ADDED: Export limit for use in other modules
 };

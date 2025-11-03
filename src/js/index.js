@@ -2,8 +2,17 @@
 // This script is loaded only by the homepage (index.html)
 
 // Import Firestore services
-import { db } from '../firebase-loader.js'; // Note: path is now '../'
-import { doc, getDoc, collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+// NOTE: Refactored to import all necessary functions from the central loader for consistency.
+import { 
+    db, 
+    doc, 
+    getDoc, 
+    collection, 
+    query, 
+    where, 
+    getDocs, 
+    limit // This function is used for fetching the featured product query.
+} from '../firebase-loader.js'; 
 
 /**
  * Loads all dynamic content for the homepage from Firestore.
@@ -11,6 +20,7 @@ import { doc, getDoc, collection, query, where, getDocs, limit } from "https://w
 async function loadHomepageContent() {
     console.log("Homepage: Loading content from Firestore...");
     try {
+        // Fetching the homepage content configuration document
         const docRef = doc(db, "siteContent", "homepage");
         const docSnap = await getDoc(docRef);
 

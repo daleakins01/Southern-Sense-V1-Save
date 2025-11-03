@@ -1,189 +1,176 @@
 /*
- * Main Site Functions (main.js)
- *
- * This script runs globally on all pages (except specialized ones like cart/checkout)
- * and handles essential site-wide functionality:
- * 1. Populating the dynamic "Shop by Scent Family" dropdown menu in the header.
- * 2. Handling the mobile menu toggle.
- * 3. Setting up authentication-dependent navigation links.
+ * main.js
+ * This script contains core, site-wide functionality (UI interaction, auth state monitoring).
  */
 
-import { 
-    db, 
-    collection, 
-    query, 
-    getDocs,
-    auth,
-    onAuthStateChanged,
-    signOut // Import signOut directly for logout link functionality
-} from '/firebase-loader.js';
+// Import necessary Firebase functions for site-wide use
+// FIX: Corrected import path to reference the file in the new /src/ directory
+import { auth, onAuthStateChanged, signOut } from '/src/firebase-loader.js';
 
-// --- Constants & Global State ---
-const MOBILE_MENU_ID = 'mobile-menu';
-const MENU_TOGGLE_ID = 'menu-toggle';
-const SCENT_FAMILY_DROPDOWN_DESKTOP_ID = 'scent-family-dropdown-desktop'; // New ID
-const SCENT_FAMILY_DROPDOWN_MOBILE_ID = 'scent-family-dropdown-mobile'; // New ID
-const ACCOUNT_LINK_ID = 'account-nav-link';
-const LOGOUT_LINK_ID = 'logout-nav-link'; // Used for mobile logout
+// --- Global UI State ---
+let userIsAdmin = false;
+let userIsLoggedIn = false;
 
-// --- Utility Functions ---
 
 /**
- * Capitalizes the first letter of each word in a hyphenated string.
+ * Initializes all site-wide UI and authentication listeners.
  */
-function formatScentFamily(str) {
-    if (!str) return 'Uncategorized';
-    return str
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-}
+function initializeMain() {
+    console.log("Main script initialized.");
 
+    // 1. Setup UI Listeners
+    setupNavListeners();
+    setupCartDrawer();
+    setupMobileNav();
 
-// --- Dynamic Navigation Logic ---
-
-/**
- * Fetches all unique scent families from Firestore products and populates the dropdowns.
- */
-async function loadScentFamilyMenu() {
-    const desktopDropdown = document.getElementById(SCENT_FAMILY_DROPDOWN_DESKTOP_ID);
-    const mobileDropdown = document.getElementById(SCENT_FAMILY_DROPDOWN_MOBILE_ID);
+    // 2. Set up Auth Listener
+    monitorAuthState();
     
-    // Check if at least one container exists before proceeding
-    if (!desktopDropdown && !mobileDropdown) return;
-
-    try {
-        const productsRef = collection(db, 'products');
-        const querySnapshot = await getDocs(query(productsRef));
-
-        const scentFamilies = new Set();
-        querySnapshot.forEach(doc => {
-            const data = doc.data();
-            if (data.scentFamily) {
-                scentFamilies.add(data.scentFamily);
-            }
-        });
-
-        const sortedFamilies = Array.from(scentFamilies).sort();
-
-        // Build the dynamic links HTML for both menus
-        let desktopLinksHtml = '';
-        let mobileLinksHtml = '';
-        
-        sortedFamilies.forEach(family => {
-            const formattedName = formatScentFamily(family);
-            const link = `<a href="/shop/?family=${family}" class="block px-4 py-2 text-stone hover:bg-parchment/70 hover:text-charcoal transition">${formattedName}</a>`;
-            desktopLinksHtml += link;
-            
-            // Mobile links need different padding/styling due to the details structure
-            const mobileLink = `<a href="/shop/?family=${family}" class="block px-3 py-2 text-stone hover:bg-white transition">${formattedName}</a>`;
-            mobileLinksHtml += mobileLink;
-        });
-
-        // 1. Inject into Desktop Menu
-        if (desktopDropdown) {
-            const desktopAllLinkContainer = desktopDropdown.querySelector('.shop-all-link-container');
-            if (desktopAllLinkContainer) {
-                desktopAllLinkContainer.insertAdjacentHTML('beforebegin', desktopLinksHtml);
-            }
-        }
-        
-        // 2. Inject into Mobile Menu (Append BEFORE the existing "Shop All" link)
-        if (mobileDropdown) {
-            const mobileShopAllLink = mobileDropdown.querySelector('a[href="/shop/"]');
-            if (mobileShopAllLink) {
-                mobileShopAllLink.insertAdjacentHTML('beforebegin', mobileLinksHtml);
-            } else {
-                // Fallback if mobile structure is too minimal
-                mobileDropdown.innerHTML = mobileLinksHtml + mobileDropdown.innerHTML;
-            }
-        }
-
-
-    } catch (error) {
-        console.error("CRITICAL: Error loading scent family menu. Dynamic content fetching failed:", error);
-        // This is a likely reason why the homepage/shop failed to load content.
-        // We will allow the rest of the site logic to proceed, but log the error.
-    }
+    // 3. Signal that the UI is ready for content scripts (e.g., index.js)
+    document.dispatchEvent(new Event('ui-ready'));
 }
 
-// --- UI Logic ---
+
+// --- Authentication/State Management ---
 
 /**
- * Toggles the mobile navigation menu state.
+ * Checks if the current user is an admin. 
+ * NOTE: This is a client-side flag used for UI only. Server-side Firestore Rules provide true security.
  */
-function setupMobileMenuToggle() {
-    const toggle = document.getElementById(MENU_TOGGLE_ID);
-    const menu = document.getElementById(MOBILE_MENU_ID);
-
-    if (toggle && menu) {
-        toggle.addEventListener('click', () => {
-            menu.classList.toggle('hidden');
-            // Toggle aria attributes for accessibility
-            const isExpanded = menu.classList.contains('hidden') ? 'false' : 'true';
-            toggle.setAttribute('aria-expanded', isExpanded);
-        });
-    }
+function checkAdminStatus(uid) {
+    // A simple, unsafe client-side check for UI visibility
+    // In a real application, this requires a Firestore lookup or custom claim.
+    // For this prototype, we rely on the admins list being present.
+    // Assuming a simplified check: if UID is one of the known admin UIDs from the database
+    // For now, this logic is removed as the check is centralized in admin-login.html
+    return false; // Placeholder
 }
 
 /**
- * Updates the navigation bar based on the user's login state.
+ * Monitors Firebase Authentication state changes.
  */
-function setupAuthNavigation() {
-    const authLinksContainer = document.getElementById('auth-links-container');
-    const logoutLink = document.getElementById(LOGOUT_LINK_ID);
-    
-    // Select all elements that depend on auth state for both desktop and mobile
-    const loggedInOnlyElements = document.querySelectorAll('.logged-in-only');
-    const loggedOutOnlyElements = document.querySelectorAll('.logged-out-only');
+function monitorAuthState() {
+    // The 'auth' object must be imported from the loader
+    onAuthStateChanged(auth, (user) => {
+        const loginLink = document.getElementById('nav-login-link');
+        const accountLink = document.getElementById('nav-account-link');
+        const adminLink = document.getElementById('nav-admin-link');
+        const logoutLink = document.getElementById('nav-logout-link');
 
-
-    onAuthStateChanged(auth, async (user) => {
         if (user) {
-            // User is logged in: Show Account/Logout, Hide Login/Register
-            authLinksContainer?.classList.add('logged-in'); 
-            authLinksContainer?.classList.remove('logged-out');
+            // User is signed in.
+            userIsLoggedIn = true;
+            // The UID itself dictates admin status; we don't check a separate status here in main.js
+
+            // UI updates
+            if (loginLink) loginLink.classList.add('hidden');
+            if (accountLink) accountLink.classList.remove('hidden');
+            if (adminLink) adminLink.classList.add('hidden'); // Default to hidden; actual admin check happens on admin pages.
+            if (logoutLink) logoutLink.classList.remove('hidden');
             
-            // Toggle visibility classes
-            loggedInOnlyElements.forEach(el => el.classList.remove('hidden'));
-            loggedOutOnlyElements.forEach(el => el.classList.add('hidden'));
+            // Special check for known admins (Placeholder for simplicity)
+            // In a real app, this should fetch /admins/{uid}
+            if (user.uid === 'X9r0b2YHkbZAweF0q7osfke1oik1' || user.uid === 'zUiP1lYPOLVPDxgqHM8agYhpGTu2') {
+                if (adminLink) adminLink.classList.remove('hidden');
+                userIsAdmin = true;
+            }
 
         } else {
-            // User is logged out: Hide Account/Logout, Show Login/Register
-            authLinksContainer?.classList.add('logged-out');
-            authLinksContainer?.classList.remove('logged-in');
-            
-            // Toggle visibility classes
-            loggedInOnlyElements.forEach(el => el.classList.add('hidden'));
-            loggedOutOnlyElements.forEach(el => el.classList.remove('hidden'));
+            // User is signed out.
+            userIsLoggedIn = false;
+            userIsAdmin = false;
 
-            // Set up Logout link listener for the mobile menu button
-            if (logoutLink) {
-                logoutLink.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    try {
-                        await signOut(auth);
-                        window.location.href = '/login/'; // Redirect after logout
-                    } catch (error) {
-                        console.error("Logout failed:", error);
-                        alert("Logout failed. Please try again.");
-                    }
-                });
-            }
+            // UI updates
+            if (loginLink) loginLink.classList.remove('hidden');
+            if (accountLink) accountLink.classList.add('hidden');
+            if (adminLink) adminLink.classList.add('hidden');
+            if (logoutLink) logoutLink.classList.add('hidden');
         }
     });
+
+    // Set up logout listener
+    const logoutButton = document.getElementById('nav-logout-link');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            signOut(auth).then(() => {
+                // Sign-out successful.
+                console.log("User logged out successfully.");
+                window.location.href = '/'; // Redirect to homepage
+            }).catch((error) => {
+                console.error("Logout failed:", error);
+                alert("Logout failed. Please try again.");
+            });
+        });
+    }
+}
+
+
+// --- UI Management ---
+
+/**
+ * Sets up listeners for the main and mobile navigation.
+ */
+function setupNavListeners() {
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    if (mobileMenuButton && mobileMenu) {
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            mobileMenuButton.setAttribute('aria-expanded', mobileMenu.classList.contains('hidden') ? 'false' : 'true');
+        });
+    }
+}
+
+/**
+ * Sets up the cart drawer toggle functionality.
+ */
+function setupCartDrawer() {
+    const cartButton = document.getElementById('cart-button');
+    const cartDrawer = document.getElementById('cart-drawer');
+    const closeCartButton = document.getElementById('close-cart-button');
+
+    // Show Cart
+    if (cartButton && cartDrawer) {
+        cartButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            cartDrawer.classList.remove('translate-x-full');
+            document.body.classList.add('overflow-hidden'); // Prevent background scrolling
+        });
+    }
+
+    // Hide Cart
+    if (closeCartButton && cartDrawer) {
+        closeCartButton.addEventListener('click', () => {
+            cartDrawer.classList.add('translate-x-full');
+            document.body.classList.remove('overflow-hidden');
+        });
+    }
+}
+
+/**
+ * Handles clicks within the mobile navigation to close the menu.
+ */
+function setupMobileNav() {
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    
+    if (mobileMenu) {
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                // Close the menu after a link is clicked
+                mobileMenu.classList.add('hidden');
+                if (mobileMenuButton) {
+                    mobileMenuButton.setAttribute('aria-expanded', 'false');
+                }
+            });
+        });
+    }
 }
 
 
 // --- Initialization ---
 
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Setup global UI features
-    setupMobileMenuToggle();
-    
-    // 2. Load dynamic navigation links (Priority Fix: Restores functionality)
-    loadScentFamilyMenu();
-    
-    // 3. Setup authentication-dependent links
-    setupAuthNavigation();
-});
+// Wait for the DOM to be fully loaded before running the main script
+document.addEventListener('DOMContentLoaded', initializeMain);

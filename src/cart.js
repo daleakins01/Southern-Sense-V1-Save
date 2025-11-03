@@ -1,483 +1,233 @@
 /*
- * Cart Logic (cart.js)
- *
- * This module handles all shopping cart functionality:
- * - Adding/removing items
- * - Updating quantities
- * - Storing/Retrieving from localStorage
- * - Rendering the cart on /cart.html
- * - Calculating totals
- * - Initializing PayPal and handling checkout
+ * cart.js
+ * Handles all client-side shopping cart logic, including adding items,
+ * updating quantities, saving to local storage, and rendering the cart drawer.
  */
 
-// Import all necessary Firebase functions from our central loader
-import { 
-    db, 
-    auth, 
-    addDoc, 
-    collection, 
-    Timestamp,
-    doc, 
-    updateDoc 
-} from '/firebase-loader.js';
+// FIX: Corrected import path to reference the file in the new /src/ directory
+import { db, collection, doc, setDoc } from '/src/firebase-loader.js';
 
-// --- Constants ---
-const CART_KEY = 'southernSenseCart';
-const SHIPPING_COST = 10.00; // Flat rate shipping
-const PAYPAL_CLIENT_ID = 'sb'; // Use 'sb' for sandbox testing
+// --- State Management ---
+let cart = loadCartFromStorage();
+const CART_STORAGE_KEY = 'southernSenseCart';
 
-// --- Private Helper Functions ---
+// --- DOM Elements (Placeholders, updated when cart drawer is rendered) ---
+let cartItemsContainer;
+let cartTotalElement;
+let checkoutButton;
 
 /**
- * Retrieves the cart from localStorage.
- * @returns {Array} The array of cart items.
+ * Loads the cart state from Local Storage or initializes an empty array.
+ * @returns {Array} The cart array.
  */
-function getCart() {
+function loadCartFromStorage() {
     try {
-        const cart = localStorage.getItem(CART_KEY);
-        return cart ? JSON.parse(cart) : [];
+        const serializedCart = localStorage.getItem(CART_STORAGE_KEY);
+        return serializedCart ? JSON.parse(serializedCart) : [];
     } catch (e) {
-        console.error("Error parsing cart from localStorage", e);
+        console.error("Could not load cart from local storage:", e);
         return [];
     }
 }
 
 /**
- * Saves the cart to localStorage.
- * @param {Array} cart - The array of cart items to save.
+ * Saves the current cart state to Local Storage.
  */
-function saveCart(cart) {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    updateCartBubble(); // Update the bubble in the header
-}
-
-/**
- * Calculates cart totals.
- * @returns {Object} An object containing { subtotal, total, itemCount }
- */
-function calculateTotals() {
-    const cart = getCart();
-    let subtotal = 0;
-    let itemCount = 0;
-
-    cart.forEach(item => {
-        subtotal += item.price * item.quantity;
-        itemCount += item.quantity;
-    });
-
-    // Shipping is flat rate unless cart is empty
-    const shipping = subtotal > 0 ? SHIPPING_COST : 0;
-    const total = subtotal + shipping;
-
-    return { subtotal, total, shipping, itemCount };
-}
-
-/**
- * Updates the cart bubble in the header.
- */
-function updateCartBubble() {
-    const { itemCount } = calculateTotals();
-    const bubble = document.getElementById('cart-bubble');
-    if (bubble) {
-        bubble.textContent = itemCount;
-        if (itemCount > 0) {
-            bubble.classList.remove('hidden');
-        } else {
-            bubble.classList.add('hidden');
-        }
+function saveCartToStorage() {
+    try {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    } catch (e) {
+        console.error("Could not save cart to local storage:", e);
     }
 }
 
 /**
- * Validates the shipping form.
- * @returns {Object|null} An object with customer data, or null if invalid.
+ * Adds an item to the cart or increments its quantity if it already exists.
+ * @param {string} id - The product ID.
+ * @param {string} name - The product name.
+ * @param {number} price - The product price.
+ * @param {string} imageUrl - The URL of the product image.
+ * @param {number} quantity - The quantity to add (default is 1).
  */
-function validateCheckoutForm(formErrorElement) {
-    const form = document.getElementById('checkout-form');
-    formErrorElement.classList.add('hidden'); // Hide error by default
-
-    if (!form.checkValidity()) {
-        // Find the first invalid field for a better error message
-        const firstInvalid = form.querySelector(':invalid');
-        let errorMsg = "Please fill out all required shipping fields.";
-        if (firstInvalid) {
-            const label = document.querySelector(`label[for="${firstInvalid.id}"]`);
-            errorMsg = `Please provide a valid ${label ? label.textContent.toLowerCase() : firstInvalid.name}.`;
-        }
-        formErrorElement.textContent = errorMsg;
-        formErrorElement.classList.remove('hidden');
-        firstInvalid.focus();
-        return null;
-    }
-
-    // All fields are valid, collect the data
-    const formData = new FormData(form);
-    const customerData = {
-        firstName: formData.get('firstName').trim(),
-        lastName: formData.get('lastName').trim(),
-        email: formData.get('email').trim(),
-        address: formData.get('address').trim(),
-        city: formData.get('city').trim(),
-        state: formData.get('state').trim(),
-        zip: formData.get('zip').trim(),
-    };
-    return customerData;
-}
-
-// --- Public (Exported) Functions ---
-
-/**
- * Adds an item to the cart.
- * @param {string} id - Product ID
- * @param {string} name - Product Name
- * @param {number} price - Product Price
- * @param {string} imageUrl - Product Image URL
- */
-export function addToCart(id, name, price, imageUrl) {
-    const cart = getCart();
+export function addToCart(id, name, price, imageUrl, quantity = 1) {
     const existingItem = cart.find(item => item.id === id);
 
     if (existingItem) {
-        existingItem.quantity += 1;
+        existingItem.quantity += quantity;
     } else {
-        cart.push({ id, name, price, imageUrl, quantity: 1 });
+        cart.push({ id, name, price, imageUrl, quantity });
     }
 
-    saveCart(cart);
-    console.log("Item added to cart:", { id, name });
-    
-    // Show a temporary success message/toast
-    // (This could be expanded into a proper modal)
-    alert(`${name} has been added to your cart!`);
+    saveCartToStorage();
+    renderCartDrawer();
+    // OPTIONAL: Show a quick notification or badge update
 }
 
 /**
- * Renders the cart items and totals on the cart page.
+ * Removes an item completely from the cart.
+ * @param {string} id - The product ID to remove.
  */
-export function renderCart() {
-    const cart = getCart();
-    const container = document.getElementById('cart-items-container');
-    const loader = document.getElementById('cart-loader');
-    const content = document.getElementById('cart-content');
-    const empty = document.getElementById('cart-empty');
-    
-    // Get total elements
-    const subtotalEl = document.getElementById('cart-subtotal');
-    const shippingEl = document.getElementById('cart-shipping');
-    const totalEl = document.getElementById('cart-total');
+function removeItem(id) {
+    cart = cart.filter(item => item.id !== id);
+    saveCartToStorage();
+    renderCartDrawer();
+}
 
-    if (!container || !loader || !content || !empty) {
-        // We're not on the cart page, so just update the bubble
-        updateCartBubble();
-        return; 
+/**
+ * Updates the quantity of a specific item in the cart.
+ * @param {string} id - The product ID to update.
+ * @param {number} newQuantity - The new quantity.
+ */
+function updateItemQuantity(id, newQuantity) {
+    const item = cart.find(i => i.id === id);
+    if (item) {
+        if (newQuantity <= 0) {
+            removeItem(id);
+        } else {
+            item.quantity = newQuantity;
+            saveCartToStorage();
+            renderCartDrawer();
+        }
+    }
+}
+
+/**
+ * Calculates the total price of all items in the cart.
+ * @returns {number} The total price.
+ */
+function calculateCartTotal() {
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+}
+
+
+// --- Rendering ---
+
+/**
+ * Renders the full cart contents into the cart drawer DOM element.
+ */
+export function renderCartDrawer() {
+    // Re-initialize DOM elements on render to ensure we catch them
+    cartItemsContainer = document.getElementById('cart-items-container');
+    cartTotalElement = document.getElementById('cart-total');
+    checkoutButton = document.getElementById('checkout-button');
+    const cartCountBadge = document.getElementById('cart-count-badge');
+    const cartStatusMessage = document.getElementById('cart-status-message');
+
+    if (!cartItemsContainer || !cartTotalElement) {
+        console.warn("Cart drawer elements not found in DOM.");
+        return;
+    }
+    
+    // Update cart badge count
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    if (cartCountBadge) {
+        cartCountBadge.textContent = totalItems;
+        cartCountBadge.classList.toggle('hidden', totalItems === 0);
     }
 
-    // We are on the cart page
-    loader.classList.add('hidden');
+    cartItemsContainer.innerHTML = ''; // Clear previous items
 
     if (cart.length === 0) {
-        content.classList.add('hidden');
-        empty.classList.remove('hidden');
+        // Show empty cart message
+        cartStatusMessage.textContent = "Your cart is currently empty.";
+        cartStatusMessage.classList.remove('hidden');
+        if (checkoutButton) checkoutButton.disabled = true;
     } else {
-        empty.classList.add('hidden');
-        content.classList.remove('hidden');
-        
-        container.innerHTML = ''; // Clear existing items
-        
+        // Hide empty cart message
+        cartStatusMessage.classList.add('hidden');
+        if (checkoutButton) checkoutButton.disabled = false;
+
         cart.forEach(item => {
-            const itemTotal = (item.price * item.quantity).toFixed(2);
-            const itemHtml = `
-                <div class="flex flex-col md:flex-row items-center bg-white p-4 rounded-lg shadow-md gap-4">
-                    <img src="${item.imageUrl || '/logo.webp'}" alt="${item.name}" class="w-24 h-24 object-cover rounded-lg">
-                    <div class="flex-grow text-center md:text-left">
-                        <h3 class="text-xl font-playfair text-charcoal">${item.name}</h3>
-                        <p class="text-stone text-sm">Price: $${item.price}</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <button class="quantity-decrease text-xl font-bold w-8 h-8 rounded-full bg-parchment hover:bg-stone/20" data-id="${item.id}">-</button>
-                        <input type="number" value="${item.quantity}" min="1" class="w-16 text-center border rounded-lg py-2 quantity-input" data-id="${item.id}">
-                        <button class="quantity-increase text-xl font-bold w-8 h-8 rounded-full bg-parchment hover:bg-stone/20" data-id="${item.id}">+</button>
-                    </div>
-                    <p class="text-lg font-medium text-charcoal w-24 text-right">$${itemTotal}</p>
-                    <button class="remove-item text-red-600 hover:text-red-800 text-3xl font-bold" data-id="${item.id}" title="Remove item">&times;</button>
+            const itemElement = document.createElement('div');
+            itemElement.className = 'flex items-center space-x-4 py-3 border-b border-stone/10';
+            
+            const itemTotalPrice = (item.price * item.quantity).toFixed(2);
+            
+            // FIX: Ensure the image path is prefixed with /src/ for the final path
+            const itemImageUrl = item.imageUrl.startsWith('/src/') ? item.imageUrl : `/src/${item.imageUrl}`;
+
+            itemElement.innerHTML = `
+                <img src="${itemImageUrl}" alt="${item.name}" class="w-16 h-16 object-cover rounded-md border border-stone/10">
+                <div class="flex-grow">
+                    <h4 class="font-roboto text-sm font-medium text-charcoal">${item.name}</h4>
+                    <p class="font-playfair text-lg text-burnt-orange font-bold">$${itemTotalPrice}</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <input type="number" min="1" value="${item.quantity}" data-item-id="${item.id}"
+                           class="w-14 p-1 border border-stone/30 rounded-lg text-center font-roboto text-sm cart-quantity-input">
+                    <button data-item-id="${item.id}" class="text-stone hover:text-red-500 transition remove-item-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 112 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
                 </div>
             `;
-            container.innerHTML += itemHtml;
+            cartItemsContainer.appendChild(itemElement);
         });
-
-        // Add event listeners for new buttons
-        attachItemListeners();
+        
+        // Add listeners for the newly rendered elements
+        setupItemListeners();
     }
 
-    // Update totals
-    const { subtotal, total, shipping } = calculateTotals();
-    subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-    shippingEl.textContent = `$${shipping.toFixed(2)}`;
-    totalEl.textContent = `$${total.toFixed(2)}`;
-    
-    // Also update the header bubble
-    updateCartBubble();
+    // Update total
+    cartTotalElement.textContent = calculateCartTotal().toFixed(2);
 }
 
 /**
- * Attaches event listeners to cart item buttons (remove, +, -).
+ * Sets up listeners for quantity changes and remove buttons inside the cart drawer.
  */
-function attachItemListeners() {
-    document.querySelectorAll('.remove-item').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const id = e.target.dataset.id;
-            const cart = getCart().filter(item => item.id !== id);
-            saveCart(cart);
-            renderCart(); // Re-render the cart
-        });
-    });
-
-    document.querySelectorAll('.quantity-increase').forEach(button => {
-        button.addEventListener('click', (e) => {
-            updateQuantity(e.target.dataset.id, 1);
-        });
-    });
-    
-    document.querySelectorAll('.quantity-decrease').forEach(button => {
-        button.addEventListener('click', (e) => {
-            updateQuantity(e.target.dataset.id, -1);
-        });
-    });
-
-    document.querySelectorAll('.quantity-input').forEach(input => {
+function setupItemListeners() {
+    // Quantity changes
+    cartItemsContainer.querySelectorAll('.cart-quantity-input').forEach(input => {
         input.addEventListener('change', (e) => {
+            const id = e.target.dataset.itemId;
             const newQuantity = parseInt(e.target.value, 10);
-            if (isNaN(newQuantity) || newQuantity < 1) {
-                e.target.value = 1; // Reset to 1 if invalid
-            }
-            const cart = getCart();
-            const item = cart.find(i => i.id === e.target.dataset.id);
-            if (item) {
-                item.quantity = Math.max(1, newQuantity); // Ensure at least 1
-                saveCart(cart);
-                renderCart();
-            }
+            updateItemQuantity(id, newQuantity);
+        });
+    });
+
+    // Remove buttons
+    cartItemsContainer.querySelectorAll('.remove-item-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const id = e.currentTarget.dataset.itemId;
+            removeItem(id);
         });
     });
 }
 
-/**
- * Updates the quantity of an item in the cart.
- * @param {string} id - The ID of the product to update.
- * @param {number} change - The amount to change (e.g., 1 or -1).
- */
-function updateQuantity(id, change) {
-    const cart = getCart();
-    const item = cart.find(i => i.id === id);
+// --- Checkout Logic (Placeholder) ---
 
-    if (item) {
-        item.quantity += change;
-        if (item.quantity < 1) {
-            item.quantity = 1; // Don't allow 0 or less
-        }
-        saveCart(cart);
-        renderCart(); // Re-render
+/**
+ * Handles the checkout button click.
+ */
+function handleCheckout() {
+    if (cart.length === 0) {
+        alert("Your cart is empty. Please add items before checking out.");
+        return;
     }
+    
+    // Placeholder logic for checkout flow
+    console.log("Proceeding to checkout with cart:", cart);
+    // In a real application, this would initiate a Stripe/PayPal session
+    
+    // For now, redirect to the Cart page (which is a static page)
+    window.location.href = '/cart/'; 
 }
 
-/**
- * Clears all items from the cart.
- */
-function clearCart() {
-    saveCart([]);
-    renderCart();
-    console.log("Cart cleared.");
-}
 
-/**
- * Attaches real-time validation listeners to the checkout form.
- */
-export function attachFormListeners() {
-    const form = document.getElementById('checkout-form');
-    if (form) {
-        form.addEventListener('input', () => {
-            // As the user types, try to validate.
-            // This is a simple way to clear the error message
-            // if the user starts fixing the problem.
-            const formError = document.getElementById('form-error');
-            if (!formError.classList.contains('hidden')) {
-                if (form.checkValidity()) {
-                    formError.classList.add('hidden');
-                }
-            }
-        });
+// --- Initialization ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Find the checkout button and attach listener if it exists
+    checkoutButton = document.getElementById('checkout-button');
+    if (checkoutButton) {
+        checkoutButton.addEventListener('click', handleCheckout);
     }
-}
+    
+    // Initial render of the cart drawer content
+    renderCartDrawer();
+});
 
-/**
- * Initializes the PayPal SDK and renders the buttons.
- */
-export function initPayPal(formErrorElement) {
-    const paypalContainer = document.getElementById('paypal-button-container');
-    const paypalLoader = document.getElementById('paypal-loader');
-
-    if (!paypalContainer) return;
-
-    paypalLoader.classList.remove('hidden');
-
-    paypal.Buttons({
-        // --- createOrder ---
-        // This is called when the user clicks the PayPal button.
-        createOrder: async (data, actions) => {
-            console.log("PayPal createOrder started...");
-            // 1. Validate the form
-            const customerData = validateCheckoutForm(formErrorElement);
-            if (!customerData) {
-                console.log("Form validation failed.");
-                return actions.reject(); // Stop the transaction
-            }
-            
-            // 2. Calculate totals
-            const { total, subtotal, shipping } = calculateTotals();
-            const cart = getCart();
-
-            // 3. Create the order payload for PayPal
-            const purchase_units = [{
-                amount: {
-                    value: total.toFixed(2),
-                    currency_code: 'USD',
-                    breakdown: {
-                        item_total: { currency_code: 'USD', value: subtotal.toFixed(2) },
-                        shipping: { currency_code: 'USD', value: shipping.toFixed(2) }
-                    }
-                },
-                items: cart.map(item => ({
-                    name: item.name,
-                    unit_amount: { currency_code: 'USD', value: item.price },
-                    quantity: item.quantity,
-                    sku: item.id
-                })),
-                shipping: {
-                    name: {
-                        full_name: `${customerData.firstName} ${customerData.lastName}`
-                    },
-                    address: {
-                        address_line_1: customerData.address,
-                        admin_area_2: customerData.city,
-                        admin_area_1: customerData.state,
-                        postal_code: customerData.zip,
-                        country_code: 'US'
-                    }
-                }
-            }];
-
-            // --- CRITICAL FIX START: Check for authenticated user and add userId ---
-            const currentUser = auth.currentUser;
-            const currentUserId = currentUser ? currentUser.uid : null; // Get UID if logged in
-
-            // 4. Create the full order object for our Firestore database
-            const orderData = {
-                // IMPORTANT: Promote email to top level for guest lookups/emails
-                email: customerData.email, 
-                customer: {
-                    ...customerData,
-                    // Link the customer info to the user ID (redundant but clean)
-                    userId: currentUserId 
-                },
-                items: cart,
-                totals: { subtotal, shipping, total },
-                status: 'Pending', // Will be 'Paid' after approval
-                createdAt: Timestamp.now(),
-                paypalOrderId: null // Will be set on approval
-            };
-            
-            // CRITICAL FIX: Add top-level userId ONLY if authenticated.
-            // This satisfies the Firestore security rule for authenticated orders.
-            if (currentUserId) {
-                orderData.userId = currentUserId; 
-            }
-            // --- CRITICAL FIX END ---
-
-            // 5. Save the 'Pending' order to Firestore
-            try {
-                const orderRef = await addDoc(collection(db, "orders"), orderData);
-                console.log("Pending order saved to Firestore with ID:", orderRef.id);
-                // Store the Firestore order ID to use in onApprove
-                paypalContainer.dataset.firestoreOrderId = orderRef.id; 
-            } catch (e) {
-                console.error("Error saving pending order to Firestore:", e);
-                formErrorElement.textContent = "Could not start checkout. Please try again.";
-                formErrorElement.classList.remove('hidden');
-                return actions.reject();
-            }
-            
-            // 6. Create the order with PayPal
-            return actions.order.create({
-                purchase_units: purchase_units,
-                application_context: {
-                    shipping_preference: 'SET_PROVIDED_ADDRESS'
-                }
-            });
-        },
-
-        // --- onApprove ---
-        // This is called after the user successfully authorizes the payment.
-        onApprove: async (data, actions) => {
-            console.log("PayPal onApprove started...");
-            try {
-                const details = await actions.order.capture();
-                console.log("Payment successful:", details);
-
-                const firestoreOrderId = paypalContainer.dataset.firestoreOrderId;
-                if (!firestoreOrderId) {
-                    throw new Error("No Firestore order ID found.");
-                }
-
-                // 1. Update the order in Firestore to 'Paid'
-                const orderRef = doc(db, 'orders', firestoreOrderId);
-                await updateDoc(orderRef, {
-                    status: 'Paid',
-                    paypalOrderId: details.id,
-                    paypalCaptureDetails: details // Save the full receipt
-                });
-                console.log("Firestore order updated to 'Paid'.");
-                
-                // 2. Clear the cart
-                clearCart();
-                
-                // 3. Redirect to the confirmation page
-                // We pass the Firestore Order ID so the page can look it up
-                window.location.href = `/order-confirmation/?orderId=${firestoreOrderId}`;
-
-            } catch (err) {
-                console.error("Error capturing payment or updating order:", err);
-                formErrorElement.textContent = "Payment failed after approval. Please contact support.";
-                formErrorElement.classList.remove('hidden');
-            }
-        },
-
-        // --- onError ---
-        // This is called if an error occurs during the PayPal flow
-        onError: (err) => {
-            console.error("PayPal Error:", err);
-            formErrorElement.textContent = "An error occurred with the payment. Please try again.";
-            formErrorElement.classList.remove('hidden');
-        },
-
-        // --- onCancel ---
-        // This is called if the user cancels the payment
-        onCancel: (data) => {
-            console.log("PayPal payment cancelled.", data);
-            // Optionally remove the 'Pending' order from Firestore
-            // For now, we'll leave it
-        }
-
-    }).render(paypalContainer).then(() => {
-        // Hide loader once buttons are rendered
-        paypalLoader.classList.add('hidden');
-    }).catch((err) => {
-        console.error("Failed to render PayPal buttons:", err);
-        paypalLoader.classList.add('hidden');
-        paypalContainer.innerHTML = "<p class='text-red-600 text-center'>Error loading payment options. Please refresh.</p>";
-    });
-}
-
-// --- Initialize Bubble on Load ---
-// This runs on every page load to ensure the header
-// bubble is always up-to-date.
-document.addEventListener('DOMContentLoaded', updateCartBubble);
+// The export below was causing the duplicate export error because addToCart and renderCartDrawer
+// are already exported inline (export function...).
+// export { addToCart };

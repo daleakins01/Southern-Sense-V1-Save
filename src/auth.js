@@ -1,79 +1,112 @@
 /*
- * Authentication Logic (auth.js)
- *
- * This module exports functions for user authentication (registration, login, logout)
- * and ensures that user profiles are created/managed in Firestore upon registration.
+ * auth.js
+ * Handles user authentication (register, login) functionality.
  */
 
+// FIX: Corrected import path to reference the file in the new /src/ directory
 import { 
     auth, 
-    db, 
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, 
-    signOut, 
-    doc, 
     setDoc, 
-    Timestamp 
-} from '/firebase-loader.js';
-
-// --- Constants ---
-// Define the Firestore collection where customer profiles are stored
-const USERS_COLLECTION = 'users';
+    doc, 
+    db 
+} from '/src/firebase-loader.js';
 
 /**
- * Registers a new user with Firebase Auth and creates a corresponding Firestore profile.
- * * @param {string} email - The user's email address.
- * @param {string} password - The user's chosen password.
- * @param {string} firstName - The user's first name.
- * @param {string} lastName - The user's last name.
- * @returns {Promise<Object>} The authenticated user object and a reference to the profile.
+ * Handles user registration form submission.
  */
-export async function registerUser(email, password, firstName, lastName) {
-    // 1. Create user in Firebase Authentication
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+document.addEventListener('DOMContentLoaded', () => {
+    const registerForm = document.getElementById('register-form');
+    const registerStatus = document.getElementById('register-status');
 
-    // 2. Create user profile document in Firestore (using UID as the document ID)
-    const userProfileRef = doc(db, USERS_COLLECTION, user.uid);
-    
-    // Ensure all required fields (firstName, lastName, role, etc.) are set for /account.html logic
-    const profileData = {
-        userId: user.uid,
-        email: email,
-        firstName: firstName,
-        lastName: lastName,
-        role: 'customer', // Default role for new users
-        createdAt: Timestamp.now()
-    };
-    
-    // Firestore security rules (Firestore Rules file) expect the UID to be the document ID 
-    // and the request.auth.uid to match that ID upon creation.
-    await setDoc(userProfileRef, profileData);
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            registerStatus.textContent = 'Processing registration...';
+            registerStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-yellow-100 text-yellow-700 block';
 
-    console.log("User registered and profile created in Firestore:", user.uid);
-    return user;
-}
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
 
-/**
- * Logs in an existing user with Firebase Auth.
- * * @param {string} email - The user's email address.
- * @param {string} password - The user's password.
- * @returns {Promise<Object>} The authenticated user object.
- */
-export async function loginUser(email, password) {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    console.log("User logged in:", userCredential.user.uid);
-    return userCredential.user;
-}
+            try {
+                // 1. Create user with email and password
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
 
-/**
- * Logs out the current user.
- * * @returns {Promise<void>}
- */
-export async function logout() {
-    await signOut(auth);
-    console.log("User logged out.");
-}
+                // 2. Create a corresponding user document in Firestore's 'users' collection
+                await setDoc(doc(db, "users", user.uid), {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    // Additional fields can be added here (e.g., createdAt)
+                });
 
-// NOTE: onAuthStateChanged is handled directly in page scripts (e.g., account.html, admin.html)
-// using the imported auth object, not exported from here.
+                registerStatus.textContent = 'Registration successful! Redirecting to account...';
+                registerStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-green-100 text-green-700 block';
+                
+                // Redirect upon success
+                setTimeout(() => {
+                    window.location.href = '/account/'; 
+                }, 1000);
+
+            } catch (error) {
+                let message = error.message;
+                if (message.includes('auth/email-already-in-use')) {
+                    message = 'The email address is already in use by another account.';
+                } else if (message.includes('auth/weak-password')) {
+                    message = 'Password should be at least 6 characters.';
+                } else {
+                    message = `Registration failed: ${error.message.replace('Firebase: ', '')}`;
+                }
+
+                registerStatus.textContent = message;
+                registerStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-red-100 text-red-700 block';
+                console.error("Registration error:", error);
+            }
+        });
+    }
+
+    /**
+     * Handles user login form submission.
+     */
+    const loginForm = document.getElementById('login-form');
+    const loginStatus = document.getElementById('login-status');
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loginStatus.textContent = 'Attempting sign in...';
+            loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-yellow-100 text-yellow-700 block';
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+
+                loginStatus.textContent = 'Sign in successful! Redirecting to account...';
+                loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-green-100 text-green-700 block';
+
+                // Redirect upon success
+                setTimeout(() => {
+                    window.location.href = '/account/'; 
+                }, 1000);
+
+            } catch (error) {
+                let message = error.message;
+                if (message.includes('auth/invalid-credential') || message.includes('auth/wrong-password') || message.includes('auth/user-not-found')) {
+                    message = 'Invalid email or password.';
+                } else {
+                    message = `Sign in failed: ${error.message.replace('Firebase: ', '')}`;
+                }
+
+                loginStatus.textContent = message;
+                loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-red-100 text-red-700 block';
+                console.error("Login error:", error);
+            }
+        });
+    }
+});

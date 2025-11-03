@@ -25,7 +25,8 @@ import { getFirestore,
          where, 
          getDocs, 
          Timestamp,
-         limit // ADDED: Required for index.js and shop.js queries
+         limit,
+         orderBy // ADDED: Required for shop.html product queries
        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
@@ -76,5 +77,6 @@ export {
     where, 
     getDocs,
     Timestamp,
-    limit // ADDED: Export limit for use in other modules
+    limit,
+    orderBy // ADDED: Export orderBy for use in other modules (like shop.html)
 };

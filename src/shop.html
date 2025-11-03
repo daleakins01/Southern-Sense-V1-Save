@@ -53,7 +53,7 @@ title: Shop All Products
 </main>
 
 <script type="module">
-    // FIX: Corrected import path to include /src/ directory to match Eleventy configuration
+    // FIX: Import all required Firestore functions from the central loader
     import { 
         db, 
         collection, 
@@ -66,7 +66,15 @@ title: Shop All Products
 
     // --- State Management ---
     let allProducts = [];
-    let currentFilter = { category: 'all', scentFamily: 'all', sortBy: 'name-asc' };
+    // Initialize currentFilter based on URL parameter (from quiz or direct link)
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialScentFamily = urlParams.get('family') || 'all';
+
+    let currentFilter = { 
+        category: 'all', 
+        scentFamily: initialScentFamily, 
+        sortBy: 'name-asc' 
+    };
 
     // --- DOM Elements ---
     const productGrid = document.getElementById('product-grid');
@@ -87,9 +95,8 @@ title: Shop All Products
         loadingIndicator.classList.remove('hidden');
 
         try {
-            // FIX: Use Firestore query functions imported from firebase-loader.js
             const productsCollection = collection(db, "products");
-            // NOTE: orderBy is crucial here for consistent initial load
+            // Always fetch base data sorted by name
             const q = query(productsCollection, orderBy("name")); 
 
             const querySnapshot = await getDocs(q);
@@ -107,8 +114,8 @@ title: Shop All Products
                     imageUrl: data.imageUrl ? `/src/${data.imageUrl}` : 'https://placehold.co/400x400/FBF9F6/3D352E?text=Image+Missing', 
                     category: data.category || 'other',
                     scentFamily: data.scentFamily || 'unclassified',
-                    // Note: If you want to use the Firebase ID in the product URL:
-                    url: `product.html?id=${doc.id}`
+                    // FIX: Changed link generation to rely on Eleventy's directory structure (no .html extension)
+                    url: `/product/?id=${doc.id}`
                 };
             });
             
@@ -152,7 +159,7 @@ title: Shop All Products
             filterScentSelect.appendChild(option);
         });
         
-        // Restore selected filter if possible
+        // Restore selected filter if possible (used for quiz redirection)
         if (currentFilter.scentFamily !== 'all') {
             filterScentSelect.value = currentFilter.scentFamily;
         }

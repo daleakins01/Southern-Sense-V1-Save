@@ -1,262 +1,233 @@
 ---
-layout: layout.html
-title: Shop All Products
+layout: layout
+title: Shop All Candles & Melts
 ---
 
-<header class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
-    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
-        <h1 class="font-playfair text-6xl font-extrabold text-parchment drop-shadow-lg">Our Collection</h1>
-    </div>
-</header>
-
-<main class="container mx-auto p-4 lg:p-8 py-16">
-    <div class="text-center mb-12">
-        <p class="font-roboto text-lg text-stone max-w-3xl mx-auto">
-            Explore our full range of handcrafted luxury candles, wax melts, and home fragrances. Every item is made with a clean-burning coconut-soy blend and the finest essential oils.
-        </p>
-    </div>
-
-    <div class="flex flex-col md:flex-row justify-between items-center mb-12 space-y-4 md:space-y-0 bg-parchment p-6 rounded-xl shadow-inner border border-stone/10">
-        <div class="w-full md:w-auto">
-            <label for="sort-by" class="block font-roboto text-sm font-medium text-charcoal mb-1">Sort By</label>
-            <select id="sort-by" class="w-full md:w-48 p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange font-roboto text-sm">
-                <option value="name-asc">Name (A-Z)</option>
-                <option value="price-asc">Price (Low to High)</option>
-                <option value="price-desc">Price (High to Low)</option>
-            </select>
-        </div>
-
-        <div class="w-full md:w-auto">
-            <label for="filter-category" class="block font-roboto text-sm font-medium text-charcoal mb-1">Filter by Category</label>
-            <select id="filter-category" class="w-full md:w-48 p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange font-roboto text-sm">
-                <option value="all">All Products</option>
-                <option value="candle">Candles</option>
-                <option value="melt">Wax Melts</option>
-                </select>
-        </div>
-        
-        <div class="w-full md:w-auto">
-            <label for="filter-scent" class="block font-roboto text-sm font-medium text-charcoal mb-1">Filter by Scent Family</label>
-            <select id="filter-scent" class="w-full md:w-48 p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange font-roboto text-sm">
-                <option value="all">All Scent Families</option>
-                </select>
-        </div>
-    </div>
-
-    <section id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        <div id="loading-indicator" class="col-span-full text-center p-12">
-            <p class="font-playfair text-xl text-stone">Loading our collection, please wait...</p>
-            <div class="mt-4 animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
-        </div>
-    </section>
-
-</main>
-
 <script type="module">
-    // FIX: Import all required Firestore functions from the central loader
-    import { 
-        db, 
-        collection, 
-        query, 
-        where, 
-        orderBy, 
-        getDocs, 
-        limit 
-    } from '/src/firebase-loader.js'; 
-
-    // --- State Management ---
-    let allProducts = [];
-    // Initialize currentFilter based on URL parameter (from quiz or direct link)
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialScentFamily = urlParams.get('family') || 'all';
-
-    let currentFilter = { 
-        category: 'all', 
-        scentFamily: initialScentFamily, 
-        sortBy: 'name-asc' 
-    };
-
+    // FIX: Corrected import path to include /src/ directory and added required Firestore functions
+    import { db, collection, query, where, getDocs, orderBy } from '/src/firebase-loader.js';
+    import { addToCart } from '/src/cart.js';
+    
     // --- DOM Elements ---
+    const shopHeading = document.getElementById('shop-heading');
+    const shopIntro = document.getElementById('shop-intro');
     const productGrid = document.getElementById('product-grid');
-    const loadingIndicator = document.getElementById('loading-indicator');
-    const sortBySelect = document.getElementById('sort-by');
-    const filterCategorySelect = document.getElementById('filter-category');
-    const filterScentSelect = document.getElementById('filter-scent');
-    const scentFamilyMap = {}; // To build the scent family filter options
+    const shopLoader = document.getElementById('shop-loader');
+    const filterMessage = document.getElementById('filter-message');
 
-    // --- Core Functions ---
+    // --- State ---
+    let allProducts = [];
+    
+    // --- Utility Functions ---
 
     /**
-     * Fetches all products from the Firestore 'products' collection.
+     * Extracts the scentFamily filter from the URL query parameters.
+     * @returns {string|null} The scent family to filter by, or null.
      */
-    async function fetchAllProducts() {
-        // Show loading state
-        productGrid.innerHTML = '';
-        loadingIndicator.classList.remove('hidden');
-
-        try {
-            const productsCollection = collection(db, "products");
-            // Always fetch base data sorted by name
-            const q = query(productsCollection, orderBy("name")); 
-
-            const querySnapshot = await getDocs(q);
-            
-            allProducts = querySnapshot.docs.map(doc => {
-                const data = doc.data();
-                // Ensure data structure integrity for all products
-                return {
-                    id: doc.id,
-                    name: data.name || 'Untitled Product',
-                    shortDescription: data.shortDescription || 'A beautiful scent.',
-                    // CRITICAL CHECK: Ensure price is correctly read and parsed
-                    price: parseFloat(data.price) || 0.00, 
-                    // CRITICAL CHECK: Ensure imageUrl uses the /src/ path for local serving
-                    imageUrl: data.imageUrl ? `/src/${data.imageUrl}` : 'https://placehold.co/400x400/FBF9F6/3D352E?text=Image+Missing', 
-                    category: data.category || 'other',
-                    scentFamily: data.scentFamily || 'unclassified',
-                    // FIX: Changed link generation to rely on Eleventy's directory structure (no .html extension)
-                    url: `/product/?id=${doc.id}`
-                };
-            });
-            
-            // Build filter map after fetching all products
-            buildScentFamilyMap(); 
-            // Apply current filters to the fetched products
-            applyFiltersAndSort(); 
-
-        } catch (error) {
-            console.error("Error fetching products:", error);
-            // Display error message to the user
-            productGrid.innerHTML = `
-                <div class="col-span-full text-center p-12 bg-red-50 border border-red-200 rounded-lg">
-                    <p class="font-playfair text-xl text-red-700">Failed to load products.</p>
-                    <p class="font-roboto text-sm text-red-600 mt-2">There was an issue connecting to the database. Please verify the API keys in firebase-loader.js and try refreshing.</p>
-                </div>
-            `;
-        } finally {
-            loadingIndicator.classList.add('hidden');
-        }
+    function getFilterFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('family');
     }
 
     /**
-     * Analyzes all products to build a unique list of scent families for the filter.
+     * Capitalizes the first letter of each word in a string (for display).
+     * @param {string} str - The input string (e.g., "fruity-sweet").
+     * @returns {string} The formatted string (e.g., "Fruity Sweet").
      */
-    function buildScentFamilyMap() {
-        const families = new Set();
-        allProducts.forEach(p => {
-            if (p.scentFamily && p.scentFamily !== 'unclassified') {
-                families.add(p.scentFamily);
-            }
-        });
+    function formatScentFamily(str) {
+        if (!str) return 'All Products';
+        return str
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }
 
-        // Clear and rebuild scent filter options
-        filterScentSelect.innerHTML = '<option value="all">All Scent Families</option>';
-        families.forEach(family => {
-            const option = document.createElement('option');
-            // Capitalize the first letter for display and replace hyphens
-            option.value = family;
-            option.textContent = family.charAt(0).toUpperCase() + family.slice(1).replace(/-/g, ' '); 
-            filterScentSelect.appendChild(option);
-        });
+    /**
+     * Renders a single product card HTML.
+     * @param {Object} product - The product data.
+     * @returns {string} The product card HTML string.
+     */
+    function renderProductCard(product) {
+        const isOutOfStock = product.stock <= 0;
+        // CRITICAL CHECK: Ensure price is treated as a float and formatted.
+        const price = parseFloat(product.price).toFixed(2); 
         
-        // Restore selected filter if possible (used for quiz redirection)
-        if (currentFilter.scentFamily !== 'all') {
-            filterScentSelect.value = currentFilter.scentFamily;
-        }
-    }
-
-    /**
-     * Applies the current state of filters and sorting to the allProducts array.
-     */
-    function applyFiltersAndSort() {
-        let filteredProducts = [...allProducts];
-
-        // 1. Filtering
-        if (currentFilter.category !== 'all') {
-            filteredProducts = filteredProducts.filter(p => p.category === currentFilter.category);
-        }
-        if (currentFilter.scentFamily !== 'all') {
-            filteredProducts = filteredProducts.filter(p => p.scentFamily === currentFilter.scentFamily);
-        }
-
-        // 2. Sorting
-        filteredProducts.sort((a, b) => {
-            switch (currentFilter.sortBy) {
-                case 'name-asc':
-                    return a.name.localeCompare(b.name);
-                case 'price-asc':
-                    return a.price - b.price;
-                case 'price-desc':
-                    return b.price - a.price;
-                default:
-                    return 0;
-            }
-        });
-
-        renderProducts(filteredProducts);
-    }
-
-    /**
-     * Renders the given array of products into the grid.
-     * @param {Array} products - The array of products to display.
-     */
-    function renderProducts(products) {
-        productGrid.innerHTML = ''; // Clear existing content
-
-        if (products.length === 0) {
-            productGrid.innerHTML = `
-                <div class="col-span-full text-center p-12">
-                    <p class="font-playfair text-2xl text-stone">No products found matching your filters.</p>
-                    <p class="font-roboto text-sm text-stone mt-2">Try adjusting your category or scent family selections.</p>
+        // Stock status elements
+        const stockStatusHtml = isOutOfStock
+            ? `<p class="text-sm font-semibold text-red-600">SOLD OUT</p>`
+            : `<p class="text-sm font-semibold text-charcoal">In Stock</p>`;
+            
+        // Button or Link
+        const actionButtonHtml = isOutOfStock
+            // Out of Stock: Redirect to detail page (where they can sign up for alerts)
+            ? `<a href="/product/?id=${product.id}" class="w-full px-4 py-2 bg-stone/50 text-parchment font-bold rounded-lg text-center cursor-not-allowed">View Details</a>`
+            // In Stock: Add to Cart button with data attributes
+            : `<button data-id="${product.id}" 
+                      data-name="${product.name}"
+                      data-price="${price}"
+                      data-image="${product.imageUrl}"
+                      class="add-to-cart-button w-full px-4 py-2 bg-burnt-orange text-parchment font-bold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
+                Add to Cart
+              </button>`;
+        
+        return `
+            <div class="product-card bg-white rounded-lg shadow-xl overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
+                <a href="/product/?id=${product.id}" class="block relative">
+                    <img src="/src/${product.imageUrl || 'logo.webp'}" alt="${product.name}" class="w-full h-72 object-cover">
+                    ${product.featured ? '<span class="absolute top-3 left-3 px-3 py-1 text-xs bg-burnt-orange text-parchment rounded-full font-bold shadow-md">FEATURED</span>' : ''}
+                </a>
+                <div class="p-5">
+                    <h3 class="text-xl font-playfair text-charcoal mb-1">${product.name}</h3>
+                    <p class="text-sm text-stone mb-3">${formatScentFamily(product.scentFamily)}</p>
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="text-lg font-bold text-burnt-orange">$${price}</p>
+                        ${stockStatusHtml}
+                    </div>
+                    ${actionButtonHtml}
                 </div>
-            `;
+            </div>
+        `;
+    }
+
+    // --- Main Logic ---
+    
+    /**
+     * Attaches click listeners to all new "Add to Cart" buttons.
+     */
+    function attachCartListeners() {
+        document.querySelectorAll('.add-to-cart-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const { id, name, price, image } = e.currentTarget.dataset;
+                
+                // Use the imported addToCart function
+                addToCart(id, name, parseFloat(price), image);
+            });
+        });
+    }
+
+    /**
+     * Filters the global product list and renders the grid.
+     * @param {string|null} filterFamily - The scent family to filter by.
+     */
+    function renderProductGrid(filterFamily) {
+        let filteredProducts = allProducts;
+        let displayedCount = 0;
+
+        // Set heading and introductory text based on filter
+        shopHeading.textContent = formatScentFamily(filterFamily);
+        if (filterFamily) {
+            filteredProducts = allProducts.filter(p => p.scentFamily === filterFamily);
+            shopIntro.textContent = `Browse our collection of products featuring the delightful notes of the ${formatScentFamily(filterFamily)} family.`;
+        } else {
+            shopIntro.textContent = `Explore our entire collection of hand-poured candles and luxurious wax melts.`;
+        }
+
+
+        productGrid.innerHTML = '';
+        
+        if (filteredProducts.length === 0) {
+            productGrid.innerHTML = `<p class="text-lg text-stone col-span-full text-center py-10">No products found matching your criteria. <a href="/shop/" class="text-burnt-orange hover:underline">View All Products</a></p>`;
+            filterMessage.textContent = `0 products found.`;
             return;
         }
 
-        products.forEach(product => {
-            // Use the pre-processed URL with /src/ path included
-            const validImageUrl = product.imageUrl; 
+        // Sort: Featured first, then by stock (in-stock first), then by name
+        // FIX: orderBy is imported and used here for initial fetching, but the client-side sort handles the display order
+        filteredProducts.sort((a, b) => {
+            // Featured priority
+            if (a.featured && !b.featured) return -1;
+            if (!a.featured && b.featured) return 1;
             
-            const productCard = document.createElement('a');
-            productCard.href = product.url; // Use the generated URL
-            productCard.className = 'block group bg-white/70 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-stone/10';
-            
-            productCard.innerHTML = `
-                <div class="overflow-hidden">
-                    <img src="${validImageUrl}" alt="${product.name}" class="w-full h-64 object-cover object-center transition-transform duration-500 group-hover:scale-105" onerror="this.src='https://placehold.co/400x400/FBF9F6/3D352E?text=Image+Error'; this.onerror=null;">
-                </div>
-                <div class="p-4 text-center">
-                    <h3 class="font-playfair text-xl font-bold text-charcoal group-hover:text-burnt-orange transition-colors duration-200">${product.name}</h3>
-                    <p class="font-roboto text-sm text-stone mt-1">${product.shortDescription}</p>
-                    <p class="font-playfair text-2xl text-burnt-orange font-extrabold mt-3">$${product.price.toFixed(2)}</p>
-                </div>
-            `;
-            productGrid.appendChild(productCard);
+            // Stock priority (higher stock comes first)
+            if (a.stock > 0 && b.stock <= 0) return -1;
+            if (a.stock <= 0 && b.stock > 0) return 1;
+
+            // Alphabetical fallback
+            return a.name.localeCompare(b.name);
         });
+
+        filteredProducts.forEach(product => {
+            productGrid.innerHTML += renderProductCard(product);
+            displayedCount++;
+        });
+
+        // Update total count message
+        filterMessage.textContent = `${displayedCount} ${filterFamily ? formatScentFamily(filterFamily) : 'Total'} products found.`;
+
+        attachCartListeners();
     }
 
-    // --- Event Listeners and Initialization ---
 
-    function initializeShopPage() {
-        // Event listeners for filters and sorting
-        sortBySelect.addEventListener('change', (e) => {
-            currentFilter.sortBy = e.target.value;
-            applyFiltersAndSort();
-        });
+    /**
+     * Initializes the shop page by fetching all products.
+     */
+    async function initializeShop() {
+        shopLoader.classList.remove('hidden');
+        productGrid.innerHTML = '';
+        
+        const filterFamily = getFilterFromUrl();
+        shopHeading.textContent = formatScentFamily(filterFamily); // Set initial heading
 
-        filterCategorySelect.addEventListener('change', (e) => {
-            currentFilter.category = e.target.value;
-            applyFiltersAndSort();
-        });
+        try {
+            const productsRef = collection(db, 'products');
+            // Use orderBy for a clean initial fetch from Firestore
+            const q = query(productsRef, orderBy("name")); 
+            const querySnapshot = await getDocs(q);
 
-        filterScentSelect.addEventListener('change', (e) => {
-            currentFilter.scentFamily = e.target.value;
-            applyFiltersAndSort();
-        });
+            if (querySnapshot.empty) {
+                shopIntro.textContent = "We're currently stocking our shelves. Please check back soon!";
+                shopLoader.classList.add('hidden');
+                return;
+            }
 
-        // Initial data fetch
-        fetchAllProducts();
+            // Map all documents and store them in the global state
+            allProducts = querySnapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...data,
+                    // CRITICAL: Ensure price is correctly read and parsed
+                    price: parseFloat(data.price), 
+                    stock: parseInt(data.stock, 10) || 0, // Ensure stock is an integer
+                };
+            });
+
+            // Render the grid with or without the URL filter
+            renderProductGrid(filterFamily);
+
+        } catch (error) {
+            console.error("CRITICAL ERROR: Error fetching products:", error);
+            shopIntro.innerHTML = `<p class="text-red-600 font-bold">Error loading products. Check Firebase configuration and database connection.</p>`;
+        } finally {
+            shopLoader.classList.add('hidden');
+        }
     }
 
-    document.addEventListener('DOMContentLoaded', initializeShopPage);
+    // --- Initialization Trigger ---
+    document.addEventListener('DOMContentLoaded', initializeShop);
+
 </script>
+
+<main class="container mx-auto px-4 py-12 min-h-screen">
+    
+    <header class="max-w-4xl mx-auto text-center mb-12">
+        <p class="text-sm font-semibold uppercase tracking-wider text-burnt-orange mb-3">Shop Our Collection</p>
+        <h1 id="shop-heading" class="text-5xl font-playfair text-charcoal mb-4">
+            All Products
+        </h1>
+        <p id="shop-intro" class="text-lg text-stone leading-relaxed">
+            </p>
+    </header>
+
+    <div id="filter-message" class="text-center text-sm font-medium text-stone mb-6">
+        </div>
+    
+    <div id="shop-loader" class="flex justify-center items-center h-48">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-burnt-orange"></div>
+    </div>
+
+    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        </div>
+
+</main>

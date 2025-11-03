@@ -1,27 +1,118 @@
 ---
 layout: layout.html
-title: Redirecting to Scent Glossary
+title: The Guide to Scent Families
 ---
 
-<div class="container mx-auto p-4 lg:p-8 py-20 text-center">
-    <div class="max-w-xl mx-auto">
-        <h1 class="font-playfair text-4xl font-extrabold text-charcoal mb-4">Redirecting...</h1>
-        <p class="font-roboto text-lg text-stone">
-            The Scent Guide has moved to the new, dynamic 
-            <a href="/scent-glossary/" class="text-burnt-orange hover:underline font-bold">Scent Glossary</a>.
-            You will be redirected automatically.
-        </p>
-        
-        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-burnt-orange mx-auto mt-8"></div>
+<header class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
+    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+        <h1 id="guide-header-title" class="font-playfair text-6xl font-extrabold text-parchment drop-shadow-lg">The Guide to Scent Families</h1>
     </div>
-</div>
+</header>
 
-<script>
-    // Client-side redirection using JavaScript for immediate user experience.
-    window.onload = function() {
-        // Set a slight delay to allow the user to see the redirect message
-        setTimeout(function() {
-            window.location.replace("/scent-glossary/");
-        }, 500); // 500ms delay
-    };
+<main class="container mx-auto p-4 lg:p-8 py-16">
+
+    <div id="loading-state" class="text-center p-12 bg-parchment rounded-xl shadow-lg border border-stone/10">
+        <p class="font-playfair text-2xl text-stone">Loading scent education resources...</p>
+        <div class="mt-4 animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
+    </div>
+
+    <section id="guide-section" class="max-w-4xl mx-auto space-y-12 hidden">
+
+        <div class="text-center mb-10">
+            <h2 class="font-playfair text-4xl font-bold text-charcoal mb-4">Discover Your Signature Olfactory Profile</h2>
+            <div id="guide-overview-content" class="prose max-w-none text-stone font-roboto text-lg mx-auto">
+                <p>Guide overview loading...</p>
+            </div>
+        </div>
+
+        <div id="families-container" class="space-y-10">
+            <div class="bg-white p-8 rounded-xl shadow-lg border border-stone/10">
+                <h3 id="family-1-title" class="font-playfair text-3xl font-bold text-burnt-orange mb-3">Woodsy/Earthy</h3>
+                <p id="family-1-desc" class="text-stone">Description loading...</p>
+            </div>
+
+            <div class="bg-white p-8 rounded-xl shadow-lg border border-stone/10">
+                <h3 id="family-2-title" class="font-playfair text-3xl font-bold text-burnt-orange mb-3">Fresh/Aquatic</h3>
+                <p id="family-2-desc" class="text-stone">Description loading...</p>
+            </div>
+            
+            <div class="bg-white p-8 rounded-xl shadow-lg border border-stone/10">
+                <h3 id="family-3-title" class="font-playfair text-3xl font-bold text-burnt-orange mb-3">Gourmand/Spicy</h3>
+                <p id="family-3-desc" class="text-stone">Description loading...</p>
+            </div>
+        </div>
+
+    </section>
+
+</main>
+
+<script type="module">
+    // FIX: Corrected import path to include /src/ directory
+    import { db, doc, getDoc } from '/src/firebase-loader.js'; 
+
+    // --- DOM Elements ---
+    const loadingState = document.getElementById('loading-state');
+    const guideSection = document.getElementById('guide-section');
+    const guideHeaderTitle = document.getElementById('guide-header-title');
+    const guideOverviewContent = document.getElementById('guide-overview-content');
+    
+    // Family Elements (Using template IDs for dynamic population)
+    const family1Title = document.getElementById('family-1-title');
+    const family1Desc = document.getElementById('family-1-desc');
+    const family2Title = document.getElementById('family-2-title');
+    const family2Desc = document.getElementById('family-2-desc');
+    const family3Title = document.getElementById('family-3-title');
+    const family3Desc = document.getElementById('family-3-desc');
+
+
+    /**
+     * Loads dynamic content for the Scent Guide page from Firestore.
+     */
+    async function loadScentGuideContent() {
+        console.log("Scent Guide Page: Loading content from Firestore...");
+        
+        loadingState.classList.remove('hidden');
+        guideSection.classList.add('hidden');
+
+        try {
+            // Document reference for the 'scent-guide' page content
+            // NOTE: Check your Firestore console for document path: siteContent/scent-guide
+            const docRef = doc(db, "siteContent", "scent-guide");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                // 1. Header and Overview
+                guideHeaderTitle.textContent = data.guideHeaderTitle || "The Guide to Scent Families";
+                guideOverviewContent.innerHTML = data.guideOverviewContent || "<p>Guide overview not set.</p>";
+                
+                // 2. Scent Families Content
+                // Note: The structure assumes fields like family1Title, family1Desc exist
+                family1Title.textContent = data.family1Title || "Woodsy/Earthy";
+                family1Desc.textContent = data.family1Desc || "Details loading...";
+                family2Title.textContent = data.family2Title || "Fresh/Aquatic";
+                family2Desc.textContent = data.family2Desc || "Details loading...";
+                family3Title.textContent = data.family3Title || "Gourmand/Spicy";
+                family3Desc.textContent = data.family3Desc || "Details loading...";
+                
+                // Success: Hide loading, show content
+                loadingState.classList.add('hidden');
+                guideSection.classList.remove('hidden');
+
+            } else {
+                // FIX: Better error handling for missing document
+                console.warn("Scent Guide Page: Document 'siteContent/scent-guide' does not exist. Falling back to default content.");
+                loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Configuration Error: The 'siteContent/scent-guide' document is missing from Firestore. Please populate it in the Admin Panel.</p>`;
+                
+                // Still show the general section layout with default texts
+                guideSection.classList.remove('hidden'); 
+            }
+        } catch (error) {
+            console.error("Error fetching Scent Guide content:", error);
+            loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Error loading content: ${error.message}</p>`;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadScentGuideContent);
 </script>

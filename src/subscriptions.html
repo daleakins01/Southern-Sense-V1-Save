@@ -101,6 +101,7 @@ title: Subscription Boxes
 
         try {
             // Document reference for the 'subscriptions' page content
+            // NOTE: Check your Firestore console for document path: siteContent/subscriptions
             const docRef = doc(db, "siteContent", "subscriptions");
             const docSnap = await getDoc(docRef);
 
@@ -132,8 +133,13 @@ title: Subscription Boxes
                 subscriptionsSection.classList.remove('hidden');
 
             } else {
-                console.warn("Subscriptions Page: Document 'siteContent/subscriptions' does not exist.");
-                loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Error: Subscription configuration document not found.</p>`;
+                // FIX: Better error handling for missing document
+                console.warn("Subscriptions Page: Document 'siteContent/subscriptions' does not exist. Falling back to default content.");
+                subHeaderTitle.textContent = "Subscriptions (Content Missing)";
+                loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Configuration Error: The 'siteContent/subscriptions' document is missing from Firestore. Please populate it in the Admin Panel.</p>`;
+                
+                // Still show the general section layout with default texts
+                subscriptionsSection.classList.remove('hidden'); 
             }
         } catch (error) {
             console.error("Error fetching Subscription content:", error);

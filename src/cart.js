@@ -8,8 +8,8 @@
 import { db, collection, doc, setDoc } from '/src/firebase-loader.js';
 
 // --- State Management ---
-let cart = loadCartFromStorage();
-const CART_STORAGE_KEY = 'southernSenseCart';
+const CART_STORAGE_KEY = 'southernSenseCart'; // MOVED TO BE DEFINED BEFORE USE
+let cart = loadCartFromStorage(); // Now called after its dependency is defined
 
 // --- DOM Elements (Placeholders, updated when cart drawer is rendered) ---
 let cartItemsContainer;
@@ -22,7 +22,8 @@ let checkoutButton;
  */
 function loadCartFromStorage() {
     try {
-        const serializedCart = localStorage.getItem(CART_STORAGE_KEY);
+        // Now CART_STORAGE_KEY is guaranteed to be initialized
+        const serializedCart = localStorage.getItem(CART_STORAGE_KEY); 
         return serializedCart ? JSON.parse(serializedCart) : [];
     } catch (e) {
         console.error("Could not load cart from local storage:", e);
@@ -114,6 +115,8 @@ export function renderCartDrawer() {
     const cartStatusMessage = document.getElementById('cart-status-message');
 
     if (!cartItemsContainer || !cartTotalElement) {
+        // This warning is fine, as renderCartDrawer is called immediately on DCL
+        // on all pages, but only fully renders if the elements exist (in cart.html).
         console.warn("Cart drawer elements not found in DOM.");
         return;
     }
@@ -227,7 +230,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial render of the cart drawer content
     renderCartDrawer();
 });
-
-// The export below was causing the duplicate export error because addToCart and renderCartDrawer
-// are already exported inline (export function...).
-// export { addToCart };

@@ -14,9 +14,9 @@ title: Find Your Perfect Scent
 
         <div id="quiz-container">
             <h2 id="quiz-title" class="font-playfair text-4xl font-bold text-charcoal text-center mb-6">Let's Begin</h2>
-            <p id="progress-text" class="text-center font-roboto text-sm text-stone mb-8">Step 0 of 4</p>
+            <p id="progress-text" class="text-center font-roboto text-sm text-stone mb-8">Step 0 of 3</p>
 
-            <form id="scent-quiz-form">
+            <form id="scent-quiz-form-container"> 
                 
                 <div id="step-0" class="quiz-step">
                     <p class="text-center text-lg text-stone mb-8">Answer a few quick questions to discover the scent family that best matches your personal sanctuary.</p>
@@ -82,12 +82,14 @@ title: Find Your Perfect Scent
 
     // --- State & DOM ---
     let currentStep = 0;
-    const TOTAL_STEPS = 4;
+    const TOTAL_STEPS = 4; // Total number of logical steps (0, 1, 2, 3, 4=Result)
+    const QUIZ_QUESTION_COUNT = 3; // The number of questions (1, 2, 3)
     const quizContainer = document.getElementById('quiz-container');
     const quizTitle = document.getElementById('quiz-title');
     const progressText = document.getElementById('progress-text');
-    const form = document.getElementById('scent-quiz-form');
-    const resultStep = document.getElementById('result-step');
+    // FIX: Renamed form to match HTML
+    const formContainer = document.getElementById('scent-quiz-form-container'); 
+    const resultStep = document.getElementById('result-step'); 
     const loadingResult = document.getElementById('loading-result');
     const resultFamilyTitle = document.getElementById('result-family-title');
     const resultDescription = document.getElementById('result-description');
@@ -111,21 +113,42 @@ title: Find Your Perfect Scent
     // --- Quiz Navigation ---
 
     /**
-     * Hides all steps and shows the current step.
+     * Hides all steps and shows the current step/result.
      */
     function showStep(stepNumber) {
+        // 1. Hide all elements with the class .quiz-step
         document.querySelectorAll('.quiz-step').forEach(step => {
             step.classList.add('hidden');
         });
-        document.getElementById(`step-${stepNumber}`).classList.remove('hidden');
+        
+        // 2. Handle result step separately (Step 4)
+        if (stepNumber === TOTAL_STEPS) {
+            resultStep.classList.remove('hidden');
+            formContainer.classList.add('hidden'); // Hide the question container
+            quizTitle.textContent = "Your Recommendation";
+            progressText.classList.add('hidden'); 
+            return;
+        }
+
+        // 3. Handle question steps (Step 0 to 3)
+        const stepElement = document.getElementById(`step-${stepNumber}`);
+        // FIX: The original crash happened because there was no element with ID 'step-4'
+        if (stepElement) {
+            stepElement.classList.remove('hidden');
+        }
+        
+        // Show the form container if we are in a question step
+        formContainer.classList.remove('hidden');
         
         currentStep = stepNumber;
-        progressText.textContent = `Step ${currentStep} of ${TOTAL_STEPS - 1}`;
+        progressText.classList.remove('hidden');
         
         if (stepNumber === 0) {
             quizTitle.textContent = "Let's Begin";
-        } else if (stepNumber > 0 && stepNumber < TOTAL_STEPS) {
+            progressText.textContent = "Welcome"; 
+        } else if (stepNumber > 0 && stepNumber <= QUIZ_QUESTION_COUNT) {
             quizTitle.textContent = "Find Your Perfect Scent";
+            progressText.textContent = `Step ${currentStep} of ${QUIZ_QUESTION_COUNT}`;
         }
     }
 
@@ -133,35 +156,56 @@ title: Find Your Perfect Scent
      * Collects answers from the current step and moves to the next.
      */
     function handleNextStep(e) {
-        const currentStepEl = document.getElementById(`step-${currentStep}`);
-        const checkedInput = currentStepEl.querySelector('input[type="radio"]:checked');
+        // Validation check is ONLY necessary if we are past the welcome screen (currentStep > 0)
+        if (currentStep > 0) {
+            const currentStepEl = document.getElementById(`step-${currentStep}`);
+            const checkedInput = currentStepEl.querySelector('input[type="radio"]:checked');
+            
+            if (!checkedInput) {
+                alert('Please select an option to continue.');
+                return;
+            }
 
-        if (!checkedInput) {
-            alert('Please select an option to continue.');
-            return;
+            // Tally the answer weight for the completed step
+            const answerValue = checkedInput.value;
+            const weights = scentWeights[answerValue];
+            for (const scent in weights) {
+                answerTally[scent] = (answerTally[scent] || 0) + weights[scent];
+            }
         }
 
-        // Tally the answer weight
-        const answerValue = checkedInput.value;
-        const weights = scentWeights[answerValue];
-        for (const scent in weights) {
-            answerTally[scent] = (answerTally[scent] || 0) + weights[scent];
-        }
-
-        const nextStep = parseInt(e.target.dataset.nextStep);
+        // Proceed to the next step based on the button's data attribute
+        const nextStep = parseInt(e.currentTarget.dataset.nextStep);
         showStep(nextStep);
     }
     
     // --- Result Calculation ---
 
     /**
-     * Determines the top-voted scent family and fetches a product recommendation.
+     * Determines the top-voted scent family and displays the result.
      */
     async function calculateResult(e) {
         e.preventDefault();
         
+        // Final validation for the last question (Step 3)
+        const currentStepEl = document.getElementById(`step-3`);
+        const checkedInput = currentStepEl.querySelector('input[type="radio"]:checked');
+        
+        if (!checkedInput) {
+            alert('Please select an option to continue.');
+            return;
+        }
+
+        // Tally the final answer
+        const answerValue = checkedInput.value;
+        const weights = scentWeights[answerValue];
+        for (const scent in weights) {
+            answerTally[scent] = (answerTally[scent] || 0) + weights[scent];
+        }
+
         // Show result step and loading state
-        showStep(TOTAL_STEPS);
+        showStep(TOTAL_STEPS); 
+        
         loadingResult.classList.remove('hidden');
         resultFamilyTitle.classList.add('hidden');
         resultDescription.classList.add('hidden');
@@ -177,25 +221,24 @@ title: Find Your Perfect Scent
             }
         }
 
-        // Handle fallback if no answers were tallied (shouldn't happen)
         if (!topScent) {
-            topScent = 'woodsy'; // Default recommendation
+            topScent = 'woodsy'; // Default fallback
         }
 
         // Display results
         const readableScent = topScent.charAt(0).toUpperCase() + topScent.slice(1).replace(/-/g, ' ');
         resultFamilyTitle.textContent = readableScent;
-        resultLink.href = `/shop/?family=${topScent}`;
+        // The link filters the shop by the determined scent family ID
+        resultLink.href = `/shop/?family=${topScent}`; 
 
-        // 2. Fetch data (Optional: Can fetch from a separate Firestore document for description/image)
-        // For simplicity, we'll use a hardcoded description
-        resultDescription.textContent = `Based on your answers, the ${readableScent} family, known for its strong connection to nature and comforting notes, is your ideal match. Click below to explore all scents in this family!`;
-        
-        // 3. Final Display
-        loadingResult.classList.add('hidden');
-        resultFamilyTitle.classList.remove('hidden');
-        resultDescription.classList.remove('hidden');
-        resultLink.classList.remove('hidden');
+        // 2. Final Display (simulating async loading)
+        setTimeout(() => {
+            resultDescription.textContent = `Based on your answers, the ${readableScent} family, known for its strong connection to nature and comforting notes, is your ideal match. Click below to explore all scents in this family!`;
+            loadingResult.classList.add('hidden');
+            resultFamilyTitle.classList.remove('hidden');
+            resultDescription.classList.remove('hidden');
+            resultLink.classList.remove('hidden');
+        }, 1000); // 1-second delay for dramatic effect
     }
 
     // --- Initialization ---
@@ -212,6 +255,6 @@ title: Find Your Perfect Scent
         document.querySelector('.start-quiz-button').addEventListener('click', handleNextStep);
 
         // Attach listener for the final form submission
-        form.addEventListener('submit', calculateResult);
+        formContainer.addEventListener('submit', calculateResult);
     });
 </script>

@@ -1,140 +1,164 @@
 ---
-layout: layout.html
+layout: layout
 title: Contact Us
 ---
 
-<header class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
-    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
-        <h1 class="font-playfair text-6xl font-extrabold text-parchment drop-shadow-lg">Get in Touch</h1>
-    </div>
-</header>
+<script type="module">
+    // FIX: Corrected import path to include /src/ directory
+    import { 
+        db, 
+        collection, 
+        addDoc, 
+        serverTimestamp 
+    } from '/src/firebase-loader.js';
 
-<main class="container mx-auto p-4 lg:p-8 py-16">
-    <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-12">
+    // --- DOM Elements ---
+    const contactForm = document.getElementById('contact-form');
+    const formMessage = document.getElementById('form-message');
+
+    // --- Core Logic ---
+
+    /**
+     * Handles the contact form submission and saves the inquiry to Firestore.
+     */
+    async function handleContactSubmit(e) {
+        e.preventDefault();
         
-        <div class="bg-parchment p-8 rounded-xl shadow-2xl border border-stone/10">
-            <h2 class="font-playfair text-3xl font-bold text-charcoal mb-6">Send Us a Message</h2>
-            
-            <p id="form-status" class="hidden font-roboto text-sm p-3 rounded-lg mb-4"></p>
+        const submitButton = e.submitter;
+        const formData = new FormData(contactForm);
+        
+        const data = {
+            name: formData.get('name').trim(),
+            email: formData.get('email').trim(),
+            subject: formData.get('subject').trim(),
+            message: formData.get('message').trim(),
+            // Ensure fields are not empty
+            isComplete: !!(formData.get('name') && formData.get('email') && formData.get('message')),
+            createdAt: serverTimestamp()
+        };
 
-            <form id="contact-form" class="space-y-4">
-                <div>
-                    <label for="contact-name" class="block font-roboto text-sm font-medium text-charcoal">Your Name</label>
-                    <input type="text" id="contact-name" name="name" required class="w-full p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
-                </div>
-                <div>
-                    <label for="contact-email" class="block font-roboto text-sm font-medium text-charcoal">Email Address</label>
-                    <input type="email" id="contact-email" name="email" required class="w-full p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
-                </div>
-                <div>
-                    <label for="contact-subject" class="block font-roboto text-sm font-medium text-charcoal">Subject</label>
-                    <select id="contact-subject" name="subject" required class="w-full p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange">
-                        <option value="">-- Select a subject --</option>
-                        <option value="General Inquiry">General Inquiry</option>
-                        <option value="Order Issue">Order Issue / Status Update</option>
-                        <option value="Product Feedback">Product Feedback</option>
-                        <option value="Wholesale Inquiry">Wholesale Inquiry</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="contact-message" class="block font-roboto text-sm font-medium text-charcoal">Message</label>
-                    <textarea id="contact-message" name="message" rows="5" required class="w-full p-2 border border-stone/30 rounded-lg focus:ring-burnt-orange focus:border-burnt-orange"></textarea>
-                </div>
+        if (!data.isComplete) {
+            showMessage("Please fill in your Name, Email, and Message.", 'error');
+            return;
+        }
+
+        submitButton.disabled = true;
+        submitButton.textContent = 'Sending...';
+        showMessage("Sending your message...", 'info');
+
+        try {
+            // Firestore: Save the inquiry to a new 'inquiries' collection
+            await addDoc(collection(db, "inquiries"), data);
+
+            showMessage("Message sent successfully! We will respond within 48 hours.", 'success');
+            contactForm.reset();
+            
+            // Redirect to a confirmation page for cleaner UX
+            setTimeout(() => {
+                window.location.href = '/message-sent.html'; 
+            }, 1000);
+
+        } catch (error) {
+            console.error("Contact Form Submission Error:", error);
+            showMessage("Failed to send message. Please try again or email support@southernsense.org.", 'error');
+
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Send Message';
+        }
+    }
+
+    /**
+     * Displays a status message to the user.
+     * @param {string} message - The message content.
+     * @param {string} type - 'success', 'error', or 'info'.
+     */
+    function showMessage(message, type) {
+        formMessage.textContent = message;
+        formMessage.classList.remove('hidden', 'text-green-600', 'text-red-600', 'text-stone', 'bg-red-50', 'bg-green-50', 'bg-parchment/50');
+        
+        if (type === 'success') {
+            formMessage.classList.add('text-green-600', 'bg-green-50');
+        } else if (type === 'error') {
+            formMessage.classList.add('text-red-600', 'bg-red-50');
+        } else {
+            formMessage.classList.add('text-stone', 'bg-parchment/50');
+        }
+    }
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        contactForm.addEventListener('submit', handleContactSubmit);
+    });
+
+</script>
+
+<main class="container mx-auto px-4 py-12 min-h-screen">
+    
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-playfair text-charcoal mb-4">Get In Touch</h1>
+            <p class="text-lg text-stone max-w-2xl mx-auto">
+                Whether you have a question about an order, our refill program, or need scent advice, we're here to help.
+            </p>
+        </header>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-white p-8 rounded-xl shadow-lg border border-stone/10">
+
+            <div class="lg:order-1">
+                <form id="contact-form" class="space-y-6">
+                    
+                    <h2 class="text-2xl font-playfair text-burnt-orange mb-4">Send Us a Message</h2>
+
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-stone mb-1">Your Name</label>
+                        <input type="text" id="name" name="name" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
+                    </div>
+                    
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-stone mb-1">Email Address</label>
+                        <input type="email" id="email" name="email" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
+                    </div>
+                    
+                    <div>
+                        <label for="subject" class="block text-sm font-medium text-stone mb-1">Subject (Optional)</label>
+                        <input type="text" id="subject" name="subject" class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
+                    </div>
+
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-stone mb-1">Your Message</label>
+                        <textarea id="message" name="message" rows="5" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange"></textarea>
+                    </div>
+                    
+                    <div id="form-message" class="hidden text-sm font-medium p-3 rounded-lg"></div>
+
+                    <button type="submit" class="w-full px-4 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-burnt-orange/80 transition duration-300">
+                        Send Message
+                    </button>
+                </form>
+            </div>
+
+            <div class="lg:order-2 space-y-8 p-4 bg-parchment rounded-lg border-l-4 border-stone">
                 
-                <button type="submit" id="submit-button" class="w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg shadow-md hover:bg-opacity-90 transition duration-150">
-                    Send Message
-                </button>
-            </form>
-        </div>
-        
-        <div class="space-y-8">
-            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-4">
-                <h3 class="font-playfair text-2xl font-bold text-charcoal">Direct Contact</h3>
-                <p class="text-stone">
-                    For immediate questions about an existing order or quick queries, please use the direct email below.
-                </p>
-                <ul class="space-y-2">
-                    <li class="font-roboto text-sm"><strong class="font-bold text-charcoal">Customer Service:</strong> <a href="mailto:support@southernsense.org" class="text-burnt-orange hover:underline">support@southernsense.org</a></li>
-                    <li class="font-roboto text-sm"><strong class="font-bold text-charcoal">Wholesale:</strong> <a href="mailto:wholesale@southernsense.org" class="text-burnt-orange hover:underline">wholesale@southernsense.org</a></li>
-                </ul>
-            </div>
+                <h2 class="text-2xl font-playfair text-charcoal mb-4">Direct Contact & Support</h2>
 
-            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-4">
-                <h3 class="font-playfair text-2xl font-bold text-charcoal">Business Hours</h3>
-                <p class="text-stone">Our team is available to assist you during the following hours:</p>
-                <ul class="font-roboto text-sm space-y-1">
-                    <li>Monday - Friday: 9:00 AM - 5:00 PM (EST)</li>
-                    <li>Weekends & Holidays: Closed</li>
-                </ul>
+                <div>
+                    <h3 class="font-bold text-lg text-charcoal mb-1">Email Support</h3>
+                    <a href="mailto:support@southernsense.org" class="text-burnt-orange hover:underline">support@southernsense.org</a>
+                    <p class="text-sm text-stone">Best for order inquiries, returns, and general questions.</p>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-lg text-charcoal mb-1">Business Hours</h3>
+                    <p class="text-stone">Monday - Friday: 9:00 AM - 5:00 PM EST</p>
+                    <p class="text-stone">Closed on weekends and major holidays.</p>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-lg text-charcoal mb-1">Press & Media</h3>
+                    <a href="mailto:media@southernsense.org" class="text-burnt-orange hover:underline">media@southernsense.org</a>
+                </div>
             </div>
-            
         </div>
     </div>
 </main>
-
-<script type="module">
-    // FIX: Corrected import path to include /src/ directory
-    import { db, collection, addDoc, Timestamp } from '/src/firebase-loader.js'; 
-
-    const contactForm = document.getElementById('contact-form');
-    const formStatus = document.getElementById('form-status');
-    const submitButton = document.getElementById('submit-button');
-    const originalButtonText = submitButton.textContent;
-
-    if (contactForm) {
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            // Set loading state
-            submitButton.disabled = true;
-            submitButton.textContent = 'Sending...';
-            formStatus.classList.remove('hidden');
-            formStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-yellow-100 text-yellow-700 block mb-4';
-            formStatus.textContent = 'Submitting your message to the server...';
-
-            const name = document.getElementById('contact-name').value;
-            const email = document.getElementById('contact-email').value;
-            const subject = document.getElementById('contact-subject').value;
-            const message = document.getElementById('contact-message').value;
-
-            try {
-                // Save the message to the 'contactMessages' collection in Firestore
-                await addDoc(collection(db, "contactMessages"), {
-                    name: name,
-                    email: email,
-                    subject: subject,
-                    message: message,
-                    // Use Firestore's server timestamp for the creation date
-                    receivedAt: Timestamp.now(), 
-                    // Add a default 'resolved' status for admin tracking
-                    resolved: false
-                });
-
-                // Success state
-                formStatus.textContent = 'Success! Your message has been sent. We will respond within 24-48 hours.';
-                formStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-green-100 text-green-700 block mb-4';
-                
-                // Clear the form fields upon successful submission
-                contactForm.reset();
-
-                // Redirect to a success page for better tracking/UX
-                setTimeout(() => {
-                    window.location.href = '/message-sent/'; 
-                }, 1000);
-
-            } catch (error) {
-                console.error("Error submitting contact form:", error);
-
-                // Error state
-                formStatus.textContent = `Error sending message: ${error.message}. Please try again later or email us directly.`;
-                formStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-red-100 text-red-700 block mb-4';
-            } finally {
-                // Reset button after error or success (if no redirect)
-                if (window.location.pathname.indexOf('/message-sent/') === -1) {
-                    submitButton.disabled = false;
-                    submitButton.textContent = originalButtonText;
-                }
-            }
-        });
-    }
-</script>

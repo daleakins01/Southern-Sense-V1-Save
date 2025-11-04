@@ -91,16 +91,18 @@ title: Candle Care Guide
                 
                 // 1. Header and Overview
                 careHeaderTitle.textContent = data.careHeaderTitle || "Candle Care Guide";
+                // CRITICAL FIX: The CMS structure uses 'careOverviewContent', not 'careIntro'
                 careOverviewContent.innerHTML = data.careOverviewContent || "<p>Care overview not set.</p>";
                 
                 // 2. Care Tips
-                tip1Title.textContent = data.tip1Title || "First Burn";
+                // CRITICAL FIX: The CMS structure uses 'tipXHeading' and 'tipXText'
+                tip1Title.textContent = data.tip1Heading || "First Burn";
                 tip1Text.textContent = data.tip1Text || "Details about first burn loading...";
-                tip2Title.textContent = data.tip2Title || "Wick Trimming";
+                tip2Title.textContent = data.tip2Heading || "Wick Trimming";
                 tip2Text.textContent = data.tip2Text || "Details about trimming loading...";
-                tip3Title.textContent = data.tip3Title || "Optimal Burn Time";
+                tip3Title.textContent = data.tip3Heading || "Optimal Burn Time";
                 tip3Text.textContent = data.tip3Text || "Details about burn time loading...";
-                tip4Title.textContent = data.tip4Title || "Safety First";
+                tip4Title.textContent = data.tip4Heading || "Safety First";
                 tip4Text.textContent = data.tip4Text || "Details about safety loading...";
                 
                 // Success: Hide loading, show content

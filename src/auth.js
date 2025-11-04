@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 registerStatus.textContent = 'Registration successful! Redirecting to account...';
                 registerStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-green-100 text-green-700 block';
                 
-                // Redirect upon success
+                // CRITICAL FIX: Redirect to clean URL
                 setTimeout(() => {
                     window.location.href = '/account/'; 
                 }, 1000);
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 loginStatus.textContent = 'Sign in successful! Redirecting to account...';
                 loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-green-100 text-green-700 block';
 
-                // Redirect upon success
+                // CRITICAL FIX: Redirect to clean URL
                 setTimeout(() => {
                     window.location.href = '/account/'; 
                 }, 1000);

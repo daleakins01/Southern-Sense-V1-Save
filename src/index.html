@@ -47,16 +47,9 @@ title: Southern Sense - Hand-Poured Luxury Candles
                 if (heroTitleEl) heroTitleEl.textContent = data.heroTitle || "Southern Sense";
                 if (heroSubtitleEl) heroSubtitleEl.textContent = data.heroSubtitle || "Experience the warmth and charm of the South...";
                 
-                // 2. Our Difference Section (Optimized DOM assignment)
-                // Using nested structure in Firestore to fetch these:
-                const aboutRef = doc(db, "siteContent", "about");
-                const aboutSnap = await getDoc(aboutRef);
-
-                if(aboutSnap.exists()) {
-                    const aboutData = aboutSnap.data();
-                    if (diffWaxTextEl) diffWaxTextEl.textContent = aboutData.diffWax || "We use a premium soy-coconut wax blend that ensures a clean, slow, and even burn every time.";
-                    if (diffOilsTextEl) diffOilsTextEl.textContent = aboutData.diffOils || "Our oils are 100% phthalate-free and safe, providing a rich scent throw without harmful chemicals.";
-                }
+                // 2. Our Difference Section (CRITICAL FIX: Use homepage fields directly if present)
+                if (diffWaxTextEl) diffWaxTextEl.textContent = data.diffWax || "We use a premium soy-coconut wax blend that ensures a clean, slow, and even burn every time.";
+                if (diffOilsTextEl) diffOilsTextEl.textContent = data.diffOils || "Our oils are 100% phthalate-free and safe, providing a rich scent throw without harmful chemicals.";
                 
                 // 3. Featured Product ID
                 featuredId = data.featuredProductId || null;
@@ -79,6 +72,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
      */
     function renderProductCard(product) {
         const isOutOfStock = product.stock <= 0;
+        // CRITICAL FIX: Ensure price is fetched as float, then formatted back to string for display/data-attribute consistency
         const price = parseFloat(product.price).toFixed(2); 
         const scentFamily = product.scentFamily ? product.scentFamily.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'Scent';
 
@@ -146,11 +140,24 @@ title: Southern Sense - Hand-Poured Luxury Candles
             const productsRef = collection(db, 'products');
             let productsToRender = [];
             
+            // Helper function to map and format product data
+            const mapProduct = (doc) => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...data,
+                    // CRITICAL FIX: Ensure numerical safety for stock and price string-to-number conversion
+                    price: parseFloat(data.price), 
+                    stock: parseInt(data.stock, 10) || 0, 
+                    featured: data.featured === true
+                };
+            };
+            
             if (featuredId) {
                 // 1. Attempt to fetch the specific featured product
                 const docSnap = await getDoc(doc(productsRef, featuredId));
-                if (docSnap.exists() && docSnap.data().stock > 0) {
-                    productsToRender.push({ id: docSnap.id, ...docSnap.data() });
+                if (docSnap.exists() && mapProduct(docSnap).stock > 0) {
+                    productsToRender.push(mapProduct(docSnap));
                 }
             }
 
@@ -164,7 +171,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
                 const querySnapshot = await getDocs(q);
                 
                 querySnapshot.docs.forEach(doc => {
-                    const productData = { id: doc.id, ...doc.data() };
+                    const productData = mapProduct(doc);
                     // Avoid duplicates if the featuredId item was already fetched
                     if (!productsToRender.some(p => p.id === productData.id)) {
                         productsToRender.push(productData);
@@ -176,7 +183,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
             if (productsToRender.length === 0) {
                  const fallbackQ = query(productsRef, where('stock', '>', 0), limit(4));
                  const fallbackSnapshot = await getDocs(fallbackQ);
-                 productsToRender = fallbackSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                 productsToRender = fallbackSnapshot.docs.map(mapProduct);
                  if (productsToRender.length > 0) {
                      featuredProductTitleEl.textContent = 'Popular Scents';
                  }
@@ -187,21 +194,14 @@ title: Southern Sense - Hand-Poured Luxury Candles
                 featuredProductsGrid.innerHTML = '<p class="text-lg text-stone col-span-full text-center py-10">No products available at this time. Please check back later.</p>';
             } else {
                 productsToRender.slice(0, 4).forEach(data => {
-                    const product = { 
-                        id: data.id, 
-                        ...data, 
-                        // Ensure numerical safety
-                        price: parseFloat(data.price),
-                        stock: parseInt(data.stock, 10) || 0
-                    };
-                    featuredProductsGrid.innerHTML += renderProductCard(product);
+                    featuredProductsGrid.innerHTML += renderProductCard(data);
                 });
                 attachCartListeners();
             }
 
         } catch (error) {
             console.error("Error fetching featured products:", error);
-            featuredProductsGrid.innerHTML = `<p class="text-red-600 col-span-full text-center py-10">Failed to load products. Connection error.</p>`;
+            featuredProductsGrid.innerHTML = `<p class="text-red-600 col-span-full text-center py-10">Failed to load products. Check console for database connection issues.</p>`;
         } finally {
             featuredLoader.classList.add('hidden');
         }
@@ -230,7 +230,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
             <p id="hero-subtitle" class="text-xl text-stone max-w-2xl mx-auto mb-8">
                 Experience the warmth and charm of the South with our hand-poured, luxury soy-blend candles. Clean, comforting, and crafted for your home.
             </p>
-            <a href="/shop.html" class="px-10 py-4 bg-burnt-orange text-parchment text-lg font-bold rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
+            <a href="/shop/" class="px-10 py-4 bg-burnt-orange text-parchment text-lg font-bold rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
                 Shop Our Scents
             </a>
         </div>
@@ -247,7 +247,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
             </div>
 
         <div class="text-center mt-12">
-            <a href="/shop.html" class="px-8 py-3 border border-stone/30 text-charcoal font-bold rounded-lg hover:bg-parchment/70 transition duration-300">
+            <a href="/shop/" class="px-8 py-3 border border-stone/30 text-charcoal font-bold rounded-lg hover:bg-parchment/70 transition duration-300">
                 View All Candles & Melts
             </a>
         </div>
@@ -282,7 +282,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
     <section class="container mx-auto px-4 py-20 text-center">
         <h2 class="text-4xl font-playfair text-charcoal mb-4">Can't Decide? Try Our Scent Quiz!</h2>
         <p class="text-lg text-stone max-w-xl mx-auto mb-8">Answer a few quick questions and we'll match you with the perfect Southern Sense fragrance for your home and mood.</p>
-        <a href="/scent-quiz.html" class="px-8 py-3 bg-stone text-parchment font-bold rounded-lg shadow-lg hover:bg-charcoal transition duration-300">
+        <a href="/scent-quiz/" class="px-8 py-3 bg-stone text-parchment font-bold rounded-lg shadow-lg hover:bg-charcoal transition duration-300">
             Take the Quiz Now
         </a>
     </section>

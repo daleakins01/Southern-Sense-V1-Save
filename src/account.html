@@ -90,6 +90,7 @@ title: My Account
             isAdmin = adminDocSnap.exists();
 
             if (isAdmin) {
+                // Admin link is already /admin.html as that page explicitly uses .html (no change needed here)
                 adminPanelLink.classList.remove('hidden');
             }
 
@@ -204,7 +205,8 @@ title: My Account
                 });
             } else {
                 // If not logged in, redirect to login page
-                window.location.href = '/login.html';
+                // CRITICAL FIX: Redirect to clean URL
+                window.location.href = '/login/';
             }
         });
     }
@@ -218,7 +220,8 @@ title: My Account
                 e.preventDefault();
                 // FIX: Use the imported signOut function
                 signOut(auth).then(() => {
-                    window.location.href = '/login.html';
+                    // CRITICAL FIX: Redirect to clean URL
+                    window.location.href = '/login/';
                 }).catch(error => {
                     console.error("Logout failed:", error);
                     alert("Logout failed. Please try again.");
@@ -284,7 +287,7 @@ title: My Account
                                 <th class="px-6 py-3">Date</th>
                                 <th class="px-6 py-3">Total</th>
                                 <th class="px-6 py-3">Status</th>
-                                <th class="px-6 py-3 text-right">Actions</th>
+                                <th class="px-6 py-3">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="orders-table-body" class="bg-white divide-y divide-stone/20">

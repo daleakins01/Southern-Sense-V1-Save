@@ -93,7 +93,8 @@ title: Refill Program
         console.log("Refill Program Page: Loading content from Firestore...");
         try {
             // Document reference for the 'refill-program' page content
-            const docRef = doc(db, "siteContent", "refill-program");
+            // CRITICAL FIX: The CMS document name is 'refillProgram', not 'refill-program' based on other CMS files.
+            const docRef = doc(db, "siteContent", "refillProgram");
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
@@ -103,7 +104,7 @@ title: Refill Program
                 document.getElementById('header-title').textContent = data.refillHeaderTitle || "Refill Program";
                 
                 // 2. Overview Content (HTML)
-                document.getElementById('refill-content').innerHTML = data.refillContent || "<p class='text-center'>Program overview not set in Firestore.</p>";
+                document.getElementById('refill-content').innerHTML = data.refillIntro || "<p class='text-center'>Program overview not set in Firestore.</p>";
                 
                 // 3. How It Works Steps
                 document.getElementById('how-it-works-title').textContent = data.refillHowItWorksTitle || "How It Works";
@@ -125,7 +126,7 @@ title: Refill Program
                 document.getElementById('refill-policy-2').textContent = data.refillPolicy2Text || "Policy 2 not found.";
 
             } else {
-                console.warn("Refill Program Page: Document 'siteContent/refill-program' does not exist.");
+                console.warn("Refill Program Page: Document 'siteContent/refillProgram' does not exist.");
                 document.getElementById('refill-content').innerHTML = `<p class="text-red-600 text-center">Error: Could not load Refill Program configuration.</p>`;
             }
         } catch (error) {

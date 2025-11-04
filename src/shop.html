@@ -43,6 +43,7 @@ title: Shop All Candles & Melts
      */
     function formatScentFamily(str) {
         if (!str) return 'All Products';
+        // Handle cases like "earthy-woody" -> "Earthy Woody"
         return str
             .split('-')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -105,13 +106,15 @@ title: Shop All Candles & Melts
         document.querySelectorAll('.add-to-cart-button').forEach(button => {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
+                // Get product details from data attributes
                 const { id, name, price, image } = e.currentTarget.dataset;
                 
                 // Construct the product object as expected by cart.js
                 const product = {
                     id: id,
                     name: name,
-                    price: price, // Passed as string from data-attribute, parseFloat is handled in cart.js
+                    // Pass price as string, let cart.js handle final parsing
+                    price: price, 
                     imageUrl: image
                 };
                 
@@ -136,10 +139,13 @@ title: Shop All Candles & Melts
         let displayedCount = 0;
 
         // Set heading and introductory text based on filter
-        shopHeading.textContent = formatScentFamily(filterFamily);
+        const formattedFamily = formatScentFamily(filterFamily);
+        shopHeading.textContent = formattedFamily;
+        
         if (filterFamily) {
-            filteredProducts = allProducts.filter(p => p.scentFamily === filterFamily);
-            shopIntro.textContent = `Browse our collection of products featuring the delightful notes of the ${formatScentFamily(filterFamily)} family.`;
+            // Filter logic: match scentFamily property exactly
+            filteredProducts = allProducts.filter(p => p.scentFamily && p.scentFamily.toLowerCase() === filterFamily.toLowerCase());
+            shopIntro.textContent = `Browse our collection of products featuring the delightful notes of the ${formattedFamily} family.`;
         } else {
             shopIntro.textContent = `Explore our entire collection of hand-poured candles and luxurious wax melts.`;
         }
@@ -148,6 +154,7 @@ title: Shop All Candles & Melts
         productGrid.innerHTML = '';
         
         if (filteredProducts.length === 0) {
+            // CRITICAL FIX: Ensure the return link is standardized /shop/
             productGrid.innerHTML = `<p class="text-lg text-stone col-span-full text-center py-10">No products found matching your criteria. <a href="/shop/" class="text-burnt-orange hover:underline">View All Products</a></p>`;
             filterMessage.textContent = `0 products found.`;
             return;
@@ -173,7 +180,7 @@ title: Shop All Candles & Melts
         });
 
         // Update total count message
-        filterMessage.textContent = `${displayedCount} ${filterFamily ? formatScentFamily(filterFamily) : 'Total'} products found.`;
+        filterMessage.textContent = `${displayedCount} ${filterFamily ? formattedFamily : 'Total'} products found.`;
 
         attachCartListeners();
     }
@@ -191,7 +198,7 @@ title: Shop All Candles & Melts
 
         try {
             const productsRef = collection(db, 'products');
-            // Use query without orderBy for initial fetch, sorting is done client-side
+            // Use query without orderBy for initial fetch, relying on client-side sort
             const q = query(productsRef); 
             const querySnapshot = await getDocs(q);
 
@@ -208,6 +215,7 @@ title: Shop All Candles & Melts
                     id: doc.id,
                     ...data,
                     // CRITICAL: Ensure price and stock are correctly read and parsed
+                    // price is stored as a string in Firestore (e.g., "20.00"), parse it back here for local sorting/math
                     price: parseFloat(data.price), 
                     stock: parseInt(data.stock, 10) || 0, // Ensure stock is an integer
                     featured: data.featured === true // Ensure boolean type is maintained
@@ -219,7 +227,8 @@ title: Shop All Candles & Melts
 
         } catch (error) {
             console.error("CRITICAL ERROR: Error fetching products:", error);
-            shopIntro.innerHTML = `<p class="text-red-600 font-bold">Error loading products. Check Firebase configuration and database connection.</p>`;
+            // Provide better user feedback on failure
+            shopIntro.innerHTML = `<p class="text-red-600 font-bold">Error loading products. Please try refreshing or check console for details.</p>`;
         } finally {
             shopLoader.classList.add('hidden');
         }

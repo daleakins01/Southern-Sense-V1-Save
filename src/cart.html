@@ -45,7 +45,7 @@ title: Your Shopping Cart
                     <span>$<span id="cart-total">0.00</span></span>
                 </div>
 
-                <button id="checkout-button" class="w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg shadow-md hover:bg-opacity-90 transition duration-150" disabled>
+                <button id="checkout-button" type="button" class="w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg shadow-md hover:bg-opacity-90 transition duration-150" disabled>
                     Proceed to Checkout
                 </button>
                 
@@ -62,5 +62,14 @@ title: Your Shopping Cart
     document.addEventListener('DOMContentLoaded', () => {
         // Renders the cart contents into the main page view
         renderCartDrawer();
+        
+        // CRITICAL FIX: Attach the checkout handler imported from cart.js after the DOM is loaded
+        import('/src/cart.js').then(module => {
+            const checkoutButton = document.getElementById('checkout-button');
+            if (checkoutButton) {
+                // Ensure button click triggers the handleCheckout function from cart.js
+                checkoutButton.addEventListener('click', module.handleCheckout);
+            }
+        });
     });
 </script>

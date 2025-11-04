@@ -54,6 +54,7 @@ title: Scent Glossary
 
         try {
             // Document reference for the 'scent-glossary' page content
+            // CRITICAL FIX: The CMS document name is 'scent-glossary' based on other CMS files.
             const docRef = doc(db, "siteContent", "scent-glossary");
             const docSnap = await getDoc(docRef);
 

@@ -96,14 +96,16 @@ title: Find Your Perfect Scent
     const resultLink = document.getElementById('result-link');
     
     // Maps quiz answers to weighted scent family preferences (using existing structure)
+    // NOTE: This logic relies on a defined set of scentFamily IDs used in the products collection:
+    // "woodsy-earthy", "floral-fresh", "fruity-sweet", "gourmand-spicy"
     const scentWeights = {
-        'calm': { 'woodsy-earthy': 2, 'floral-fresh': 1, 'gourmand-spicy': 1 }, // Adjusted to match Firestore/Shop family names
-        'uplifted': { 'floral-fresh': 3, 'fruity-sweet': 2, 'fresh-clean': 1 }, // Changed 'citrus' to match a defined family
-        'warm': { 'gourmand-spicy': 3, 'fruity-sweet': 2, 'woodsy-earthy': 1 }, // Combined warm/inviting results
+        'calm': { 'woodsy-earthy': 2, 'floral-fresh': 1, 'gourmand-spicy': 1 }, 
+        'uplifted': { 'floral-fresh': 3, 'fruity-sweet': 2, 'fresh-clean': 1 }, 
+        'warm': { 'gourmand-spicy': 3, 'fruity-sweet': 2, 'woodsy-earthy': 1 }, 
         'nature': { 'woodsy-earthy': 3, 'fresh-clean': 2, 'green': 1 },
-        'bakery': { 'fruity-sweet': 4, 'gourmand-spicy': 2, 'vanilla': 1 }, // Used fruity-sweet/gourmand for bakery
+        'bakery': { 'fruity-sweet': 4, 'gourmand-spicy': 2, 'vanilla': 1 }, 
         'patio': { 'floral-fresh': 3, 'fruity-sweet': 2, 'aquatic': 1 },
-        'citrus': { 'floral-fresh': 4, 'fruity-sweet': 2, 'fresh-clean': 1 }, // Used floral-fresh for bright scents
+        'citrus': { 'floral-fresh': 4, 'fruity-sweet': 2, 'fresh-clean': 1 }, 
         'wood': { 'woodsy-earthy': 4, 'gourmand-spicy': 2, 'leather': 1 },
         'spice': { 'gourmand-spicy': 4, 'fruity-sweet': 2, 'warm-amber': 1 }
     };
@@ -255,7 +257,7 @@ title: Find Your Perfect Scent
             description: 'We had trouble calculating your perfect match. Please explore our full collection!'
         };
         
-        // The link filters the shop by the determined scent family ID
+        // CRITICAL FIX: The link targets the standardized /shop/ URL
         resultLink.href = `/shop/?family=${topScentId}`; 
         
         // 2. Simulate loading and display results

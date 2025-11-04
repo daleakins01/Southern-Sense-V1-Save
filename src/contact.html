@@ -51,12 +51,12 @@ title: Contact Us
             // Firestore: Save the inquiry to a new 'inquiries' collection
             await addDoc(collection(db, "inquiries"), data);
 
-            showMessage("Message sent successfully! We will respond within 48 hours.", 'success');
+            showMessage("Message sent successfully! Redirecting to confirmation...", 'success');
             contactForm.reset();
             
-            // Redirect to a confirmation page for cleaner UX
+            // CRITICAL FIX: Redirect to clean URL
             setTimeout(() => {
-                window.location.href = '/message-sent.html'; 
+                window.location.href = '/message-sent/'; 
             }, 1000);
 
         } catch (error) {

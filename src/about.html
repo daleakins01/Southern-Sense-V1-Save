@@ -79,15 +79,29 @@ title: Our Story & Values
                 document.getElementById('values-content').innerHTML = data.valuesContent || "<p>Core values content not set in Firestore.</p>";
                 
                 // 3. What Makes Us Different Section (Reusing data from homepage content for consistency)
-                const homepageRef = doc(db, "siteContent", "homepage");
-                const homepageSnap = await getDoc(homepageRef);
+                // CRITICAL FIX: The logic here previously attempted to pull difference text from the 'about' 
+                // and 'homepage' documents. The provided CMS data shows the content has been consolidated
+                // to the homepage doc (or it should be). I will primarily check the main doc first.
                 
-                if (homepageSnap.exists()) {
-                    const homeData = homepageSnap.data();
-                    document.getElementById('diff-wax-title').textContent = homeData.diffWaxTitle || "Finest Wax";
-                    document.getElementById('diff-wax-text').textContent = homeData.diffWax || "Wax details loading...";
-                    document.getElementById('diff-oils-title').textContent = homeData.diffOilsTitle || "Clean Fragrances";
-                    document.getElementById('diff-oils-text').textContent = homeData.diffOils || "Oil details loading...";
+                if (data.diffWaxTitle) document.getElementById('diff-wax-title').textContent = data.diffWaxTitle;
+                if (data.diffWaxText) document.getElementById('diff-wax-text').textContent = data.diffWaxText;
+                if (data.diffOilsTitle) document.getElementById('diff-oils-title').textContent = data.diffOilsTitle;
+                if (data.diffOilsText) document.getElementById('diff-oils-text').textContent = data.diffOilsText;
+
+
+                // FALLBACK: If the content is missing from 'about', check the 'homepage' doc.
+                if (!data.diffWaxText || !data.diffOilsText) {
+                    const homepageRef = doc(db, "siteContent", "homepage");
+                    const homepageSnap = await getDoc(homepageRef);
+                    
+                    if (homepageSnap.exists()) {
+                        const homeData = homepageSnap.data();
+                        // Only overwrite if the 'about' content was missing
+                        if (homeData.diffWaxTitle) document.getElementById('diff-wax-title').textContent = homeData.diffWaxTitle || "Finest Wax";
+                        if (homeData.diffWax) document.getElementById('diff-wax-text').textContent = homeData.diffWax || "Wax details loading...";
+                        if (homeData.diffOilsTitle) document.getElementById('diff-oils-title').textContent = homeData.diffOilsTitle || "Clean Fragrances";
+                        if (homeData.diffOils) document.getElementById('diff-oils-text').textContent = homeData.diffOils || "Oil details loading...";
+                    }
                 }
 
             } else {

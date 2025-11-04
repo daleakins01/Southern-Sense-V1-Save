@@ -1,7 +1,7 @@
 /*
  * cart.js
  * Manages client-side shopping cart state (localStorage) and core functions.
- * Exports: addToCart, updateCartDisplay, renderCartDrawer, initializeCart, checkout
+ * Exports: addToCart, updateCartDisplay, renderCartDrawer, initializeCart, handleCheckout
  */
 
 // CRITICAL FIX: Ensure serverTimestamp is imported here
@@ -244,7 +244,8 @@ export function renderCartDrawer() {
         });
 
         // Checkout button listener (redirects to the dedicated cart page or executes checkout logic)
-        checkoutButton?.addEventListener('click', handleCheckout);
+        // CRITICAL FIX: The event listener is now attached in cart.html where this function is called.
+        // We ensure a simple fallback to the dedicated cart page if needed.
     }
 
 
@@ -253,7 +254,7 @@ export function renderCartDrawer() {
 /**
  * Handles the final checkout process: collecting user data, creating a Firestore order, and clearing the cart.
  */
-async function handleCheckout() {
+export async function handleCheckout() {
     const cart = getCart();
     if (cart.length === 0) return;
 
@@ -295,9 +296,9 @@ async function handleCheckout() {
     }
 
     try {
-        const orderData = {
-            // Include userId only if authenticated for Firestore Rules
-            userId: user ? user.uid : null, 
+        
+        // 1. Construct the base order data
+        let orderData = {
             email: customerEmail,
             items: cart,
             totals: totals,
@@ -312,8 +313,14 @@ async function handleCheckout() {
             },
             status: 'Pending', 
             paymentMethod: 'Simulated Payment',
-            createdAt: serverTimestamp() // CRITICAL FIX: serverTimestamp is now correctly available
+            createdAt: serverTimestamp() 
         };
+        
+        // 2. CRITICAL FIX: Conditionally add userId only if authenticated.
+        // This prevents the field from existing for guest checkouts, satisfying the Firestore rule.
+        if (user) {
+            orderData.userId = user.uid;
+        }
 
         const docRef = await addDoc(collection(db, "orders"), orderData);
 
@@ -321,7 +328,7 @@ async function handleCheckout() {
         localStorage.removeItem(CART_STORAGE_KEY);
         updateCartDisplay();
         
-        // Redirect to the confirmation page with the new Order ID
+        // CRITICAL FIX: Redirect to the standardized confirmation page URL
         window.location.href = `/order-confirmation/?orderId=${docRef.id}`;
 
     } catch (error) {

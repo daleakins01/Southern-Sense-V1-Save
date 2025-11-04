@@ -7,12 +7,13 @@
  */
 
 // Import the functions you need from the SDKs you use
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+// CRITICAL FIX: Updated SDK version from 10.12.2 to 12.4.0
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getAuth, 
          createUserWithEmailAndPassword, 
          signInWithEmailAndPassword, 
          signOut, 
-         onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+         onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { getFirestore, 
          collection, 
          doc, 
@@ -28,7 +29,7 @@ import { getFirestore,
          limit, 
          orderBy,
          serverTimestamp // CRITICAL FIX: Import serverTimestamp from Firestore SDK
-       } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+       } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 
 // Your web app's Firebase configuration (CRITICALLY FIXED with provided keys)
@@ -39,8 +40,8 @@ const firebaseConfig = {
     authDomain: "southernsense-store.firebaseapp.com",
     // CRITICAL FIX: Project ID used in console error URL (Confirmed correct)
     projectId: "southernsense-store",
-    // Storage bucket derived from Project ID
-    storageBucket: "southernsense-store.appspot.com",
+    // CRITICAL FIX: Synchronized storageBucket value to southernsense-store.firebasestorage.app
+    storageBucket: "southernsense-store.firebasestorage.app",
     // FINAL VALUE: Messaging Sender ID provided by user
     messagingSenderId: "154582397729", 
     // CRITICAL FIX: App ID provided by user, resolves Priority 1 initialization failure

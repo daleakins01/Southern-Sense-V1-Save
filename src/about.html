@@ -12,6 +12,10 @@ title: Our Story & Values
 <main class="container mx-auto p-4 lg:p-8 py-16">
     <section id="about-content" class="max-w-4xl mx-auto space-y-12">
         
+        <div id="about-narrative-1" class="prose max-w-none text-stone font-roboto text-lg mx-auto text-center">
+            <p>Loading introductory story...</p>
+        </div>
+
         <div class="grid md:grid-cols-3 gap-8 items-center bg-white p-8 rounded-xl shadow-xl border border-stone/10">
             <img src="/src/paula-bryan-portrait.webp" alt="Portrait of Founder Paula Bryan" class="w-full h-auto rounded-lg shadow-md md:col-span-1">
             <div class="md:col-span-2 space-y-4">
@@ -23,6 +27,10 @@ title: Our Story & Values
             </div>
         </div>
 
+        <div id="about-narrative-2" class="prose max-w-none text-stone font-roboto text-lg mx-auto text-center">
+            <p>Loading closing story...</p>
+        </div>
+        
         <div class="space-y-6">
             <h2 id="values-title" class="font-playfair text-4xl font-bold text-charcoal text-center">Our Commitment to Quality</h2>
             <div id="values-content" class="prose max-w-none text-stone font-roboto">
@@ -63,45 +71,38 @@ title: Our Story & Values
         console.log("About Page: Loading content from Firestore...");
         try {
             // Document reference for the 'about' page content
-            const docRef = doc(db, "siteContent", "about");
-            const docSnap = await getDoc(docRef);
+            const aboutRef = doc(db, "siteContent", "about");
+            const aboutSnap = await getDoc(aboutRef);
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                
-                // 1. Founder Quote Section
-                document.getElementById('founder-quote-title').textContent = data.founderQuoteTitle || "Our Story";
-                document.getElementById('founder-quote-text').textContent = data.founderQuoteText || "No founder quote found.";
-                
-                // 2. Our Values Section
-                document.getElementById('values-title').textContent = data.valuesTitle || "Our Commitment";
-                // Injects the HTML content for the values
-                document.getElementById('values-content').innerHTML = data.valuesContent || "<p>Core values content not set in Firestore.</p>";
-                
-                // 3. What Makes Us Different Section (Reusing data from homepage content for consistency)
-                // CRITICAL FIX: The logic here previously attempted to pull difference text from the 'about' 
-                // and 'homepage' documents. The provided CMS data shows the content has been consolidated
-                // to the homepage doc (or it should be). I will primarily check the main doc first.
-                
-                if (data.diffWaxTitle) document.getElementById('diff-wax-title').textContent = data.diffWaxTitle;
-                if (data.diffWaxText) document.getElementById('diff-wax-text').textContent = data.diffWaxText;
-                if (data.diffOilsTitle) document.getElementById('diff-oils-title').textContent = data.diffOilsTitle;
-                if (data.diffOilsText) document.getElementById('diff-oils-text').textContent = data.diffOilsText;
+            // Document reference for the 'homepage' page content (for reuse)
+            const homepageRef = doc(db, "siteContent", "homepage");
+            const homepageSnap = await getDoc(homepageRef);
 
 
-                // FALLBACK: If the content is missing from 'about', check the 'homepage' doc.
-                if (!data.diffWaxText || !data.diffOilsText) {
-                    const homepageRef = doc(db, "siteContent", "homepage");
-                    const homepageSnap = await getDoc(homepageRef);
-                    
-                    if (homepageSnap.exists()) {
-                        const homeData = homepageSnap.data();
-                        // Only overwrite if the 'about' content was missing
-                        if (homeData.diffWaxTitle) document.getElementById('diff-wax-title').textContent = homeData.diffWaxTitle || "Finest Wax";
-                        if (homeData.diffWax) document.getElementById('diff-wax-text').textContent = homeData.diffWax || "Wax details loading...";
-                        if (homeData.diffOilsTitle) document.getElementById('diff-oils-title').textContent = homeData.diffOilsTitle || "Clean Fragrances";
-                        if (homeData.diffOils) document.getElementById('diff-oils-text').textContent = homeData.diffOils || "Oil details loading...";
-                    }
+            if (aboutSnap.exists()) {
+                const aboutData = aboutSnap.data();
+                
+                // 1. Story Narrative (CRITICAL FIX: Populate new DOM elements)
+                document.getElementById('about-narrative-1').innerHTML = `<p>${aboutData.aboutParagraph1 || 'Loading introductory story...'}</p>`;
+                document.getElementById('about-narrative-2').innerHTML = `<p>${aboutData.aboutParagraph2 || 'Loading closing story...'}</p>`;
+
+                // 2. Founder Quote Section
+                document.getElementById('founder-quote-title').textContent = aboutData.founderQuoteTitle || "Our Story";
+                document.getElementById('founder-quote-text').textContent = aboutData.founderQuoteText || "No founder quote found.";
+                
+                // 3. Our Values Section
+                document.getElementById('values-title').textContent = aboutData.valuesTitle || "Our Commitment";
+                document.getElementById('values-content').innerHTML = aboutData.valuesContent || "<p>Core values content not set in Firestore.</p>";
+                
+                // 4. What Makes Us Different Section (Prioritize Homepage fields for consistency)
+                if (homepageSnap.exists()) {
+                    const homeData = homepageSnap.data();
+                    document.getElementById('diff-wax-title').textContent = homeData.diffWaxTitle || "Finest Wax";
+                    document.getElementById('diff-wax-text').textContent = homeData.diffWax || "Wax details loading...";
+                    document.getElementById('diff-oils-title').textContent = homeData.diffOilsTitle || "Clean Fragrances";
+                    document.getElementById('diff-oils-text').textContent = homeData.diffOils || "Oil details loading...";
+                } else {
+                    console.warn("Could not load wax/oil difference content from homepage CMS.");
                 }
 
             } else {

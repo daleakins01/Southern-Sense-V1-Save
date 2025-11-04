@@ -17,7 +17,7 @@ title: Admin Panel
         updateDoc,
         deleteDoc, 
         signOut,
-        serverTimestamp // CRITICAL FIX: Ensure serverTimestamp is imported for review approval logic
+        serverTimestamp // CRITICAL FIX: Ensure serverTimestamp is imported here
     } from '/src/firebase-loader.js';
     import { logout } from '/src/auth.js';
     
@@ -107,7 +107,7 @@ title: Admin Panel
 
         try {
             const ordersRef = collection(db, 'orders');
-            // FIX: Using orderBy to ensure consistent sorting when fetching all
+            // FIX: Using query without orderBy because Firestore Rules only allow ordering by fields with indexes
             const q = query(ordersRef); 
             const querySnapshot = await getDocs(q);
 
@@ -123,8 +123,8 @@ title: Admin Panel
                 currentOrders.push(order);
             });
 
-            // Sort by date, newest first (requires Timestamp.toDate())
-            currentOrders.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+            // Sort by date, newest first (client-side sort for performance on small dataset)
+            currentOrders.sort((a, b) => b.createdAt?.toDate() - a.createdAt?.toDate());
             
             renderOrdersTable();
             ordersMessage.classList.add('hidden');
@@ -144,7 +144,8 @@ title: Admin Panel
             const orderIdDisplay = order.id.slice(-6);
             const statusClasses = getStatusClasses(order.status);
             const formattedDate = formatDate(order.createdAt);
-            const total = order.totals.total.toFixed(2);
+            // Ensure totals.total exists before accessing toFixed
+            const total = order.totals?.total ? order.totals.total.toFixed(2) : 'N/A';
             
             const customerName = order.customer?.firstName ? 
                                  `${order.customer.firstName} ${order.customer.lastName}` : 
@@ -228,7 +229,7 @@ title: Admin Panel
         
         try {
             const productsRef = collection(db, 'products');
-            // FIX: Ensure products are sorted by name for a clear list
+            // FIX: Ensure products are fetched without unnecessary sorting, will sort client-side
             const q = query(productsRef);
             const querySnapshot = await getDocs(q);
 
@@ -240,6 +241,7 @@ title: Admin Panel
             querySnapshot.forEach(doc => {
                 const product = doc.data();
                 product.price = parseFloat(product.price); 
+                product.id = doc.id; // Ensure ID is attached
                 currentProducts.push(product);
             });
 
@@ -386,8 +388,8 @@ title: Admin Panel
                     return a.approved ? 1 : -1;
                 }
                 // Then sort by date, newest first
-                const dateA = a.createdAt?.toDate() || new Date(0); 
-                const dateB = b.createdAt?.toDate() || new Date(0); 
+                const dateA = a.submittedAt?.toDate() || new Date(0); 
+                const dateB = b.submittedAt?.toDate() || new Date(0); 
                 return dateB - dateA;
             });
 
@@ -463,8 +465,8 @@ title: Admin Panel
         try {
             const updateFields = { 
                 approved: approvedStatus,
-                // FIX: Add a timestamp when the review was approved/unapproved for audit/sorting purposes
-                moderatedAt: serverTimestamp() // CRITICAL FIX: serverTimestamp is now correctly available
+                // CRITICAL FIX: Ensure serverTimestamp is called and correctly used here
+                moderatedAt: serverTimestamp() 
             };
             
             const reviewDoc = await getDoc(reviewRef);
@@ -528,7 +530,7 @@ title: Admin Panel
                 currentAlerts.push(alert);
             });
             
-            // Sort by request date, oldest first
+            // Sort by request date, oldest first (client-side sort for smaller dataset)
             currentAlerts.sort((a, b) => a.requestedAt?.toDate() - b.requestedAt?.toDate());
 
             renderStockAlertsList();
@@ -593,7 +595,10 @@ title: Admin Panel
         try {
             await deleteDoc(alertRef); 
             
-            alert(`Alert for ${alertId.slice(-6)} resolved and removed.`);
+            const product = currentAlerts.find(a => a.id === alertId);
+            const productName = product ? product.productName : alertId.slice(-6);
+
+            alert(`Alert for ${productName} resolved and removed.`);
             await fetchStockAlerts();
 
         } catch (error) {
@@ -606,8 +611,8 @@ title: Admin Panel
     
     const SITE_CONTENT_DOCS = [
         { id: 'about', name: 'About Us Page' },
-        { id: 'candleCare', name: 'Candle Care Page' },
-        { id: 'refillProgram', name: 'Refill Program Page' },
+        { id: 'candle-care', name: 'Candle Care Page' },
+        { id: 'refill-program', name: 'Refill Program Page' },
         { id: 'gifting', name: 'Gifting Page' }, 
         { id: 'subscriptions', name: 'Subscriptions Page' }, 
         { id: 'scent-glossary', name: 'Scent Glossary Page' }, 
@@ -674,7 +679,7 @@ title: Admin Panel
         // 2. Iterate through contentData keys to build dynamic fields
         for (const key in contentData) {
             // Only allow editing of string fields
-            if (typeof contentData[key] !== 'string') continue;
+            if (typeof contentData[key] !== 'string' && typeof contentData[key] !== 'number' && typeof contentData[key] !== 'boolean') continue;
             
             const labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); 
 
@@ -690,10 +695,17 @@ title: Admin Panel
             const content = contentData[key];
 
             // Use textarea for long content (descriptions, safety warnings, etc.)
-            if (key.includes('Content') || key.includes('Intro') || key.includes('Text') || content.length > 50 || key.includes('html')) {
+            if (key.includes('Content') || key.includes('Intro') || key.includes('Text') || (typeof content === 'string' && content.length > 50) || key.includes('html')) {
                 inputElement = document.createElement('textarea');
                 inputElement.rows = 5;
                 inputElement.placeholder = 'Supports basic HTML tags (p, ul, li, strong, em)';
+            } else if (typeof content === 'number') {
+                inputElement = document.createElement('input');
+                inputElement.type = 'number';
+            } else if (typeof content === 'boolean') {
+                 // Skip booleans for now as the current form design doesn't support them easily.
+                 // A future enhancement would be to add a checkbox interface.
+                 continue; 
             } else {
                 inputElement = document.createElement('input');
                 inputElement.type = 'text';
@@ -733,13 +745,19 @@ title: Admin Panel
             const updateData = {};
             
             for (const [key, value] of formData.entries()) {
-                updateData[key] = value;
+                // Attempt to convert to number if the original value was a number
+                const originalValue = siteContent[docId][key];
+                if (typeof originalValue === 'number' && !isNaN(parseFloat(value))) {
+                     updateData[key] = parseFloat(value);
+                } else {
+                    updateData[key] = value;
+                }
             }
 
             const contentRef = doc(db, 'siteContent', docId);
             await updateDoc(contentRef, updateData);
 
-            siteContent[docId] = updateData;
+            siteContent[docId] = { ...siteContent[docId], ...updateData }; // Update local state
             contentSaveMessage.textContent = `Content for ${docId.replace(/([A-Z])/g, ' $1').toUpperCase()} updated successfully!`;
             contentSaveMessage.classList.remove('hidden');
             
@@ -809,18 +827,20 @@ title: Admin Panel
             return;
         }
         
-        // Fetch all data initially for dashboard metrics
-        await Promise.all([
-            fetchAllOrders(),
-            fetchAllProducts(),
-            fetchAllReviews(),
-            fetchStockAlerts()
-        ]);
+        // Load data promises concurrently but don't await them here.
+        // The dashboard elements will show 'Loading...' until the functions complete.
+        // We ensure all core functions are called once at start.
+        fetchAllOrders();
+        fetchAllProducts();
+        fetchAllReviews();
+        fetchStockAlerts();
 
         adminLoader.classList.add('hidden');
         adminContent.classList.remove('hidden');
 
         // Start with the default tab (Dashboard)
+        // We will call the dashboard fetch functions explicitly here if required by tab logic,
+        // but since they were called above, the data populates asynchronously.
         switchTab('tab-dashboard');
     }
 

@@ -12,6 +12,7 @@ import {
     doc, 
     db 
 } from '/src/firebase-loader.js';
+// FIX: Removed the non-existent 'logout' import.
 
 /**
  * Handles user registration form submission.

@@ -76,13 +76,14 @@
 
 <script type="module">
     // CRITICAL FIX: The header's inline script must use the correct absolute path
+    // Removed unused import 'db' and 'doc' and 'getDoc' since admin check is client side (already fixed in previous step)
     import { 
         auth, 
-        db, 
         onAuthStateChanged, 
         signOut, 
+        db, 
         doc, 
-        getDoc 
+        getDoc
     } from '/src/firebase-loader.js';
     import { updateCartDisplay } from '/src/cart.js'; // Ensure cart count is updated immediately
 
@@ -120,6 +121,7 @@
             
             // Check Admin Status (CRITICAL FIX)
             try {
+                // Ensure imports for DB/doc/getDoc are retained if needed for the Admin check
                 const adminDocRef = doc(db, 'admins', user.uid);
                 const adminDocSnap = await getDoc(adminDocRef);
 

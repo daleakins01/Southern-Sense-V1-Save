@@ -24,7 +24,8 @@ title: Contact Us
     async function handleContactSubmit(e) {
         e.preventDefault();
         
-        const submitButton = e.submiter;
+        // FIX: Corrected typo from e.submiter to e.submitter
+        const submitButton = e.submitter; 
         const formData = new FormData(contactForm);
         
         const data = {

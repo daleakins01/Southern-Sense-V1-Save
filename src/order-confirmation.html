@@ -81,18 +81,21 @@ title: Order Confirmed
 
             const order = docSnap.data();
             
-            // CRITICAL SECURITY CHECK: Ensure the user owns the order, unless it was a guest checkout
-            if (order.userId && currentUser && order.userId !== currentUser.uid) {
-                // If a userId exists on the order and it doesn't match the current user, deny read access.
+            // CRITICAL SECURITY FIX: Use optional chaining to safely check if a userId exists on the order.
+            // If the order has a userId AND the current user is logged in, their UIDs MUST match.
+            // If the user is a guest (currentUser is null) and the order has no userId, it passes (Guest Checkout).
+            if (order.userId && currentUser?.uid && order.userId !== currentUser.uid) {
+                // Also need to implement an Admin check here if one were available, 
+                // but relying on Firestore rules for the server-side check.
                 renderError("Access Denied: You do not have permission to view this order.");
                 return;
             }
-            // If the user is logged out (guest checkout), the read is allowed by Firestore Rules if no 'userId' field exists on the order.
 
             // --- Render Order Header ---
             orderIdDisplay.textContent = orderId.toUpperCase();
             orderDateDisplay.textContent = formatDate(order.createdAt);
-            orderTotalDisplay.textContent = `$${order.totals.total.toFixed(2)}`;
+            // FIX: Use optional chaining for safe access to nested totals
+            orderTotalDisplay.textContent = `$${order.totals?.total?.toFixed(2) || 'N/A'}`;
             
             // --- Render Shipping Info ---
             const customer = order.customer || {};
@@ -101,21 +104,28 @@ title: Order Confirmed
 
             shippingNameDisplay.textContent = fullName || 'Guest Customer';
             shippingAddressDisplay.innerHTML = `
-                ${customer.address}<br>
-                ${customer.city}, ${customer.state} ${customer.zip}
+                ${customer.address || 'N/A'}<br>
+                ${customer.city || ''}, ${customer.state || ''} ${customer.zip || ''}
             `;
             
             // --- Render Itemized List and Subtotals ---
             let itemsHtml = '';
-            order.items.forEach(item => {
-                const itemTotal = (item.price * item.quantity).toFixed(2);
+            // FIX: Ensure order.items is an array before trying to iterate
+            (order.items || []).forEach(item => {
+                const itemPrice = parseFloat(item.price);
+                const itemQuantity = item.quantity || 0;
+                const itemTotal = (itemPrice * itemQuantity).toFixed(2);
+                
+                // Ensure correct image URL format
+                const imageUrl = item.imageUrl?.startsWith('http') ? item.imageUrl : '/src/' + item.imageUrl;
+
                 itemsHtml += `
                     <div class="flex justify-between py-3 border-b border-stone/10">
                         <div class="flex items-center space-x-3">
-                            <img src="${item.imageUrl.startsWith('http') ? item.imageUrl : '/src/' + item.imageUrl}" alt="${item.name}" class="w-12 h-12 object-cover rounded-md">
+                            <img src="${imageUrl}" alt="${item.name}" class="w-12 h-12 object-cover rounded-md">
                             <div>
                                 <p class="font-medium text-charcoal">${item.name}</p>
-                                <p class="text-sm text-stone">Qty: ${item.quantity} @ $${parseFloat(item.price).toFixed(2)}</p>
+                                <p class="text-sm text-stone">Qty: ${itemQuantity} @ $${itemPrice.toFixed(2)}</p>
                             </div>
                         </div>
                         <span class="font-medium text-charcoal">$${itemTotal}</span>
@@ -124,11 +134,12 @@ title: Order Confirmed
             });
             itemizedListContainer.innerHTML = itemsHtml;
             
-            subtotalDisplay.textContent = `$${order.totals.subtotal.toFixed(2)}`;
-            shippingDisplay.textContent = `$${order.totals.shipping.toFixed(2)}`;
+            // FIX: Use optional chaining for safe access to nested totals
+            subtotalDisplay.textContent = `$${order.totals?.subtotal?.toFixed(2) || 'N/A'}`;
+            shippingDisplay.textContent = `$${order.totals?.shipping?.toFixed(2) || '0.00'}`;
             
             // --- Render Auth Message ---
-            if (user) {
+            if (currentUser) {
                 authMessageContainer.innerHTML = `
                     <p class="text-sm text-stone mt-2">
                         This order has been saved to your <a href="/account/" class="text-burnt-orange font-semibold hover:underline">Account History</a>.

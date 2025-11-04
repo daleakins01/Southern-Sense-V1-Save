@@ -191,8 +191,8 @@ title: Shop All Candles & Melts
 
         try {
             const productsRef = collection(db, 'products');
-            // Use orderBy for a clean initial fetch from Firestore
-            const q = query(productsRef, orderBy("name")); 
+            // Use query without orderBy for initial fetch, sorting is done client-side
+            const q = query(productsRef); 
             const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
@@ -207,9 +207,10 @@ title: Shop All Candles & Melts
                 return {
                     id: doc.id,
                     ...data,
-                    // CRITICAL: Ensure price is correctly read and parsed
+                    // CRITICAL: Ensure price and stock are correctly read and parsed
                     price: parseFloat(data.price), 
                     stock: parseInt(data.stock, 10) || 0, // Ensure stock is an integer
+                    featured: data.featured === true // Ensure boolean type is maintained
                 };
             });
 

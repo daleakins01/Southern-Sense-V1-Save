@@ -84,6 +84,7 @@ title: Product Name
             const productRef = doc(db, 'products', productId);
             const docSnap = await getDoc(productRef);
 
+            // CRITICAL FIX: Add check for document existence
             if (!docSnap.exists()) {
                 renderError(`Product with ID: ${productId} was not found.`);
                 return;
@@ -91,6 +92,7 @@ title: Product Name
 
             const product = docSnap.data();
             currentProduct = { id: docSnap.id, ...product };
+            // Ensure price is always stored as a number locally for consistency
             currentProduct.price = parseFloat(currentProduct.price);
             
             // --- Render Product Data ---
@@ -202,7 +204,8 @@ title: Product Name
 
         // Render individual reviews
         let reviewsHtml = '';
-        reviewsList.sort((a, b) => b.submittedAt?.toDate() - a.submittedAt?.toDate()); // Newest first
+        // CRITICAL FIX: Ensure submittedAt is accessed safely before calling toDate()
+        reviewsList.sort((a, b) => (b.submittedAt?.toDate() || new Date(0)) - (a.submittedAt?.toDate() || new Date(0))); // Newest first
 
         reviewsList.forEach(review => {
             const reviewDate = review.submittedAt ? formatDate(review.submittedAt) : 'N/A';
@@ -294,15 +297,7 @@ title: Product Name
         submitButton.textContent = 'Requesting...';
         
         try {
-            const alertData = {
-                productId: currentProduct.id,
-                productName: currentProduct.name,
-                email: email,
-                requestedAt: serverTimestamp(), // CRITICAL FIX: serverTimestamp is now correctly available
-                resolved: false 
-            };
-            
-            // Check if alert already exists for this email/product
+            // CRITICAL FIX: Check if alert already exists for this email/product
             const alertsRef = collection(db, 'backInStockRequests');
             const q = query(alertsRef, 
                             where('productId', '==', currentProduct.id), 
@@ -314,6 +309,14 @@ title: Product Name
                 emailInput.value = '';
                 return;
             }
+            
+            const alertData = {
+                productId: currentProduct.id,
+                productName: currentProduct.name,
+                email: email,
+                requestedAt: serverTimestamp(), // CRITICAL FIX: serverTimestamp is now correctly available
+                resolved: false 
+            };
 
             await addDoc(alertsRef, alertData);
             

@@ -10,10 +10,8 @@ import {
     collection, 
     addDoc, 
     serverTimestamp, 
-    doc, 
-    getDoc, 
-    updateDoc, 
     auth 
+    // Removed: doc, getDoc, updateDoc (not used in cart.js for the core cart logic)
 } from '/src/firebase-loader.js';
 
 // --- Global Constants & State ---
@@ -55,7 +53,9 @@ function calculateTotals(cart) {
     const subtotal = cart.reduce((sum, item) => {
         // Ensure price is treated as a number
         const price = parseFloat(item.price);
-        return sum + (price * item.quantity);
+        // Use optional chaining for safety, though it shouldn't be needed after adding to cart
+        const quantity = item.quantity || 0; 
+        return sum + (price * quantity);
     }, 0);
 
     // Only charge shipping if there are items
@@ -87,6 +87,9 @@ export function addToCart(product, quantity = 1) {
     let cart = getCart();
     const existingItemIndex = cart.findIndex(item => item.id === product.id);
 
+    // FIX: Ensure incoming price is always parsed to a float
+    const price = parseFloat(product.price);
+
     if (existingItemIndex > -1) {
         // Item exists, increment quantity
         cart[existingItemIndex].quantity += quantity;
@@ -95,7 +98,7 @@ export function addToCart(product, quantity = 1) {
         const newItem = {
             id: product.id,
             name: product.name,
-            price: parseFloat(product.price),
+            price: price,
             imageUrl: product.imageUrl,
             quantity: quantity,
         };
@@ -149,7 +152,7 @@ function removeItem(productId) {
  */
 export function updateCartDisplay() {
     const cart = getCart();
-    const totalItems = cart.reduce((count, item) => count + item.quantity, 0);
+    const totalItems = cart.reduce((count, item) => count + (item.quantity || 0), 0);
 
     const cartCountElements = document.querySelectorAll('.cart-item-count');
     cartCountElements.forEach(el => {
@@ -179,15 +182,18 @@ export function renderCartDrawer() {
 
         if (cart.length === 0) {
             statusMessage?.classList.remove('hidden');
-            checkoutButton.disabled = true;
+            if (checkoutButton) checkoutButton.disabled = true;
         } else {
             statusMessage?.classList.add('hidden');
-            checkoutButton.disabled = false;
+            if (checkoutButton) checkoutButton.disabled = false;
         }
 
         cart.forEach(item => {
-            const itemTotal = (item.price * item.quantity).toFixed(2);
-            const priceDisplay = parseFloat(item.price).toFixed(2);
+            // FIX: Ensure price is a number before calculation
+            const price = parseFloat(item.price);
+            const quantity = item.quantity || 0;
+            const itemTotal = (price * quantity).toFixed(2);
+            const priceDisplay = price.toFixed(2);
 
             const itemHtml = `
                 <div class="flex items-center space-x-4 border-b border-stone/10 last:border-b-0 py-3">
@@ -201,7 +207,7 @@ export function renderCartDrawer() {
                     <div class="flex items-center space-x-3">
                         <input type="number" 
                                data-product-id="${item.id}" 
-                               value="${item.quantity}" 
+                               value="${quantity}" 
                                min="1" 
                                class="cart-quantity-input w-16 p-2 border border-stone/30 rounded-lg text-center text-charcoal">
                         <span class="font-bold text-charcoal w-16 text-right">$${itemTotal}</span>
@@ -237,10 +243,9 @@ export function renderCartDrawer() {
             });
         });
 
-        // Checkout button listener (redirects to the dedicated checkout page or executes checkout logic)
+        // Checkout button listener (redirects to the dedicated cart page or executes checkout logic)
         checkoutButton?.addEventListener('click', handleCheckout);
     }
-}
 
 
 // --- Checkout Logic (Firestore Interaction) ---
@@ -257,18 +262,37 @@ async function handleCheckout() {
     const checkoutButton = document.getElementById('checkout-button');
 
     // FIX: Simplified checkout process uses prompts for necessary customer info
+    const customerName = prompt("Please enter your Full Name:");
+    if (!customerName || customerName.trim() === '') return;
+
     const customerEmail = prompt("Please enter your email for the order confirmation:");
     if (!customerEmail || !customerEmail.includes('@')) return;
 
     const customerAddress = prompt("Please enter your full shipping address (Street, City, State, Zip):");
-    if (!customerAddress) return;
+    if (!customerAddress || customerAddress.trim() === '') return;
     
     // Disable button and show loading state
     checkoutButton.disabled = true;
     checkoutButton.textContent = 'Processing...';
 
-    // Parse simple address input
+    // Parse name and address inputs (simplistic parsing for demo/base function)
+    const nameParts = customerName.split(' ');
+    const firstName = nameParts.shift();
+    const lastName = nameParts.join(' ');
+
     const addressParts = customerAddress.split(',').map(p => p.trim());
+    const addressLine = addressParts[0] || customerAddress;
+    
+    // Attempt to parse city/state/zip from the rest
+    let city = addressParts[1] || '';
+    let state = '';
+    let zip = '';
+    
+    if (addressParts.length > 2) {
+        const stateZip = addressParts[2].trim().split(/\s+/);
+        state = stateZip[0] || '';
+        zip = stateZip[1] || '';
+    }
 
     try {
         const orderData = {
@@ -278,11 +302,13 @@ async function handleCheckout() {
             items: cart,
             totals: totals,
             customer: {
+                firstName: firstName,
+                lastName: lastName,
                 email: customerEmail, 
-                address: addressParts[0] || customerAddress, 
-                city: addressParts[1] || '',
-                state: addressParts[2]?.split(' ')[0] || '',
-                zip: addressParts[2]?.split(' ')[1] || '',
+                address: addressLine, 
+                city: city,
+                state: state,
+                zip: zip,
             },
             status: 'Pending', 
             paymentMethod: 'Simulated Payment',

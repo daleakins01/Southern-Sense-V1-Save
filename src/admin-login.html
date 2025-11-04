@@ -10,7 +10,8 @@ title: Admin Login
         signInWithEmailAndPassword, 
         doc, 
         getDoc,
-        onAuthStateChanged 
+        onAuthStateChanged,
+        signOut 
     // FIX: Corrected import path to include /src/ directory
     } from '/src/firebase-loader.js'; 
 
@@ -86,6 +87,7 @@ title: Admin Login
      */
     function showMessage(message, type) {
         loginMessage.textContent = message;
+        // FIX: Ensure correct classes are toggled
         loginMessage.classList.remove('hidden', 'text-green-600', 'text-red-600', 'text-stone');
         
         if (type === 'success') {
@@ -105,14 +107,19 @@ title: Admin Login
         // Security Check: If a user is already logged in, check their admin status and redirect
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const adminDocRef = doc(db, 'admins', user.uid);
-                const adminDocSnap = await getDoc(adminDocRef);
-                
-                if (adminDocSnap.exists()) {
-                    window.location.href = '/admin.html'; // Redirect existing admin
-                } else {
-                    // Log out non-admin users who land on this page while authenticated
-                    await signOut(auth);
+                try {
+                    const adminDocRef = doc(db, 'admins', user.uid);
+                    const adminDocSnap = await getDoc(adminDocRef);
+                    
+                    if (adminDocSnap.exists()) {
+                        window.location.href = '/admin.html'; // Redirect existing admin
+                    } else {
+                        // Log out non-admin users who land on this page while authenticated
+                        await signOut(auth);
+                    }
+                } catch (error) {
+                    console.error("Admin Login Pre-check Failed:", error);
+                    // Continue to allow manual login attempt if the check fails silently
                 }
             }
         });

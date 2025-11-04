@@ -19,7 +19,7 @@ title: Admin Panel
         signOut,
         serverTimestamp // CRITICAL FIX: Ensure serverTimestamp is imported here
     } from '/src/firebase-loader.js';
-    import { logout } from '/src/auth.js';
+    // CRITICAL FIX: Removed unused and conflicting 'logout' import
     
     // --- State and Handlers ---
     let currentUser = null;
@@ -240,6 +240,7 @@ title: Admin Panel
 
             querySnapshot.forEach(doc => {
                 const product = doc.data();
+                // Ensure price is parsed to number for local sorting/manipulation
                 product.price = parseFloat(product.price); 
                 product.id = doc.id; // Ensure ID is attached
                 currentProducts.push(product);
@@ -333,6 +334,7 @@ title: Admin Panel
             
             const updateData = {
                 name: formData.get('name'),
+                // Store price as string to match existing data format, but ensure 2 decimal places
                 price: parseFloat(formData.get('price')).toFixed(2), 
                 stock: parseInt(formData.get('stock'), 10),
                 scentFamily: formData.get('scentFamily'),
@@ -593,6 +595,7 @@ title: Admin Panel
         const alertRef = doc(db, 'backInStockRequests', alertId);
         
         try {
+            // Firestore Rule: Deleting the document is the required 'resolve' action.
             await deleteDoc(alertRef); 
             
             const product = currentAlerts.find(a => a.id === alertId);
@@ -612,7 +615,7 @@ title: Admin Panel
     const SITE_CONTENT_DOCS = [
         { id: 'about', name: 'About Us Page' },
         { id: 'candle-care', name: 'Candle Care Page' },
-        { id: 'refill-program', name: 'Refill Program Page' },
+        { id: 'refillProgram', name: 'Refill Program Page' },
         { id: 'gifting', name: 'Gifting Page' }, 
         { id: 'subscriptions', name: 'Subscriptions Page' }, 
         { id: 'scent-glossary', name: 'Scent Glossary Page' }, 
@@ -678,8 +681,9 @@ title: Admin Panel
 
         // 2. Iterate through contentData keys to build dynamic fields
         for (const key in contentData) {
-            // Only allow editing of string fields
-            if (typeof contentData[key] !== 'string' && typeof contentData[key] !== 'number' && typeof contentData[key] !== 'boolean') continue;
+            // Only allow editing of string, number, or boolean fields
+            const content = contentData[key];
+            if (typeof content !== 'string' && typeof content !== 'number' && typeof content !== 'boolean') continue;
             
             const labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); 
 
@@ -692,29 +696,43 @@ title: Admin Panel
             label.setAttribute('for', `content-field-${key}`);
             
             let inputElement;
-            const content = contentData[key];
 
-            // Use textarea for long content (descriptions, safety warnings, etc.)
+            // Use textarea for long content (descriptions, safety warnings, etc.) or complex HTML
             if (key.includes('Content') || key.includes('Intro') || key.includes('Text') || (typeof content === 'string' && content.length > 50) || key.includes('html')) {
                 inputElement = document.createElement('textarea');
                 inputElement.rows = 5;
                 inputElement.placeholder = 'Supports basic HTML tags (p, ul, li, strong, em)';
+                inputElement.value = content;
             } else if (typeof content === 'number') {
                 inputElement = document.createElement('input');
                 inputElement.type = 'number';
+                inputElement.value = content;
             } else if (typeof content === 'boolean') {
-                 // Skip booleans for now as the current form design doesn't support them easily.
-                 // A future enhancement would be to add a checkbox interface.
-                 continue; 
+                inputElement = document.createElement('input');
+                inputElement.type = 'checkbox';
+                inputElement.checked = content;
+                // Need special handling for the output to distinguish checked/unchecked
+                inputElement.name = key;
+                inputElement.id = `content-field-${key}`;
+                
+                // Special rendering for checkbox
+                fieldGroup.classList.add('flex', 'items-center');
+                label.classList.remove('block');
+                label.classList.add('ml-2');
+                fieldGroup.appendChild(inputElement);
+                fieldGroup.appendChild(label);
+                
+                siteContentForm.appendChild(fieldGroup);
+                continue; // Skip standard rendering below
             } else {
                 inputElement = document.createElement('input');
                 inputElement.type = 'text';
+                inputElement.value = content;
             }
             
             inputElement.className = 'w-full p-3 border border-stone/30 rounded-lg text-charcoal bg-white';
             inputElement.id = `content-field-${key}`;
             inputElement.name = key;
-            inputElement.value = content;
 
             fieldGroup.appendChild(label);
             fieldGroup.appendChild(inputElement);
@@ -745,14 +763,29 @@ title: Admin Panel
             const updateData = {};
             
             for (const [key, value] of formData.entries()) {
-                // Attempt to convert to number if the original value was a number
+                // Get the original content type for type preservation
                 const originalValue = siteContent[docId][key];
+
                 if (typeof originalValue === 'number' && !isNaN(parseFloat(value))) {
+                     // Preserve Number type
                      updateData[key] = parseFloat(value);
+                } else if (typeof originalValue === 'boolean') {
+                    // Handle Checkbox/Boolean type (only present if checked in FormData)
+                    updateData[key] = value === 'on'; 
                 } else {
+                    // Default to String type
                     updateData[key] = value;
                 }
             }
+            
+            // CRITICAL FIX: Manually check and set any boolean fields that were unchecked (and thus missing from formData)
+            for (const key in siteContent[docId]) {
+                 if (typeof siteContent[docId][key] === 'boolean' && !updateData.hasOwnProperty(key)) {
+                    // If the field existed as a boolean but wasn't in formData, it was unchecked.
+                    updateData[key] = false;
+                 }
+            }
+
 
             const contentRef = doc(db, 'siteContent', docId);
             await updateDoc(contentRef, updateData);
@@ -823,6 +856,7 @@ title: Admin Panel
 
         if (!isAdmin) {
             alert("Access Denied: You must be an administrator to view this page.");
+            // CRITICAL FIX: Standardize redirect to clean URL
             window.location.href = '/account/'; 
             return;
         }
@@ -859,7 +893,8 @@ title: Admin Panel
             logoutButton.addEventListener('click', (e) => {
                 e.preventDefault();
                 signOut(auth).then(() => {
-                    window.location.href = '/admin-login.html';
+                    // CRITICAL FIX: Standardize redirect to clean URL
+                    window.location.href = '/admin-login/';
                 }).catch(error => {
                     console.error("Logout failed:", error);
                     alert("Logout failed. Please try again.");
@@ -886,7 +921,8 @@ title: Admin Panel
             if (user) {
                 initializeAdmin(user);
             } else {
-                window.location.href = '/admin-login.html';
+                // CRITICAL FIX: Standardize redirect to clean URL
+                window.location.href = '/admin-login/';
             }
         });
     });

@@ -4,7 +4,7 @@
  * Exports: addToCart, updateCartDisplay, renderCartDrawer, initializeCart, checkout
  */
 
-// FIX: Corrected import path to reference the file in the /src/ directory
+// CRITICAL FIX: Ensure serverTimestamp is imported here
 import { 
     db, 
     collection, 
@@ -58,8 +58,8 @@ function calculateTotals(cart) {
         return sum + (price * item.quantity);
     }, 0);
 
-    // Calculate shipping based on cart content (can be simplified to flat rate)
-    const shipping = subtotal > 0 ? SHIPPING_RATE : 0.00; // Only charge shipping if there are items
+    // Only charge shipping if there are items
+    const shipping = subtotal > 0 ? SHIPPING_RATE : 0.00; 
 
     const total = subtotal + shipping;
 
@@ -164,7 +164,6 @@ export function updateCartDisplay() {
 
 /**
  * Renders the cart contents in the full `cart.html` page (or the slide-out drawer).
- * The logic is designed to work for both a dedicated page and a reusable drawer element.
  */
 export function renderCartDrawer() {
     const cart = getCart();
@@ -257,11 +256,9 @@ async function handleCheckout() {
     const user = auth.currentUser;
     const checkoutButton = document.getElementById('checkout-button');
 
-    // FIX: Simplified checkout to focus on core function and order creation
-    // In a real app, this would redirect to a detailed payment form first.
-    // For now, we simulate a simple checkout using a prompt for customer info.
+    // FIX: Simplified checkout process uses prompts for necessary customer info
     const customerEmail = prompt("Please enter your email for the order confirmation:");
-    if (!customerEmail) return;
+    if (!customerEmail || !customerEmail.includes('@')) return;
 
     const customerAddress = prompt("Please enter your full shipping address (Street, City, State, Zip):");
     if (!customerAddress) return;
@@ -270,9 +267,8 @@ async function handleCheckout() {
     checkoutButton.disabled = true;
     checkoutButton.textContent = 'Processing...';
 
-    // Parse simple address input (basic attempt)
-    const addressParts = customerAddress.split(',');
-    const address = addressParts[0]?.trim() || customerAddress;
+    // Parse simple address input
+    const addressParts = customerAddress.split(',').map(p => p.trim());
 
     try {
         const orderData = {
@@ -282,16 +278,15 @@ async function handleCheckout() {
             items: cart,
             totals: totals,
             customer: {
-                // Simplified customer data for this scope
                 email: customerEmail, 
-                address: address, 
-                city: addressParts[1]?.trim() || '',
-                state: addressParts[2]?.trim().split(' ')[0] || '',
-                zip: addressParts[2]?.trim().split(' ')[1] || '',
+                address: addressParts[0] || customerAddress, 
+                city: addressParts[1] || '',
+                state: addressParts[2]?.split(' ')[0] || '',
+                zip: addressParts[2]?.split(' ')[1] || '',
             },
             status: 'Pending', 
             paymentMethod: 'Simulated Payment',
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp() // CRITICAL FIX: serverTimestamp is now correctly available
         };
 
         const docRef = await addDoc(collection(db, "orders"), orderData);

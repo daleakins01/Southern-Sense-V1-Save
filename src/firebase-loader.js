@@ -25,8 +25,9 @@ import { getFirestore,
          where, 
          getDocs, 
          Timestamp,
-         limit, // Required for queries
-         orderBy // CRITICAL FIX: Required for shop.html sorting
+         limit, 
+         orderBy,
+         serverTimestamp // CRITICAL FIX: Import serverTimestamp from Firestore SDK
        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
@@ -78,5 +79,6 @@ export {
     getDocs,
     Timestamp,
     limit,
-    orderBy // CRITICAL FIX: Export orderBy
+    orderBy,
+    serverTimestamp // CRITICAL FIX: Export serverTimestamp
 };

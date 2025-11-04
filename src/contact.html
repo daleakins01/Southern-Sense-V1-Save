@@ -4,7 +4,7 @@ title: Contact Us
 ---
 
 <script type="module">
-    // FIX: Corrected import path to include /src/ directory
+    // FIX: Corrected import path and ensured serverTimestamp is imported here
     import { 
         db, 
         collection, 
@@ -24,7 +24,7 @@ title: Contact Us
     async function handleContactSubmit(e) {
         e.preventDefault();
         
-        const submitButton = e.submitter;
+        const submitButton = e.submiter;
         const formData = new FormData(contactForm);
         
         const data = {
@@ -34,7 +34,7 @@ title: Contact Us
             message: formData.get('message').trim(),
             // Ensure fields are not empty
             isComplete: !!(formData.get('name') && formData.get('email') && formData.get('message')),
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp() // CRITICAL FIX: serverTimestamp is now correctly available
         };
 
         if (!data.isComplete) {

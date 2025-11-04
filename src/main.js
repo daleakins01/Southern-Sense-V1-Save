@@ -3,11 +3,12 @@
  * General client-side UI and utility functions, including Scent Quiz logic.
  */
 
-// FIX: Corrected import path for Firebase dependencies
+// FIX: Ensure serverTimestamp is imported for any logging or future features, though not explicitly used in current logic.
 import { 
     db, 
     collection, 
-    getDocs 
+    getDocs,
+    serverTimestamp // CRITICAL FIX: Ensure all Firebase functions are imported from the loader
 } from '/src/firebase-loader.js'; 
 
 // --- 1. Global UI / Navigation ---
@@ -33,9 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Debounce or Throttle this for better performance in a full application
         window.addEventListener('scroll', () => {
             if (window.scrollY > 100) {
+                // Add classes for sticky effect
                 header.classList.add('shadow-md', 'bg-parchment/95');
                 header.classList.remove('bg-parchment');
             } else {
+                // Remove classes when scrolling back to the top
                 header.classList.remove('shadow-md', 'bg-parchment/95');
                 header.classList.add('bg-parchment');
             }
@@ -241,6 +244,7 @@ function showResults() {
     let productsHtml = '';
     finalProducts.slice(0, 4).forEach(product => { // Show top 4 matches
         const price = parseFloat(product.price).toFixed(2);
+        // FIX: Ensure image URL uses the correct /src/ prefix
         const imageUrl = product.imageUrl.startsWith('http') ? product.imageUrl : '/src/' + product.imageUrl;
         
         productsHtml += `

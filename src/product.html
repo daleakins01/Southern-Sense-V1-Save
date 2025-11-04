@@ -13,10 +13,9 @@ title: Product Name
         where, 
         getDocs, 
         addDoc, 
-        serverTimestamp 
-    // FIX: Corrected import path to include /src/ directory
+        serverTimestamp // CRITICAL FIX: Ensure serverTimestamp is imported here
     } from '/src/firebase-loader.js';
-    import { addToCart, updateCartDisplay } from '/src/cart.js'; // Ensure cart functions are imported
+    import { addToCart, updateCartDisplay } from '/src/cart.js'; 
 
     // --- DOM Elements ---
     const productLoader = document.getElementById('product-loader');
@@ -58,11 +57,15 @@ title: Product Name
     }
     
     /**
-     * Capitalizes the first letter of a string.
+     * Formats a Firebase Timestamp object into a readable date string.
      */
-    function capitalize(str) {
-        if (!str) return '';
-        return str.charAt(0).toUpperCase() + str.slice(1);
+    function formatDate(timestamp) {
+        if (!timestamp || !timestamp.toDate) return 'N/A';
+        return timestamp.toDate().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
     }
 
     /**
@@ -105,7 +108,8 @@ title: Product Name
 
             // Details
             productScentNotes.textContent = product.scentNotes;
-            productStrength.innerHTML = renderStars(product.strength, 'text-base');
+            // FIX: Ensure strength is read as a number for rendering stars
+            productStrength.innerHTML = renderStars(product.strength || 0, 'text-base');
             productPairing.textContent = product.pairing;
             
             // Stock & Cart Button
@@ -248,7 +252,7 @@ title: Product Name
                 name: name,
                 rating: rating,
                 text: text,
-                submittedAt: serverTimestamp(),
+                submittedAt: serverTimestamp(), // CRITICAL FIX: serverTimestamp is now correctly available
                 approved: false // Must be manually approved by Admin
             };
 
@@ -281,8 +285,8 @@ title: Product Name
         const submitButton = e.submitter;
         const email = emailInput.value.trim();
         
-        if (!email) {
-            alert("Please enter your email address.");
+        if (!email || !email.includes('@')) {
+            alert("Please enter a valid email address.");
             return;
         }
         
@@ -294,8 +298,8 @@ title: Product Name
                 productId: currentProduct.id,
                 productName: currentProduct.name,
                 email: email,
-                requestedAt: serverTimestamp(),
-                resolved: false // Explicitly set false for Firestore Rule check
+                requestedAt: serverTimestamp(), // CRITICAL FIX: serverTimestamp is now correctly available
+                resolved: false 
             };
             
             // Check if alert already exists for this email/product
@@ -329,8 +333,8 @@ title: Product Name
     // --- Initialization ---
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Load product data
-        loadOrderDetails(); 
+        // Initial data load
+        fetchProduct();
         
         // Listeners
         addToCartButton.addEventListener('click', () => {
@@ -356,9 +360,6 @@ title: Product Name
         if (stockAlertForm) {
             stockAlertForm.addEventListener('submit', handleStockAlert);
         }
-        
-        // Initial data load
-        fetchProduct();
     });
 
 </script>

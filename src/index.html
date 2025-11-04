@@ -4,22 +4,61 @@ title: Southern Sense - Hand-Poured Luxury Candles
 ---
 
 <script type="module">
-    // CRITICAL FIX: Corrected import path to include /src/ directory and ensured all required Firestore functions are imported
+    // Consolidation: All dependencies for CMS and Featured Products are now here.
     import { 
         db, 
         collection, 
         query, 
         where, 
-        getDocs 
+        getDocs, 
+        doc, 
+        getDoc,
+        limit 
     } from '/src/firebase-loader.js';
-    import { addToCart, updateCartDisplay } from '/src/cart.js'; // Ensure cart functions are correctly imported
+    import { addToCart, updateCartDisplay } from '/src/cart.js'; 
 
-    // --- DOM Elements ---
+    // --- DOM Elements (CMS Content) ---
+    const heroTitleEl = document.getElementById('hero-title');
+    const heroSubtitleEl = document.getElementById('hero-subtitle');
+    const diffWaxTextEl = document.getElementById('diff-wax-text');
+    const diffOilsTextEl = document.getElementById('diff-oils-text');
+    
+    // --- DOM Elements (Products) ---
     const featuredProductsGrid = document.getElementById('featured-products-grid');
     const featuredLoader = document.getElementById('featured-loader');
 
-    // --- Utility Functions ---
+    // --- CMS Logic (Consolidated from src/js/index.js) ---
 
+    /**
+     * Loads dynamic content for the Hero and Features sections from the 'siteContent/homepage' document.
+     * @returns {Promise<void>}
+     */
+    async function loadHomepageCMS() {
+        try {
+            const docRef = doc(db, "siteContent", "homepage");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                // 1. Hero Section
+                if (heroTitleEl) heroTitleEl.textContent = data.heroTitle || "Southern Sense";
+                if (heroSubtitleEl) heroSubtitleEl.textContent = data.heroSubtitle || "Experience the warmth and charm of the South...";
+                
+                // 2. Our Difference Section (Optimized DOM assignment)
+                if (diffWaxTextEl) diffWaxTextEl.textContent = data.diffWax || "We use a premium soy-coconut wax blend that ensures a clean, slow, and even burn every time.";
+                if (diffOilsTextEl) diffOilsTextEl.textContent = data.diffOils || "Our oils are 100% phthalate-free and safe, providing a rich scent throw without harmful chemicals.";
+            } else {
+                console.warn("Homepage CMS document not found. Using defaults.");
+            }
+        } catch (error) {
+            console.error("Error fetching homepage CMS content:", error);
+        }
+    }
+
+
+    // --- Product Logic (Optimized) ---
+    
     /**
      * Renders a single product card HTML specifically for the homepage layout.
      * @param {Object} product - The product data.
@@ -32,7 +71,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
 
         // Button or Link
         const actionButtonHtml = isOutOfStock
-            ? `<a href="/product/?id=${product.id}" class="w-full px-4 py-2 border border-stone/30 text-stone rounded-lg text-center cursor-not-allowed">View Details</a>`
+            ? `<a href="/product/?id=${product.id}" class="w-full block text-center px-4 py-2 border border-stone/30 text-stone rounded-lg cursor-not-allowed">View Details</a>`
             : `<button data-id="${product.id}" 
                       data-name="${product.name}"
                       data-price="${price}"
@@ -68,18 +107,11 @@ title: Southern Sense - Hand-Poured Luxury Candles
                 e.preventDefault();
                 const { id, name, price, image } = e.currentTarget.dataset;
                 
-                // Construct the product object as expected by cart.js
-                const product = {
-                    id: id,
-                    name: name,
-                    price: price, 
-                    imageUrl: image
-                };
+                const product = { id, name, price, imageUrl: image };
                 
                 addToCart(product, 1); 
                 updateCartDisplay(); 
                 
-                // Provide visual feedback
                 e.currentTarget.textContent = 'Added!';
                 setTimeout(() => {
                     e.currentTarget.textContent = 'Add to Cart';
@@ -87,8 +119,6 @@ title: Southern Sense - Hand-Poured Luxury Candles
             });
         });
     }
-
-    // --- Main Logic ---
 
     /**
      * Fetches up to 4 featured products from Firestore and renders them.
@@ -99,57 +129,62 @@ title: Southern Sense - Hand-Poured Luxury Candles
 
         try {
             const productsRef = collection(db, 'products');
-            // Query for products where 'featured' is true and there is stock
+            
+            // Query for products where 'featured' is true AND stock is greater than 0, limited to 4
             const q = query(productsRef, 
                             where('featured', '==', true), 
-                            where('stock', '>', 0) 
-                            // Note: Firebase requires an index for chained queries like this
+                            where('stock', '>', 0),
+                            limit(4)
                         );
                             
             const querySnapshot = await getDocs(q);
+            let productsToRender = [];
 
             if (querySnapshot.empty) {
-                // Fallback: If no featured products found, show latest 4 products (no featured status needed)
-                const fallbackQ = query(productsRef);
+                // Fallback: If no featured products found, show 4 most recently added products
+                const fallbackQ = query(productsRef, limit(4));
                 const fallbackSnapshot = await getDocs(fallbackQ);
+                
+                productsToRender = fallbackSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-                if (fallbackSnapshot.empty) {
-                    featuredProductsGrid.innerHTML = '<p class="text-lg text-stone col-span-full text-center py-10">No products available at this time.</p>';
-                    return;
-                }
-                
-                // Use the first 4 products found as a last resort
-                const fallbackProducts = fallbackSnapshot.docs.slice(0, 4).map(doc => ({ id: doc.id, ...doc.data() }));
-                fallbackProducts.forEach(product => {
-                    featuredProductsGrid.innerHTML += renderProductCard(product);
-                });
-                
             } else {
-                // Render featured products
-                querySnapshot.docs.slice(0, 4).forEach(doc => {
-                    const data = doc.data();
+                // Use actual featured products
+                productsToRender = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            }
+            
+            if (productsToRender.length === 0) {
+                featuredProductsGrid.innerHTML = '<p class="text-lg text-stone col-span-full text-center py-10">No products available at this time. Please check back later.</p>';
+            } else {
+                productsToRender.forEach(data => {
                     const product = { 
-                        id: doc.id, 
+                        id: data.id, 
                         ...data, 
                         price: parseFloat(data.price),
                         stock: parseInt(data.stock, 10) || 0
                     };
                     featuredProductsGrid.innerHTML += renderProductCard(product);
                 });
+                attachCartListeners();
             }
-
-            attachCartListeners();
 
         } catch (error) {
             console.error("Error fetching featured products:", error);
-            featuredProductsGrid.innerHTML = `<p class="text-red-600 col-span-full text-center py-10">Failed to load products. Check console for database connection errors.</p>`;
+            featuredProductsGrid.innerHTML = `<p class="text-red-600 col-span-full text-center py-10">Failed to load products. Connection error.</p>`;
         } finally {
             featuredLoader.classList.add('hidden');
         }
     }
+    
+    /**
+     * Main initialization function
+     */
+    async function initializeHomepage() {
+        await loadHomepageCMS();
+        await fetchFeaturedProducts();
+    }
 
     // --- Initialization Trigger ---
-    document.addEventListener('DOMContentLoaded', fetchFeaturedProducts);
+    document.addEventListener('DOMContentLoaded', initializeHomepage);
 </script>
 
 <main class="min-h-screen">
@@ -157,10 +192,10 @@ title: Southern Sense - Hand-Poured Luxury Candles
     <div class="relative w-full bg-parchment py-24 md:py-32">
         <div class="container mx-auto px-4 text-center">
             <p class="font-great-vibes text-4xl text-burnt-orange mb-4">Welcome Home</p>
-            <h1 class="text-7xl md:text-8xl font-playfair text-charcoal font-bold mb-6 drop-shadow-lg">
+            <h1 id="hero-title" class="text-7xl md:text-8xl font-playfair text-charcoal font-bold mb-6 drop-shadow-lg">
                 Southern Sense
             </h1>
-            <p class="text-xl text-stone max-w-2xl mx-auto mb-8">
+            <p id="hero-subtitle" class="text-xl text-stone max-w-2xl mx-auto mb-8">
                 Experience the warmth and charm of the South with our hand-poured, luxury soy-blend candles. Clean, comforting, and crafted for your home.
             </p>
             <a href="/shop.html" class="px-10 py-4 bg-burnt-orange text-parchment text-lg font-bold rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
@@ -194,12 +229,12 @@ title: Southern Sense - Hand-Poured Luxury Candles
                 <div class="p-6 bg-white rounded-lg shadow-md">
                     <img src="/src/finest-wax.webp" alt="Finest Wax" class="w-20 h-20 mx-auto mb-4">
                     <h3 class="text-2xl font-playfair text-charcoal mb-2">Finest Wax Blends</h3>
-                    <p class="text-stone">We use a premium soy-coconut wax blend that ensures a clean, slow, and even burn every time.</p>
+                    <p id="diff-wax-text" class="text-stone">We use a premium soy-coconut wax blend that ensures a clean, slow, and even burn every time.</p>
                 </div>
                 <div class="p-6 bg-white rounded-lg shadow-md">
                     <img src="/src/clean-oils.webp" alt="Clean Oils" class="w-20 h-20 mx-auto mb-4">
                     <h3 class="text-2xl font-playfair text-charcoal mb-2">Clean Fragrance Oils</h3>
-                    <p class="text-stone">Our oils are 100% phthalate-free and safe, providing a rich scent throw without harmful chemicals.</p>
+                    <p id="diff-oils-text" class="text-stone">Our oils are 100% phthalate-free and safe, providing a rich scent throw without harmful chemicals.</p>
                 </div>
                 <div class="p-6 bg-white rounded-lg shadow-md">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-burnt-orange mx-auto mb-4" viewBox="0 0 20 20" fill="currentColor">

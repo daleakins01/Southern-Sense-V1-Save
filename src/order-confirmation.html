@@ -9,8 +9,8 @@ title: Order Confirmed
         doc, 
         getDoc, 
         auth, 
-        onAuthStateChanged 
-    // FIX: Corrected dependency path to /src/firebase-loader.js
+        onAuthStateChanged,
+        Timestamp // CRITICAL FIX: Ensure Timestamp is imported for the formatDate utility
     } from '/src/firebase-loader.js';
 
     // --- DOM Elements ---
@@ -81,7 +81,7 @@ title: Order Confirmed
 
             const order = docSnap.data();
             
-            // CRITICAL SECURITY CHECK: Ensure the user owns the order, unless they were a guest checkout
+            // CRITICAL SECURITY CHECK: Ensure the user owns the order, unless it was a guest checkout
             if (order.userId && currentUser && order.userId !== currentUser.uid) {
                 // If a userId exists on the order and it doesn't match the current user, deny read access.
                 renderError("Access Denied: You do not have permission to view this order.");
@@ -96,7 +96,10 @@ title: Order Confirmed
             
             // --- Render Shipping Info ---
             const customer = order.customer || {};
-            shippingNameDisplay.textContent = `${customer.firstName || 'Guest'} ${customer.lastName || 'Customer'}`;
+            // FIX: Handle cases where first/last name might be empty strings
+            const fullName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
+
+            shippingNameDisplay.textContent = fullName || 'Guest Customer';
             shippingAddressDisplay.innerHTML = `
                 ${customer.address}<br>
                 ${customer.city}, ${customer.state} ${customer.zip}
@@ -109,10 +112,10 @@ title: Order Confirmed
                 itemsHtml += `
                     <div class="flex justify-between py-3 border-b border-stone/10">
                         <div class="flex items-center space-x-3">
-                            <img src="${item.imageUrl || '/src/logo.webp'}" alt="${item.name}" class="w-12 h-12 object-cover rounded-md">
+                            <img src="${item.imageUrl.startsWith('http') ? item.imageUrl : '/src/' + item.imageUrl}" alt="${item.name}" class="w-12 h-12 object-cover rounded-md">
                             <div>
                                 <p class="font-medium text-charcoal">${item.name}</p>
-                                <p class="text-sm text-stone">Qty: ${item.quantity} @ $${item.price.toFixed(2)}</p>
+                                <p class="text-sm text-stone">Qty: ${item.quantity} @ $${parseFloat(item.price).toFixed(2)}</p>
                             </div>
                         </div>
                         <span class="font-medium text-charcoal">$${itemTotal}</span>
@@ -125,7 +128,7 @@ title: Order Confirmed
             shippingDisplay.textContent = `$${order.totals.shipping.toFixed(2)}`;
             
             // --- Render Auth Message ---
-            if (currentUser) {
+            if (user) {
                 authMessageContainer.innerHTML = `
                     <p class="text-sm text-stone mt-2">
                         This order has been saved to your <a href="/account/" class="text-burnt-orange font-semibold hover:underline">Account History</a>.

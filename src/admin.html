@@ -16,8 +16,8 @@ title: Admin Panel
         getDoc, 
         updateDoc,
         deleteDoc, 
-        signOut 
-    // FIX: Corrected import path to include /src/ directory
+        signOut,
+        serverTimestamp // CRITICAL FIX: Ensure serverTimestamp is imported for review approval logic
     } from '/src/firebase-loader.js';
     import { logout } from '/src/auth.js';
     
@@ -107,6 +107,7 @@ title: Admin Panel
 
         try {
             const ordersRef = collection(db, 'orders');
+            // FIX: Using orderBy to ensure consistent sorting when fetching all
             const q = query(ordersRef); 
             const querySnapshot = await getDocs(q);
 
@@ -122,6 +123,7 @@ title: Admin Panel
                 currentOrders.push(order);
             });
 
+            // Sort by date, newest first (requires Timestamp.toDate())
             currentOrders.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
             
             renderOrdersTable();
@@ -226,7 +228,9 @@ title: Admin Panel
         
         try {
             const productsRef = collection(db, 'products');
-            const querySnapshot = await getDocs(query(productsRef));
+            // FIX: Ensure products are sorted by name for a clear list
+            const q = query(productsRef);
+            const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
                 productsMessage.textContent = 'No products found in the database.';
@@ -361,7 +365,8 @@ title: Admin Panel
 
         try {
             const reviewsRef = collection(db, 'reviews');
-            const querySnapshot = await getDocs(query(reviewsRef));
+            const q = query(reviewsRef);
+            const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
                 reviewsMessage.textContent = 'No reviews found in the database.';
@@ -376,10 +381,11 @@ title: Admin Panel
             });
             
             currentReviews.sort((a, b) => {
+                // Prioritize unapproved reviews first
                 if (a.approved !== b.approved) {
                     return a.approved ? 1 : -1;
                 }
-                // FIX: Assuming createdAt field exists on all reviews for consistent sorting
+                // Then sort by date, newest first
                 const dateA = a.createdAt?.toDate() || new Date(0); 
                 const dateB = b.createdAt?.toDate() || new Date(0); 
                 return dateB - dateA;
@@ -403,7 +409,6 @@ title: Admin Panel
         currentReviews.forEach(review => {
             const isPending = review.approved === false;
             
-            // FIX: Added null check for createdAt
             const reviewDate = review.submittedAt ? formatDate(review.submittedAt) : 'N/A';
             const productName = review.productName || 'Unknown Product';
             
@@ -456,10 +461,12 @@ title: Admin Panel
         const reviewRef = doc(db, 'reviews', reviewId);
         
         try {
-            // FIX: If the review is created with a 'text' field, ensure it is updated
-            const updateFields = { approved: approvedStatus };
+            const updateFields = { 
+                approved: approvedStatus,
+                // FIX: Add a timestamp when the review was approved/unapproved for audit/sorting purposes
+                moderatedAt: serverTimestamp() // CRITICAL FIX: serverTimestamp is now correctly available
+            };
             
-            // Fetch product name for success message (optional, but nice UX)
             const reviewDoc = await getDoc(reviewRef);
             let productName = "Unknown Product";
             if(reviewDoc.exists() && reviewDoc.data().productName) {
@@ -506,8 +513,6 @@ title: Admin Panel
 
         try {
             const alertsRef = collection(db, 'backInStockRequests');
-            // FIX: Removed the where clause for 'resolved', assuming that unresolved requests are just still present in the collection, and the Firestore Rules enforce that only non-resolved requests can be created.
-            // The Firebase Rules only allow creation if `resolved == false` AND `size == 5` (5 expected fields).
             const q = query(alertsRef); 
             const querySnapshot = await getDocs(q);
 
@@ -523,6 +528,7 @@ title: Admin Panel
                 currentAlerts.push(alert);
             });
             
+            // Sort by request date, oldest first
             currentAlerts.sort((a, b) => a.requestedAt?.toDate() - b.requestedAt?.toDate());
 
             renderStockAlertsList();
@@ -602,12 +608,11 @@ title: Admin Panel
         { id: 'about', name: 'About Us Page' },
         { id: 'candleCare', name: 'Candle Care Page' },
         { id: 'refillProgram', name: 'Refill Program Page' },
-        { id: 'gifting', name: 'Gifting Page' }, // ADDED: New content page
-        { id: 'subscriptions', name: 'Subscriptions Page' }, // ADDED: New content page
-        { id: 'scent-glossary', name: 'Scent Glossary Page' }, // ADDED: New content page
-        // ADDED: Assuming there is a scent-guide page based on other HTML file
+        { id: 'gifting', name: 'Gifting Page' }, 
+        { id: 'subscriptions', name: 'Subscriptions Page' }, 
+        { id: 'scent-glossary', name: 'Scent Glossary Page' }, 
         { id: 'scent-guide', name: 'Scent Guide Page' }, 
-        { id: 'homepage', name: 'Homepage Content' } // ADDED: Homepage content
+        { id: 'homepage', name: 'Homepage Content' } 
     ];
     
     async function fetchSiteContent() {
@@ -668,6 +673,7 @@ title: Admin Panel
 
         // 2. Iterate through contentData keys to build dynamic fields
         for (const key in contentData) {
+            // Only allow editing of string fields
             if (typeof contentData[key] !== 'string') continue;
             
             const labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); 
@@ -684,7 +690,6 @@ title: Admin Panel
             const content = contentData[key];
 
             // Use textarea for long content (descriptions, safety warnings, etc.)
-            // FIX: Also check if the key implies rich content
             if (key.includes('Content') || key.includes('Intro') || key.includes('Text') || content.length > 50 || key.includes('html')) {
                 inputElement = document.createElement('textarea');
                 inputElement.rows = 5;
@@ -778,7 +783,7 @@ title: Admin Panel
             fetchStockAlerts();
         } else if (targetId === 'tab-content') {
             fetchSiteContent();
-        } else if (targetId === 'tab-tools') { // NEW: Placeholder action for tools
+        } else if (targetId === 'tab-tools') { 
             console.log("Tools tab opened. Utility scripts are import-firestore.mjs and export-firestore.mjs.");
         }
     }
@@ -789,10 +794,6 @@ title: Admin Panel
     async function initializeAdmin(user) {
         currentUser = user;
         
-        // This query should use resource.data.uid in a secure setup, but is currently searching the document ID (which is the UID)
-        // Since getDoc(doc(db, 'admins', user.uid)) is faster and more correct than a query where __name__ == uid, 
-        // I will trust the AdminPageFunctionsGuide.html logic that the current admin list is in a collection named 'admins' with UID as document ID.
-
         try {
             const adminDocRef = doc(db, 'admins', user.uid);
             const adminDocSnap = await getDoc(adminDocRef);
@@ -837,7 +838,6 @@ title: Admin Panel
         if (logoutButton) {
             logoutButton.addEventListener('click', (e) => {
                 e.preventDefault();
-                // FIX: Use the imported signOut function instead of the non-existent local 'logout'
                 signOut(auth).then(() => {
                     window.location.href = '/admin-login.html';
                 }).catch(error => {

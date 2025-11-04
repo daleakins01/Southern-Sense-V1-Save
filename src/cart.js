@@ -243,9 +243,7 @@ export function renderCartDrawer() {
             });
         });
 
-        // Checkout button listener (redirects to the dedicated cart page or executes checkout logic)
-        // CRITICAL FIX: The event listener is now attached in cart.html where this function is called.
-        // We ensure a simple fallback to the dedicated cart page if needed.
+        // Checkout button listener (event listener is now attached in cart.html for clarity)
     }
 
 
@@ -355,8 +353,8 @@ export function initializeCart() {
         if (cartToggle) {
             cartToggle.addEventListener('click', (e) => {
                 e.preventDefault();
-                // Simple redirect to the dedicated cart page
-                window.location.href = '/cart.html'; 
+                // CRITICAL FIX: Redirect to the clean URL /cart/
+                window.location.href = '/cart/'; 
             });
         }
     });

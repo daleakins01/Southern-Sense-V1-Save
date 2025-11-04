@@ -31,6 +31,7 @@
     
     <script type="module">
         // Import initialization functions from the now-correctly-linked scripts
+        // CRITICAL FIX: Revert import path to absolute path
         import { initializeCart } from '/src/cart.js'; 
         
         // This function will initialize the cart (reading local storage, updating count)

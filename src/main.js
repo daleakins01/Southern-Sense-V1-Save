@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Sticky Header Logic (Simple implementation)
-    const header = document.querySelector('header');
+    // CRITICAL FIX: Target the specific header ID for robust selection.
+    const header = document.getElementById('main-header');
     if (header) {
         // Debounce or Throttle this for better performance in a full application
         window.addEventListener('scroll', () => {
@@ -39,6 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // FIX: Removed the global call to initializeScentQuiz() to prevent Firebase 
-    // fetching/conflicts on pages that don't need it.
+    // FIX: Removed the global call to initializeScentQuiz() to prevent dependency conflicts 
+    // and is now intended to be contained within src/scent-quiz.html's inline script.
 });

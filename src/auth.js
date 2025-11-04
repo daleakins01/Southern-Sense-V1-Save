@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 let message = error.message;
-                if (message.includes('auth/invalid-credential') || message.includes('auth/wrong-password') || message.includes('auth/user-not-found')) {
+                if (message.includes('auth/invalid-credential') || message.includes('auth/wrong-password' || message.includes('auth/user-not-found'))) {
                     message = 'Invalid email or password.';
                 } else {
                     message = `Sign in failed: ${error.message.replace('Firebase: ', '')}`;

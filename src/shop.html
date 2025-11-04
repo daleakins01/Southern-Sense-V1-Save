@@ -56,9 +56,9 @@ title: Shop All Candles & Melts
      * @returns {string} The product card HTML string.
      */
     function renderProductCard(product) {
+        // NOTE: price and stock are already cleaned up to be numbers in initializeShop
         const isOutOfStock = product.stock <= 0;
-        // CRITICAL CHECK: Ensure price is treated as a float and formatted.
-        const price = parseFloat(product.price).toFixed(2); 
+        const price = product.price.toFixed(2); 
         
         // Stock status elements
         const stockStatusHtml = isOutOfStock
@@ -113,7 +113,7 @@ title: Shop All Candles & Melts
                 const product = {
                     id: id,
                     name: name,
-                    // Pass price as string, let cart.js handle final parsing
+                    // Pass price as string, let cart.js handle final parsing (though it was parsed here, it's safer to pass the clean string)
                     price: price, 
                     imageUrl: image
                 };
@@ -214,9 +214,9 @@ title: Shop All Candles & Melts
                 return {
                     id: doc.id,
                     ...data,
-                    // CRITICAL: Ensure price and stock are correctly read and parsed
-                    // price is stored as a string in Firestore (e.g., "20.00"), parse it back here for local sorting/math
-                    price: parseFloat(data.price), 
+                    // CRITICAL FIX: Apply defensive number parsing for robustness
+                    // price is stored as a string in Firestore (e.g., "20.00"), parse it back here
+                    price: parseFloat(data.price) || 0.00, 
                     stock: parseInt(data.stock, 10) || 0, // Ensure stock is an integer
                     featured: data.featured === true // Ensure boolean type is maintained
                 };
@@ -226,9 +226,10 @@ title: Shop All Candles & Melts
             renderProductGrid(filterFamily);
 
         } catch (error) {
+            // CRITICAL FIX: The primary cause of failure is often here. Log and update UI
             console.error("CRITICAL ERROR: Error fetching products:", error);
             // Provide better user feedback on failure
-            shopIntro.innerHTML = `<p class="text-red-600 font-bold">Error loading products. Please try refreshing or check console for details.</p>`;
+            shopIntro.innerHTML = `<p class="text-red-600 font-bold">Error loading products. Please check the browser console for specific dependency or Firestore errors.</p>`;
         } finally {
             shopLoader.classList.add('hidden');
         }

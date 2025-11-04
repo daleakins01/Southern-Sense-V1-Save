@@ -73,7 +73,8 @@ title: Southern Sense - Hand-Poured Luxury Candles
     function renderProductCard(product) {
         const isOutOfStock = product.stock <= 0;
         // CRITICAL FIX: Ensure price is fetched as float, then formatted back to string for display/data-attribute consistency
-        const price = parseFloat(product.price).toFixed(2); 
+        // Note: product.price should already be a float from mapProduct, so we only format here.
+        const price = product.price.toFixed(2); 
         const scentFamily = product.scentFamily ? product.scentFamily.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'Scent';
 
         // Button or Link
@@ -147,7 +148,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
                     id: doc.id,
                     ...data,
                     // CRITICAL FIX: Ensure numerical safety for stock and price string-to-number conversion
-                    price: parseFloat(data.price), 
+                    price: parseFloat(data.price) || 0.00, // Robust price check
                     stock: parseInt(data.stock, 10) || 0, 
                     featured: data.featured === true
                 };
@@ -200,8 +201,9 @@ title: Southern Sense - Hand-Poured Luxury Candles
             }
 
         } catch (error) {
+            // CRITICAL FIX: The primary cause of failure is often here. Log and update UI
             console.error("Error fetching featured products:", error);
-            featuredProductsGrid.innerHTML = `<p class="text-red-600 col-span-full text-center py-10">Failed to load products. Check console for database connection issues.</p>`;
+            featuredProductsGrid.innerHTML = `<p class="text-red-600 col-span-full text-center py-10">Failed to load products. Please check the browser console for specific dependency or Firestore errors.</p>`;
         } finally {
             featuredLoader.classList.add('hidden');
         }

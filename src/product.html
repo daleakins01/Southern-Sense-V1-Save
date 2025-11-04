@@ -91,9 +91,11 @@ title: Product Name
             }
 
             const product = docSnap.data();
-            currentProduct = { id: docSnap.id, ...product };
-            // Ensure price is always stored as a number locally for consistency
-            currentProduct.price = parseFloat(currentProduct.price);
+            // CRITICAL FIX: Ensure robust data cleaning on load
+            const cleanPrice = parseFloat(product.price) || 0.00;
+            const cleanStock = parseInt(product.stock, 10) || 0;
+            
+            currentProduct = { id: docSnap.id, ...product, price: cleanPrice, stock: cleanStock };
             
             // --- Render Product Data ---
             productTitle.textContent = product.name;
@@ -115,7 +117,7 @@ title: Product Name
             productPairing.textContent = product.pairing;
             
             // Stock & Cart Button
-            if (product.stock <= 0) {
+            if (currentProduct.stock <= 0) {
                 addToCartButton.disabled = true;
                 addToCartButton.textContent = 'Out of Stock';
                 addToCartButton.classList.add('opacity-50', 'cursor-not-allowed');
@@ -124,8 +126,8 @@ title: Product Name
                 stockQuantityDisplay.classList.add('text-red-600');
                 stockAlertContainer.classList.remove('hidden');
                 
-            } else if (product.stock <= 10) {
-                stockQuantityDisplay.textContent = `Only ${product.stock} left in stock!`;
+            } else if (currentProduct.stock <= 10) {
+                stockQuantityDisplay.textContent = `Only ${currentProduct.stock} left in stock!`;
                 stockQuantityDisplay.classList.remove('text-green-600', 'text-red-600');
                 stockQuantityDisplay.classList.add('text-burnt-orange');
                 addToCartButton.disabled = false;

@@ -54,7 +54,8 @@ title: Admin Login
             if (adminDocSnap.exists()) {
                 showMessage("Admin Login successful! Redirecting to dashboard...", 'success');
                 // Success: Redirect to the main admin panel
-                window.location.href = '/admin.html';
+                // CRITICAL FIX: Use clean URL for redirect consistency
+                window.location.href = '/admin/';
             } else {
                 // Failure: User is authenticated but is NOT an admin.
                 // Log them out immediately for security and proper session management.
@@ -112,7 +113,8 @@ title: Admin Login
                     const adminDocSnap = await getDoc(adminDocRef);
                     
                     if (adminDocSnap.exists()) {
-                        window.location.href = '/admin.html'; // Redirect existing admin
+                        // CRITICAL FIX: Use clean URL for redirect consistency
+                        window.location.href = '/admin/'; // Redirect existing admin
                     } else {
                         // Log out non-admin users who land on this page while authenticated
                         await signOut(auth);

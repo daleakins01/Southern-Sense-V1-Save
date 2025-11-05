@@ -213,8 +213,28 @@ title: My Account
 
     // --- Initialization & Event Listeners ---
     document.addEventListener('DOMContentLoaded', () => {
-        initializeAccountPage();
+        // CRITICAL FIX: Removed initializeAccountPage() wrapper, 
+        // as the auth listener should be started immediately on module load.
+        // The core logic below achieves the same goal safely. 
+        // The initializeAccountPage function definition remains but is not manually called within DOMContentLoaded.
         
+        // --- Execute the core initialization (Auth State Listener) immediately on module load ---
+        // This pattern is safer for single-page application style initialization.
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                // Fetch profile and orders
+                fetchUserProfile(user).then(() => {
+                    accountLoader.classList.add('hidden');
+                    accountContent.classList.remove('hidden');
+                });
+            } else {
+                // If not logged in, redirect to login page
+                window.location.href = '/login/';
+            }
+        });
+
+
         if (logoutButton) {
             logoutButton.addEventListener('click', (e) => {
                 e.preventDefault();

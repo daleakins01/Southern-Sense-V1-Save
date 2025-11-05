@@ -315,7 +315,7 @@ export async function handleCheckout() {
         };
         
         // 2. CRITICAL FIX: Conditionally add userId only if authenticated.
-        // This prevents the field from existing for guest checkouts, satisfying the Firestore rule.
+        // This prevents the field from existing for guest checkouts, satisfying the Firestore rule (Rule 59-60).
         if (user) {
             orderData.userId = user.uid;
         }
@@ -341,21 +341,20 @@ export async function handleCheckout() {
 // --- Initialization ---
 
 /**
- * Initializes cart functionality globally (used in layout.html).
+ * Initializes cart functionality globally (called by layout.html's DOMContentLoaded).
+ * FIX: Removed redundant DOMContentLoaded wrapper.
  */
 export function initializeCart() {
-    document.addEventListener('DOMContentLoaded', () => {
-        // Update the cart count on every page load
-        updateCartDisplay(); 
-        
-        // Setup listener for the cart button in the header (if present)
-        const cartToggle = document.getElementById('cart-toggle');
-        if (cartToggle) {
-            cartToggle.addEventListener('click', (e) => {
-                e.preventDefault();
-                // CRITICAL FIX: Redirect to the clean URL /cart/
-                window.location.href = '/cart/'; 
-            });
-        }
-    });
+    // Update the cart count on every page load
+    updateCartDisplay(); 
+    
+    // Setup listener for the cart button in the header (if present)
+    const cartToggle = document.getElementById('cart-toggle');
+    if (cartToggle) {
+        cartToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            // CRITICAL FIX: Redirect to the clean URL /cart/
+            window.location.href = '/cart/'; 
+        });
+    }
 }

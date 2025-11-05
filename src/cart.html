@@ -56,7 +56,8 @@ title: Your Shopping Cart
 </main>
 
 <script type="module">
-    // CRITICAL FIX: Consolidate imports to prevent redundant module loading conflicts (which cause the 'Unexpected token export' error).
+    // CRITICAL FIX: Only import the necessary functions and execute the logic for this page.
+    // This file was identified as contributing to modular conflicts.
     import { renderCartDrawer, handleCheckout } from '/src/cart.js'; 
 
     document.addEventListener('DOMContentLoaded', () => {

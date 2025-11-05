@@ -19,8 +19,9 @@ module.exports = function(eleventyConfig) {
         },
         // Enable Eleventy to process templates in these formats
         templateFormats: ["html", "md", "liquid"],
-        // Use '.html' as the liquid/Nunjucks template engine for .html files
-        htmlTemplateEngine: "html",
+        // CRITICAL FIX: Use 'liquid' to process the Liquid syntax ({% include %}, {{ content }}) 
+        // within .html files, resolving the white page/uncompiled tag issue.
+        htmlTemplateEngine: "liquid",
         markdownTemplateEngine: "liquid"
     };
 };

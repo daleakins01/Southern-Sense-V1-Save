@@ -25,9 +25,20 @@
     
     {% include "footer.html" %}
     
-    <script type="module" src="/src/firebase-loader.js"></script> 
-    <script type="module" src="/src/cart.js"></script>
-    <script type="module" src="/src/main.js"></script> 
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', async () => {
+            // NOTE: firebase-loader is a prerequisite for cart.js and main.js logic,
+            // but it exports functions and initializes services globally.
+            await import('/src/firebase-loader.js'); 
+            
+            // Dynamically import core logic modules AFTER the DOM is ready and modules are stable
+            const { initializeCart } = await import('/src/cart.js');
+            await import('/src/main.js'); 
+            
+            // Execute initialization function from cart.js
+            initializeCart();
+        });
+    </script>
     
     </body>
 </html>

@@ -370,14 +370,18 @@ title: Product Name
             if (currentProduct) {
                 const quantity = parseInt(quantityInput.value, 10);
                 if (quantity > 0) {
-                    // CRITICAL FIX: Use global window functions
-                    window.addToCart(currentProduct, quantity);
-                    window.updateCartDisplay(); // Refresh the cart count in the header
-                    // Simple, non-intrusive confirmation
-                    addToCartButton.textContent = `Added ${quantity} to Cart!`;
-                    setTimeout(() => {
-                        addToCartButton.textContent = 'Add to Cart';
-                    }, 1500);
+                    // CRITICAL FIX: Defensive check to prevent TypeError crash if cart.js failed to load
+                    if (window.addToCart && window.updateCartDisplay) {
+                        window.addToCart(currentProduct, quantity);
+                        window.updateCartDisplay(); // Refresh the cart count in the header
+                        // Simple, non-intrusive confirmation
+                        addToCartButton.textContent = `Added ${quantity} to Cart!`;
+                        setTimeout(() => {
+                            addToCartButton.textContent = 'Add to Cart';
+                        }, 1500);
+                    } else {
+                         alert('Initialization Error: Cart functionality not loaded. Please try refreshing the page.');
+                    }
                 } else {
                     alert('Please enter a quantity greater than zero.');
                 }

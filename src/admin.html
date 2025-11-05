@@ -63,11 +63,29 @@ title: Admin Panel
     const contentSaveMessage = document.getElementById('content-save-message');
 
 
-    // --- Utility Functions ---
+    // --- Utility Functions (CRITICAL FIX: Robust Date Handling) ---
     
+    /**
+     * Helper to get milliseconds from Timestamp object or raw { _seconds, _nanoseconds } object.
+     * This fixes the 'toDate is not a function' error when loading JSON exported data.
+     */
+    function getTimeInMs(timestamp) {
+        if (!timestamp) return 0;
+        // Check if it is a native Firebase Timestamp object with .toDate() method
+        if (typeof timestamp.toDate === 'function') {
+            return timestamp.toDate().getTime();
+        }
+        // Assume it's a raw object from JSON import: { _seconds, _nanoseconds }
+        if (timestamp._seconds) {
+            return (timestamp._seconds * 1000) + Math.round(timestamp._nanoseconds / 1000000);
+        }
+        return 0;
+    }
+
     function formatDate(timestamp) {
-        if (!timestamp || !timestamp.toDate) return 'N/A';
-        return timestamp.toDate().toLocaleDateString('en-US', {
+        const ms = getTimeInMs(timestamp);
+        if (ms === 0) return 'N/A';
+        return new Date(ms).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
@@ -123,8 +141,8 @@ title: Admin Panel
                 currentOrders.push(order);
             });
 
-            // Sort by date, newest first (client-side sort for performance on small dataset)
-            currentOrders.sort((a, b) => b.createdAt?.toDate() - a.createdAt?.toDate());
+            // CRITICAL FIX: Sort by date, newest first (using the robust getTimeInMs helper)
+            currentOrders.sort((a, b) => getTimeInMs(b.createdAt) - getTimeInMs(a.createdAt));
             
             renderOrdersTable();
             ordersMessage.classList.add('hidden');
@@ -384,15 +402,14 @@ title: Admin Panel
                 currentReviews.push(review);
             });
             
+            // CRITICAL FIX: Use the robust getTimeInMs helper for sorting, eliminating the TypeError
             currentReviews.sort((a, b) => {
-                // Prioritize unapproved reviews first
+                // 1. Prioritize unapproved reviews first
                 if (a.approved !== b.approved) {
                     return a.approved ? 1 : -1;
                 }
-                // Then sort by date, newest first
-                const dateA = a.submittedAt?.toDate() || new Date(0); 
-                const dateB = b.submittedAt?.toDate() || new Date(0); 
-                return dateB - dateA;
+                // 2. Then sort by submitted date, newest first
+                return getTimeInMs(b.submittedAt) - getTimeInMs(a.submittedAt);
             });
 
             renderReviewsList();
@@ -532,8 +549,8 @@ title: Admin Panel
                 currentAlerts.push(alert);
             });
             
-            // Sort by request date, oldest first (client-side sort for smaller dataset)
-            currentAlerts.sort((a, b) => a.requestedAt?.toDate() - b.requestedAt?.toDate());
+            // Sort by request date, oldest first (using the robust getTimeInMs helper)
+            currentAlerts.sort((a, b) => getTimeInMs(a.requestedAt) - getTimeInMs(b.requestedAt));
 
             renderStockAlertsList();
             stockAlertsMessage.classList.add('hidden'); 
@@ -667,10 +684,10 @@ title: Admin Panel
         // Update button styles
         document.querySelectorAll('.content-tab-button').forEach(button => {
             if (button.getAttribute('data-content-id') === docId) {
-                button.classList.add('bg-burnt-orange', 'text-parchment');
+                button.classList.add('bg-stone', 'text-parchment');
                 button.classList.remove('bg-stone/20', 'hover:bg-burnt-orange/30', 'text-charcoal');
             } else {
-                button.classList.remove('bg-burnt-orange', 'text-parchment');
+                button.classList.remove('bg-stone', 'text-parchment');
                 button.classList.add('bg-stone/20', 'hover:bg-burnt-orange/30', 'text-charcoal');
             }
         });

@@ -27,14 +27,17 @@
     
     <script type="module">
         document.addEventListener('DOMContentLoaded', async () => {
+            // CRITICAL FIX: Add cache-busting version string to force browser to load corrected JS modules.
+            const version = '?v=1.1.2';
+            
             // 1. Load Firebase (initializes services)
             await import('/src/firebase-loader.js'); 
             
-            // 2. Load Cart Logic (attaches functions to window)
-            await import('/src/cart.js'); 
+            // 2. Load Cart Logic (attaches functions to window) - NOW CACHE BUSTED
+            await import(`/src/cart.js${version}`); 
             
-            // 3. Load Main UI Logic
-            await import('/src/main.js'); 
+            // 3. Load Main UI Logic - NOW CACHE BUSTED
+            await import(`/src/main.js${version}`); 
             
             // 4. Initialize Cart (calls the now-global function)
             window.initializeCart();

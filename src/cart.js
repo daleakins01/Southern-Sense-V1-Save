@@ -78,7 +78,7 @@ function calculateTotals(cart) {
  * @param {Object} product - The product object to add (must contain id, name, price, imageUrl).
  * @param {number} quantity - The quantity to add.
  */
-export function addToCart(product, quantity = 1) {
+function addToCart(product, quantity = 1) { // Removed export
     if (!product || !product.id) {
         console.error("Cannot add to cart: Invalid product object.");
         return;
@@ -150,7 +150,7 @@ function removeItem(productId) {
 /**
  * Updates the cart item count in the header/navigation.
  */
-export function updateCartDisplay() {
+function updateCartDisplay() { // Removed export
     const cart = getCart();
     const totalItems = cart.reduce((count, item) => count + (item.quantity || 0), 0);
 
@@ -168,7 +168,7 @@ export function updateCartDisplay() {
 /**
  * Renders the cart contents in the full `cart.html` page (or the slide-out drawer).
  */
-export function renderCartDrawer() {
+function renderCartDrawer() { // Removed export
     const cart = getCart();
     const totals = calculateTotals(cart);
     const cartContainer = document.getElementById('cart-items-container');
@@ -252,7 +252,7 @@ export function renderCartDrawer() {
 /**
  * Handles the final checkout process: collecting user data, creating a Firestore order, and clearing the cart.
  */
-export async function handleCheckout() {
+function handleCheckout() { // Removed export
     const cart = getCart();
     if (cart.length === 0) return;
 
@@ -320,7 +320,7 @@ export async function handleCheckout() {
             orderData.userId = user.uid;
         }
 
-        const docRef = await addDoc(collection(db, "orders"), orderData);
+        const docRef = addDoc(collection(db, "orders"), orderData);
 
         // Clear local storage cart and update UI
         localStorage.removeItem(CART_STORAGE_KEY);
@@ -344,7 +344,7 @@ export async function handleCheckout() {
  * Initializes cart functionality globally (called by layout.html's DOMContentLoaded).
  * FIX: Removed redundant DOMContentLoaded wrapper.
  */
-export function initializeCart() {
+function initializeCart() { // Removed export
     // Update the cart count on every page load
     updateCartDisplay(); 
     
@@ -358,3 +358,12 @@ export function initializeCart() {
         });
     }
 }
+
+// ULTIMATE FIX: Expose core functions to the global window object.
+// This ensures they are accessible by in-page scripts (like index.html's attachCartListeners) 
+// without relying on browser-specific module linking behavior which was causing the SyntaxError.
+window.addToCart = addToCart;
+window.updateCartDisplay = updateCartDisplay;
+window.handleCheckout = handleCheckout;
+window.renderCartDrawer = renderCartDrawer;
+window.initializeCart = initializeCart;

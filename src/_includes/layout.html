@@ -27,15 +27,17 @@
     
     <script type="module">
         document.addEventListener('DOMContentLoaded', async () => {
-            // NOTE: firebase-loader is a prerequisite for cart.js and main.js logic,
-            // but it exports functions and initializes services globally.
+            // 1. Load Firebase (initializes services)
             await import('/src/firebase-loader.js'); 
             
-            // Dynamically import core logic modules AFTER the DOM is ready and modules are stable
-            const { initializeCart } = await import('/src/cart.js');
+            // 2. Load Cart Logic (attaches functions to window)
+            await import('/src/cart.js'); 
+            
+            // 3. Load Main UI Logic
             await import('/src/main.js'); 
             
-            initializeCart();
+            // 4. Initialize Cart (calls the now-global function)
+            window.initializeCart();
         });
     </script>
     

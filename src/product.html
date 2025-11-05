@@ -44,6 +44,23 @@ title: Product Name
     let reviewsList = [];
     
     // --- Utility Functions ---
+    
+    /**
+     * Helper to get milliseconds from Timestamp object or raw { _seconds, _nanoseconds } object.
+     * This fixes the 'toDate is not a function' error when loading JSON exported data.
+     */
+    function getTimeInMs(timestamp) {
+        if (!timestamp) return 0;
+        // Check if it is a native Firebase Timestamp object with .toDate() method
+        if (typeof timestamp.toDate === 'function') {
+            return timestamp.toDate().getTime();
+        }
+        // Assume it's a raw object from JSON import: { _seconds, _nanoseconds }
+        if (timestamp._seconds) {
+            return (timestamp._seconds * 1000) + Math.round(timestamp._nanoseconds / 1000000);
+        }
+        return 0;
+    }
 
     /**
      * Renders star icons based on a rating value.
@@ -58,11 +75,12 @@ title: Product Name
     }
     
     /**
-     * Formats a Firebase Timestamp object into a readable date string.
+     * Formats a Firebase Timestamp or raw object into a readable date string.
      */
     function formatDate(timestamp) {
-        if (!timestamp || !timestamp.toDate) return 'N/A';
-        return timestamp.toDate().toLocaleDateString('en-US', {
+        const ms = getTimeInMs(timestamp);
+        if (ms === 0) return 'N/A';
+        return new Date(ms).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
@@ -211,8 +229,8 @@ title: Product Name
 
         // Render individual reviews
         let reviewsHtml = '';
-        // CRITICAL FIX: Ensure submittedAt is accessed safely before calling toDate()
-        reviewsList.sort((a, b) => (b.submittedAt?.toDate() || new Date(0)) - (a.submittedAt?.toDate() || new Date(0))); // Newest first
+        // CRITICAL FIX: Use the new robust getTimeInMs helper for sorting, eliminating the TypeError
+        reviewsList.sort((a, b) => getTimeInMs(b.submittedAt) - getTimeInMs(a.submittedAt)); // Newest first
 
         reviewsList.forEach(review => {
             const reviewDate = review.submittedAt ? formatDate(review.submittedAt) : 'N/A';

@@ -15,7 +15,8 @@ title: Product Name
         addDoc, 
         serverTimestamp // CRITICAL FIX: Ensure serverTimestamp is imported here
     } from '/src/firebase-loader.js';
-    import { addToCart, updateCartDisplay } from '/src/cart.js'; 
+    // CRITICAL FIX: Removed explicit import for functions now exposed via the global window object by layout.html
+    // import { addToCart, updateCartDisplay } from '/src/cart.js'; 
 
     // --- DOM Elements ---
     const productLoader = document.getElementById('product-loader');
@@ -351,8 +352,9 @@ title: Product Name
             if (currentProduct) {
                 const quantity = parseInt(quantityInput.value, 10);
                 if (quantity > 0) {
-                    addToCart(currentProduct, quantity);
-                    updateCartDisplay(); // Refresh the cart count in the header
+                    // CRITICAL FIX: Use global window functions
+                    window.addToCart(currentProduct, quantity);
+                    window.updateCartDisplay(); // Refresh the cart count in the header
                     // Simple, non-intrusive confirmation
                     addToCartButton.textContent = `Added ${quantity} to Cart!`;
                     setTimeout(() => {

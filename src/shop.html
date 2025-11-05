@@ -4,7 +4,7 @@ title: Shop All Candles & Melts
 ---
 
 <script type="module">
-    // CRITICAL FIX: Corrected import path to include /src/ directory and ensured all required Firestore functions are imported
+    // CRITICAL FIX: Removed conflicting import for globally exposed cart functions
     import { 
         db, 
         collection, 
@@ -13,7 +13,7 @@ title: Shop All Candles & Melts
         getDocs, 
         orderBy 
     } from '/src/firebase-loader.js';
-    import { addToCart, updateCartDisplay } from '/src/cart.js'; // Ensure updateCartDisplay is available
+    // Removed: import { addToCart, updateCartDisplay } from '/src/cart.js'; 
 
     // --- DOM Elements ---
     const shopHeading = document.getElementById('shop-heading');
@@ -118,8 +118,9 @@ title: Shop All Candles & Melts
                     imageUrl: image
                 };
                 
-                addToCart(product, 1); // Add one item
-                updateCartDisplay(); // Update the cart count in the header
+                // CRITICAL FIX: Use global window functions
+                window.addToCart(product, 1); // Add one item
+                window.updateCartDisplay(); // Update the cart count in the header
                 
                 // Provide visual feedback
                 e.currentTarget.textContent = 'Added!';

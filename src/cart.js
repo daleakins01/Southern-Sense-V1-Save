@@ -1,3 +1,4 @@
+
 /*
  * cart.js
  * Manages client-side shopping cart state (localStorage) and core functions.

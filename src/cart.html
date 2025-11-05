@@ -56,14 +56,15 @@ title: Your Shopping Cart
 </main>
 
 <script type="module">
-    // CRITICAL FIX: Consolidate imports to prevent redundant module loading conflicts.
+    // CRITICAL FIX: Consolidate imports to prevent redundant module loading conflicts (which cause the 'Unexpected token export' error).
+    // Import all required functions at once for maximum stability.
     import { renderCartDrawer, handleCheckout } from '/src/cart.js'; 
 
     document.addEventListener('DOMContentLoaded', () => {
         // Renders the cart contents into the main page view
         renderCartDrawer();
         
-        // CRITICAL FIX: Attach the handleCheckout function directly, now that it is imported above.
+        // Attach the handleCheckout function directly, now that it is imported above.
         const checkoutButton = document.getElementById('checkout-button');
         if (checkoutButton) {
             checkoutButton.addEventListener('click', handleCheckout);

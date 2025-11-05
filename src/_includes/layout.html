@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title or site.name }}</title>
     
-    <link rel="stylesheet" href="/output.css"> 
+    <link rel="stylesheet" href="/src/output.css"> 
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,19 +25,52 @@
     
     {% include "footer.html" %}
     
-    <script type="module" src="/src/main.js"></script> 
-    
     
     <script type="module">
-        // Import initialization functions from the now-correctly-linked scripts
-        // CRITICAL FIX: Revert import path to absolute path
-        import { initializeCart } from '/src/cart.js'; 
+        // CRITICAL FIX: Using a single, dynamic import inside DOMContentLoaded is the most resilient 
+        // way to bypass the persistent 'Unexpected token export' module conflict.
         
-        // This function will initialize the cart (reading local storage, updating count)
-        initializeCart();
-        
-        // Ensure any global script initialization from main.js is also run if needed
-        // Assuming main.js is purely event listeners/UI toggles, its import is sufficient.
+        document.addEventListener('DOMContentLoaded', async () => {
+            
+            // --- 1. Dynamic Import & Core Initialization ---
+            try {
+                // Load the cart module safely and make its exports available.
+                const cartModule = await import('/src/cart.js');
+                
+                // Initialize the cart
+                cartModule.initializeCart();
+
+                // --- 2. Global UI / Navigation (from old main.js) ---
+
+                // Mobile Menu Toggle
+                const mobileMenuButton = document.getElementById('mobile-menu-button');
+                const mobileMenu = document.getElementById('mobile-menu');
+                
+                if (mobileMenuButton && mobileMenu) {
+                    mobileMenuButton.addEventListener('click', () => {
+                        mobileMenu.classList.toggle('hidden');
+                        const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true' || false;
+                        mobileMenuButton.setAttribute('aria-expanded', !isExpanded);
+                    });
+                }
+
+                // Sticky Header Logic
+                const header = document.getElementById('main-header');
+                if (header) {
+                    window.addEventListener('scroll', () => {
+                        if (window.scrollY > 100) {
+                            header.classList.add('shadow-md', 'bg-parchment/95');
+                            header.classList.remove('bg-parchment');
+                        } else {
+                            header.classList.remove('shadow-md', 'bg-parchment/95');
+                            header.classList.add('bg-parchment');
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Critical Module Loading Failure in Layout:", error);
+            }
+        });
     </script>
     
 </body>

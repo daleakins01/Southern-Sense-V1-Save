@@ -15,8 +15,8 @@ title: Southern Sense - Hand-Poured Luxury Candles
         getDoc,
         limit 
     } from '/src/firebase-loader.js';
-    import { addToCart, updateCartDisplay } from '/src/cart.js'; 
-
+    // NOTE: addToCart and updateCartDisplay are now globally available after layout.html loads them.
+    
     // --- DOM Elements (CMS Content) ---
     const heroTitleEl = document.getElementById('hero-title');
     const heroSubtitleEl = document.getElementById('hero-subtitle');
@@ -117,8 +117,10 @@ title: Southern Sense - Hand-Poured Luxury Candles
                 
                 const product = { id, name, price, imageUrl: image };
                 
-                addToCart(product, 1); 
-                updateCartDisplay(); 
+                // Relying on global functions loaded by the layout.html dynamic import
+                // These functions are available because they are exported by cart.js
+                window.addToCart(product, 1); 
+                window.updateCartDisplay(); 
                 
                 e.currentTarget.textContent = 'Added!';
                 setTimeout(() => {
@@ -157,6 +159,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
             if (featuredId) {
                 // 1. Attempt to fetch the specific featured product
                 const docSnap = await getDoc(doc(productsRef, featuredId));
+                // CRITICAL FIX: Ensure stock check is performed before pushing to render list
                 if (docSnap.exists() && mapProduct(docSnap).stock > 0) {
                     productsToRender.push(mapProduct(docSnap));
                 }
@@ -164,17 +167,20 @@ title: Southern Sense - Hand-Poured Luxury Candles
 
             // 2. Fallback or fill remaining spots (get up to 4 other stocked, featured items)
             if (productsToRender.length < 4) {
+                // CRITICAL FIX: Simplified query to avoid the composite index requirement (FirebaseError)
+                // We now only filter by 'featured' and apply 'stock' check on the client.
                 const q = query(productsRef, 
                                 where('featured', '==', true), 
-                                where('stock', '>', 0),
-                                limit(4)
+                                limit(10) // Fetch up to 10 featured items to ensure we get enough in-stock items
                             );
                 const querySnapshot = await getDocs(q);
                 
                 querySnapshot.docs.forEach(doc => {
                     const productData = mapProduct(doc);
-                    // Avoid duplicates if the featuredId item was already fetched
-                    if (!productsToRender.some(p => p.id === productData.id)) {
+                    // Client-side filtering: check stock, avoid duplicates, and limit the total count
+                    if (productData.stock > 0 && 
+                        !productsToRender.some(p => p.id === productData.id) && 
+                        productsToRender.length < 4) {
                         productsToRender.push(productData);
                     }
                 });
@@ -201,7 +207,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
             }
 
         } catch (error) {
-            // CRITICAL FIX: The primary cause of failure is often here. Log and update UI
+            // CRITICAL FIX: Report the specific error but continue. The FirebaseError is fixed by code change.
             console.error("Error fetching featured products:", error);
             featuredProductsGrid.innerHTML = `<p class="text-red-600 col-span-full text-center py-10">Failed to load products. Please check the browser console for specific dependency or Firestore errors.</p>`;
         } finally {
@@ -218,7 +224,8 @@ title: Southern Sense - Hand-Poured Luxury Candles
     }
 
     // --- Initialization Trigger ---
-    document.addEventListener('DOMContentLoaded', initializeHomepage);
+    // The main layout controls DOMContentLoaded and Firebase loading. Running immediately.
+    initializeHomepage(); 
 </script>
 
 <main class="min-h-screen">

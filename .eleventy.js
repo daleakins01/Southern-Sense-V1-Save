@@ -3,12 +3,8 @@ module.exports = function(eleventyConfig) {
     // 1. Pass-Through Copies: Copies ALL assets from the src directory to the _site/src directory,
     // preserving the directory structure. This explicitly solves the 404 errors for
     // /src/main.js, /src/cart.js, and /src/logo.webp by ensuring they exist in the output.
-    // CRITICAL FIX: Use the 'copy everything' object pattern to robustly ensure file paths are maintained.
     eleventyConfig.addPassthroughCopy({ "src/": "src/" }); 
     
-    // NOTE: The redundant individual copies (e.g., src/logo.webp, src/main.js, src/*.webp) 
-    // and the unnecessary 'src/js' folder copy are now safely handled by the single rule above.
-
     // 2. Custom Configuration
     return {
         // Look for template files inside the `src` folder
@@ -19,8 +15,7 @@ module.exports = function(eleventyConfig) {
         },
         // Enable Eleventy to process templates in these formats
         templateFormats: ["html", "md", "liquid"],
-        // CRITICAL FIX: Use 'liquid' to process the Liquid syntax ({% include %}, {{ content }}) 
-        // within .html files, resolving the white page/uncompiled tag issue.
+        // CRITICAL FIX 1: Reverting to 'liquid' to resolve the "Cannot find module 'Nunjucks'" error. 
         htmlTemplateEngine: "liquid",
         markdownTemplateEngine: "liquid"
     };

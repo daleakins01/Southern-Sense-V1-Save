@@ -25,53 +25,9 @@
     
     {% include "footer.html" %}
     
+    <script type="module" src="/src/firebase-loader.js"></script> 
+    <script type="module" src="/src/cart.js"></script>
+    <script type="module" src="/src/main.js"></script> 
     
-    <script type="module">
-        // CRITICAL FIX: Using a single, dynamic import inside DOMContentLoaded is the most resilient 
-        // way to bypass the persistent 'Unexpected token export' module conflict.
-        
-        document.addEventListener('DOMContentLoaded', async () => {
-            
-            // --- 1. Dynamic Import & Core Initialization ---
-            try {
-                // Load the cart module safely and make its exports available.
-                const cartModule = await import('/src/cart.js');
-                
-                // Initialize the cart
-                cartModule.initializeCart();
-
-                // --- 2. Global UI / Navigation (from old main.js) ---
-
-                // Mobile Menu Toggle
-                const mobileMenuButton = document.getElementById('mobile-menu-button');
-                const mobileMenu = document.getElementById('mobile-menu');
-                
-                if (mobileMenuButton && mobileMenu) {
-                    mobileMenuButton.addEventListener('click', () => {
-                        mobileMenu.classList.toggle('hidden');
-                        const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true' || false;
-                        mobileMenuButton.setAttribute('aria-expanded', !isExpanded);
-                    });
-                }
-
-                // Sticky Header Logic
-                const header = document.getElementById('main-header');
-                if (header) {
-                    window.addEventListener('scroll', () => {
-                        if (window.scrollY > 100) {
-                            header.classList.add('shadow-md', 'bg-parchment/95');
-                            header.classList.remove('bg-parchment');
-                        } else {
-                            header.classList.remove('shadow-md', 'bg-parchment/95');
-                            header.classList.add('bg-parchment');
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error("Critical Module Loading Failure in Layout:", error);
-            }
-        });
-    </script>
-    
-</body>
+    </body>
 </html>

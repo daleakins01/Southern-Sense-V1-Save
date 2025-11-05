@@ -56,18 +56,19 @@ title: Your Shopping Cart
 </main>
 
 <script type="module">
-    // CRITICAL FIX: Only import the necessary functions and execute the logic for this page.
-    // This file was identified as contributing to modular conflicts.
-    import { renderCartDrawer, handleCheckout } from '/src/cart.js'; 
-
+    // CRITICAL FIX: The functions are now globally available (window.renderCartDrawer, window.handleCheckout) 
+    // due to the modular stability changes in cart.js. We remove the old import to prevent conflicts.
+    
     document.addEventListener('DOMContentLoaded', () => {
         // Renders the cart contents into the main page view
-        renderCartDrawer();
+        if (window.renderCartDrawer) {
+            window.renderCartDrawer();
+        }
         
         // Attach the handleCheckout function directly
         const checkoutButton = document.getElementById('checkout-button');
-        if (checkoutButton) {
-            checkoutButton.addEventListener('click', handleCheckout);
+        if (checkoutButton && window.handleCheckout) {
+            checkoutButton.addEventListener('click', window.handleCheckout);
         }
     });
 </script>

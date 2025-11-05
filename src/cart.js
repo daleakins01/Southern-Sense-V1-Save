@@ -365,5 +365,3 @@ window.updateCartDisplay = updateCartDisplay;
 window.handleCheckout = handleCheckout;
 window.renderCartDrawer = renderCartDrawer;
 window.initializeCart = initializeCart;
-
-// --- END OF FILE MARKER (DO NOT DELETE) ---

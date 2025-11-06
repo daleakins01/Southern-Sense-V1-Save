@@ -13,10 +13,9 @@ title: Product Name
         where, 
         getDocs, 
         addDoc, 
-        serverTimestamp // CRITICAL FIX: Ensure serverTimestamp is imported here
+        serverTimestamp 
     } from '/src/firebase-loader.js';
-    // CRITICAL FIX: Removed explicit import for functions now exposed via the global window object by layout.html
-    // import { addToCart, updateCartDisplay } from '/src/cart.js'; 
+    
 
     // --- DOM Elements ---
     const productLoader = document.getElementById('product-loader');
@@ -47,7 +46,6 @@ title: Product Name
     
     /**
      * Helper to get milliseconds from Timestamp object or raw { _seconds, _nanoseconds } object.
-     * This fixes the 'toDate is not a function' error when loading JSON exported data.
      */
     function getTimeInMs(timestamp) {
         if (!timestamp) return 0;
@@ -340,8 +338,8 @@ title: Product Name
                 productId: currentProduct.id,
                 productName: currentProduct.name,
                 email: email,
-                requestedAt: serverTimestamp(), // CRITICAL FIX: serverTimestamp is now correctly available
-                resolved: false // Firestore Rule: must be set to false on creation
+                requestedAt: serverTimestamp(), 
+                resolved: false 
             };
 
             await addDoc(alertsRef, alertData);
@@ -399,8 +397,6 @@ title: Product Name
 ; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
 </script>
 
-{% include "page-header.html" with pageTitle: title %}
-
 <main class="container mx-auto px-4 py-12 min-h-screen">
     <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
 
@@ -444,7 +440,7 @@ title: Product Name
                         <span id="review-summary-count" class="text-sm text-stone">(0 Reviews)</span>
                     </div>
 
-                    <p id="product-short-description" class="text-lg text-stone italic mb-6 bg-parchment p-3 rounded-lg"></p>
+                    <p id="product-short-description" class="text-lg text-stone italic mb-6 bg-parchment p-3 rounded-lg shadow-sm"></p>
 
                     <div class="prose max-w-none text-charcoal mb-8 bg-parchment p-5 rounded-lg border border-stone/10">
                         <div id="product-long-description"></div>
@@ -541,3 +537,5 @@ title: Product Name
             
         </div> </div>
 </main>
+
+**Next file to update: `src/contact.html`** (to check for remaining build errors and syntactic conflicts)

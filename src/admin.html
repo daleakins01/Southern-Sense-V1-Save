@@ -29,7 +29,8 @@ title: Admin Panel
     let currentReviews = [];
     let currentAlerts = [];
     let siteContent = {}; 
-    let lowStockCount = 0; // NEW: Global state for Low Stock Summary
+    let lowStockCount = 0; // Global state for Low Stock Summary
+    let outOfStockCount = 0; // NEW: Global state for Out of Stock Summary
 
     // --- DOM Elements ---
     const adminLoader = document.getElementById('admin-loader');
@@ -126,8 +127,9 @@ title: Admin Panel
         const pendingReviewsEl = document.getElementById('pending-reviews-count');
         const stockAlertsEl = document.getElementById('total-stock-alerts-count');
         const lowStockEl = document.getElementById('low-stock-count-summary'); 
-        const totalRevenueEl = document.getElementById('total-revenue-summary'); // NEW
-        const aovEl = document.getElementById('aov-summary'); // NEW
+        const totalRevenueEl = document.getElementById('total-revenue-summary');
+        const aovEl = document.getElementById('aov-summary');
+        const outOfStockEl = document.getElementById('out-of-stock-count-summary'); // NEW ELEMENT ID
 
         // NEW: Calculate Financials
         const totalRevenue = currentOrders.reduce((sum, order) => sum + (order.totals?.total || 0), 0);
@@ -164,12 +166,25 @@ title: Admin Panel
             }
         }
         
-        // 5. Total Revenue (NEW)
+        // 5. Out of Stock (NEW)
+        if(outOfStockEl) {
+            outOfStockEl.textContent = outOfStockCount;
+            // Highlight in red if there are any out-of-stock items
+            if (outOfStockCount > 0) {
+                outOfStockEl.classList.remove('text-stone');
+                outOfStockEl.classList.add('text-red-600');
+            } else {
+                outOfStockEl.classList.remove('text-red-600');
+                outOfStockEl.classList.add('text-stone');
+            }
+        }
+        
+        // 6. Total Revenue
         if (totalRevenueEl) {
             totalRevenueEl.textContent = `$${totalRevenue.toFixed(2)}`;
         }
 
-        // 6. AOV (NEW)
+        // 7. AOV
         if (aovEl) {
             aovEl.textContent = `$${aov.toFixed(2)}`;
         }
@@ -311,6 +326,7 @@ title: Admin Panel
             if (querySnapshot.empty) {
                 productsMessage.textContent = 'No products found in the database.';
                 lowStockCount = 0; // NEW: Set count to zero on empty result
+                outOfStockCount = 0; // NEW: Set count to zero on empty result
                 updateDashboardSummary(); // UPDATE SUMMARY
                 return;
             }
@@ -328,6 +344,9 @@ title: Admin Panel
             // NEW: Calculate low stock count (stock > 0 AND stock <= 10)
             lowStockCount = currentProducts.filter(p => p.stock > 0 && p.stock <= 10).length;
             
+            // NEW: Calculate out of stock count (stock <= 0)
+            outOfStockCount = currentProducts.filter(p => p.stock <= 0).length;
+            
             renderProductsTable();
             productsMessage.classList.add('hidden'); 
 
@@ -343,8 +362,10 @@ title: Admin Panel
         productsTableBody.innerHTML = '';
         
         currentProducts.forEach(product => {
+            const isOutOfStock = product.stock <= 0; // Check for 0 or less
             const stockColor = product.stock > 10 ? 'text-green-600' : 
                                product.stock > 0 ? 'text-burnt-orange' : 'text-red-600';
+            const stockDisplay = isOutOfStock ? 'Out of Stock' : product.stock; // UX IMPROVEMENT
             const featuredTag = product.featured ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Featured</span>' : '';
 
             const row = document.createElement('tr');
@@ -356,7 +377,7 @@ title: Admin Panel
                 <td class="px-6 py-4 text-sm text-stone">${product.scentFamily}</td>
                 <td class="px-6 py-4 text-sm font-medium text-charcoal">$${product.price.toFixed(2)}</td>
                 <td class="px-6 py-4 text-sm font-medium ${stockColor}">
-                    ${product.stock}
+                    ${stockDisplay}
                 </td>
                 <td class="px-6 py-4 text-sm">
                     ${featuredTag}
@@ -1094,6 +1115,12 @@ title: Admin Panel
                             <h3 class="text-xl font-medium text-charcoal">Low Stock Items</h3>
                             <p id="low-stock-count-summary" class="text-4xl font-bold text-stone mt-2">--</p>
                             <a data-tab="tab-products" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Manage Inventory &rarr;</a>
+                        </div>
+                        
+                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                            <h3 class="text-xl font-medium text-charcoal">Out of Stock Items</h3>
+                            <p id="out-of-stock-count-summary" class="text-4xl font-bold text-stone mt-2">--</p>
+                            <a data-tab="tab-products" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Restock Now &rarr;</a>
                         </div>
                         
                         <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">

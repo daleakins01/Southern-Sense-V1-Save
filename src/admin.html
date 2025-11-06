@@ -126,10 +126,17 @@ title: Admin Panel
         const pendingReviewsEl = document.getElementById('pending-reviews-count');
         const stockAlertsEl = document.getElementById('total-stock-alerts-count');
         const lowStockEl = document.getElementById('low-stock-count-summary'); 
+        const totalRevenueEl = document.getElementById('total-revenue-summary'); // NEW
+        const aovEl = document.getElementById('aov-summary'); // NEW
 
+        // NEW: Calculate Financials
+        const totalRevenue = currentOrders.reduce((sum, order) => sum + (order.totals?.total || 0), 0);
+        const totalOrdersCount = currentOrders.length;
+        const aov = totalOrdersCount > 0 ? totalRevenue / totalOrdersCount : 0;
+        
         // 1. Orders
         if(totalOrdersEl) {
-            totalOrdersEl.textContent = currentOrders.length;
+            totalOrdersEl.textContent = totalOrdersCount;
         }
         
         // 2. Reviews
@@ -155,6 +162,16 @@ title: Admin Panel
                 lowStockEl.classList.remove('text-red-600');
                 lowStockEl.classList.add('text-stone');
             }
+        }
+        
+        // 5. Total Revenue (NEW)
+        if (totalRevenueEl) {
+            totalRevenueEl.textContent = `$${totalRevenue.toFixed(2)}`;
+        }
+
+        // 6. AOV (NEW)
+        if (aovEl) {
+            aovEl.textContent = `$${aov.toFixed(2)}`;
         }
     }
 
@@ -1048,12 +1065,25 @@ title: Admin Panel
                     <p class="text-stone mb-6">Welcome to the control center. Use the sidebar to navigate management tasks.</p>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        
                         <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
                             <h3 class="text-xl font-medium text-charcoal">Total Orders</h3>
                             <p id="total-orders-count" class="text-4xl font-bold text-burnt-orange mt-2">--</p>
                             <p class="text-sm text-stone mt-1">Orders recorded to date.</p>
                         </div>
                         
+                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                            <h3 class="text-xl font-medium text-charcoal">Total Revenue</h3>
+                            <p id="total-revenue-summary" class="text-4xl font-bold text-green-600 mt-2">--</p>
+                            <p class="text-sm text-stone mt-1">Total lifetime sales.</p>
+                        </div>
+                        
+                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                            <h3 class="text-xl font-medium text-charcoal">Avg. Order Value</h3>
+                            <p id="aov-summary" class="text-4xl font-bold text-burnt-orange mt-2">--</p>
+                            <p class="text-sm text-stone mt-1">Sales average per transaction.</p>
+                        </div>
+
                         <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
                             <h3 class="text-xl font-medium text-charcoal">Pending Reviews</h3>
                             <p id="pending-reviews-count" class="text-4xl font-bold text-stone mt-2">--</p>
@@ -1065,7 +1095,7 @@ title: Admin Panel
                             <p id="low-stock-count-summary" class="text-4xl font-bold text-stone mt-2">--</p>
                             <a data-tab="tab-products" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Manage Inventory &rarr;</a>
                         </div>
-
+                        
                         <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
                             <h3 class="text-xl font-medium text-charcoal">Active Stock Alerts</h3>
                             <p id="total-stock-alerts-count" class="text-4xl font-bold text-stone mt-2">--</p>

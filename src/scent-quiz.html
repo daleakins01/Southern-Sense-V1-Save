@@ -182,8 +182,8 @@ title: Find Your Perfect Scent
      * @param {Event} e - The click event.
      */
     function handleNextStep(e) {
-        // Only validate if we are transitioning from a question step (1-3)
-        if (currentStep > 0 && currentStep <= QUIZ_QUESTION_COUNT) {
+        // Only validate if we are transitioning from a question step (1-2)
+        if (currentStep > 0 && currentStep < QUIZ_QUESTION_COUNT) {
             const currentStepEl = document.getElementById(`step-${currentStep}`);
             const checkedInput = currentStepEl.querySelector('input[type="radio"]:checked');
             
@@ -198,6 +198,10 @@ title: Find Your Perfect Scent
             for (const scent in weights) {
                 answerTally[scent] = (answerTally[scent] || 0) + weights[scent];
             }
+        } else if (currentStep === QUIZ_QUESTION_COUNT) {
+            // Do nothing on step 3's next button as it's the final submit.
+            // This is handled by the form submission listener.
+            return;
         }
 
         // Proceed to the next step based on the button's data attribute
@@ -215,7 +219,7 @@ title: Find Your Perfect Scent
         e.preventDefault();
         
         // Final validation for the last question (Step 3)
-        const currentStepEl = document.getElementById(`step-3`);
+        const currentStepEl = document.getElementById(`step-${QUIZ_QUESTION_COUNT}`); // step-3
         const checkedInput = currentStepEl.querySelector('input[type="radio"]:checked');
         
         if (!checkedInput) {
@@ -223,7 +227,7 @@ title: Find Your Perfect Scent
             return;
         }
 
-        // Tally the final answer
+        // CRITICAL FIX: Tally the final answer here, after validation
         const answerValue = checkedInput.value;
         const weights = scentWeights[answerValue];
         for (const scent in weights) {
@@ -280,9 +284,14 @@ title: Find Your Perfect Scent
         
         // Attach listeners for next buttons
         document.querySelectorAll('.next-step-button').forEach(button => {
-            button.addEventListener('click', handleNextStep);
+            // FIX: Reset the tally on restart (optional but safe)
+            if (button.dataset.nextStep === '1') {
+                button.addEventListener('click', () => { answerTally = {}; handleNextStep(event); });
+            } else {
+                button.addEventListener('click', handleNextStep);
+            }
         });
-
+        
         // Attach listener for the start button
         document.querySelector('.start-quiz-button').addEventListener('click', handleNextStep);
 
@@ -290,5 +299,3 @@ title: Find Your Perfect Scent
         formContainer.addEventListener('submit', calculateResult);
     });
 </script>
-
-**Next file to update: `src/admin.html`** (for visual separation)

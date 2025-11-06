@@ -1,7 +1,120 @@
-<header class="relative w-full h-64 md:h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
-    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
-        <h1 class="font-playfair text-5xl md:text-6xl font-extrabold text-parchment drop-shadow-lg text-center px-4">
-            {{ pageTitle }}
-        </h1>
+---
+layout: layout
+title: Our Story
+---
+
+{% include "page-header.html" with pageTitle: title %}
+
+<main class="container mx-auto p-4 lg:p-8 py-16">
+
+    <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
+
+        <div id="loading-state" class="text-center p-12 bg-parchment rounded-xl shadow-lg border border-stone/10">
+            <p class="font-playfair text-2xl text-stone">Loading the Southern Sense story...</p>
+            <div class="mt-4 animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
+        </div>
+
+        <section id="about-section" class="max-w-4xl mx-auto space-y-12 hidden">
+            <div class="text-center mb-10">
+                <h2 id="about-title" class="font-playfair text-4xl font-bold text-charcoal mb-4">Our Story</h2>
+                <p id="about-subtitle" class="text-lg text-stone font-roboto mx-auto">A commitment to quality and southern tradition.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 items-center">
+                <div class="md:col-span-1">
+                    <img id="about-image" src="/src/paula-bryan-portrait.webp" alt="Southern Sense Founder Paula Bryan" class="w-full h-auto object-cover rounded-xl shadow-lg border border-stone/10">
+                </div>
+                <div class="md:col-span-2 space-y-6">
+                    <div id="about-paragraph-1" class="text-stone leading-relaxed">
+                        <p>Loading story paragraph 1...</p>
+                    </div>
+                    <div id="about-paragraph-2" class="text-stone leading-relaxed">
+                        <p>Loading story paragraph 2...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-parchment p-8 rounded-xl shadow-inner border border-stone/10 mt-12">
+                <h2 id="values-title" class="font-playfair text-3xl font-bold text-burnt-orange text-center mb-4">Our Commitment to Quality</h2>
+                <div id="values-content" class="text-stone text-center prose max-w-none mx-auto">
+                    <p>Loading values...</p>
+                </div>
+            </div>
+
+            <div class="text-center pt-8">
+                <h3 id="founder-quote-title" class="font-playfair text-3xl font-bold text-charcoal mb-4">Crafted with Integrity, Shared with Love.</h3>
+                <p id="founder-quote-text" class="text-xl italic text-stone max-w-3xl mx-auto">Loading founder quote...</p>
+            </div>
+            
+        </section>
+
     </div>
-</header>
+</main>
+
+<script type="module">
+    import { db, doc, getDoc } from '/src/firebase-loader.js'; 
+
+    const loadingState = document.getElementById('loading-state');
+    const aboutSection = document.getElementById('about-section');
+    
+    // CMS Elements
+    const aboutTitle = document.getElementById('about-title');
+    const aboutSubtitle = document.getElementById('about-subtitle');
+    const aboutImage = document.getElementById('about-image');
+    const aboutParagraph1 = document.getElementById('about-paragraph-1');
+    const aboutParagraph2 = document.getElementById('about-paragraph-2');
+    const valuesTitle = document.getElementById('values-title');
+    const valuesContent = document.getElementById('values-content');
+    const founderQuoteTitle = document.getElementById('founder-quote-title');
+    const founderQuoteText = document.getElementById('founder-quote-text');
+    
+    async function loadAboutContent() {
+        console.log("About Us Page: Loading content from Firestore...");
+        
+        loadingState.classList.remove('hidden');
+        aboutSection.classList.add('hidden');
+
+        try {
+            const docRef = doc(db, "siteContent", "about");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                // 1. Titles and Subtitles
+                aboutTitle.textContent = data.aboutTitle || "Our Story";
+                aboutSubtitle.textContent = data.aboutSubtitle || "A commitment to quality and southern tradition.";
+                
+                // 2. Image (Defaulting if field is missing)
+                aboutImage.src = data.aboutImage ? `/src/${data.aboutImage}` : '/src/paula-bryan-portrait.webp';
+                
+                // 3. Core Text (HTML content)
+                aboutParagraph1.innerHTML = data.aboutParagraph1 || "<p>Story paragraph 1 not set.</p>";
+                aboutParagraph2.innerHTML = data.aboutParagraph2 || "<p>Story paragraph 2 not set.</p>";
+                
+                // 4. Values Section
+                valuesTitle.textContent = data.valuesTitle || "Our Commitment to Quality";
+                valuesContent.innerHTML = data.valuesContent || "<p>Values content not set.</p>";
+                
+                // 5. Quote Section
+                founderQuoteTitle.textContent = data.founderQuoteTitle || "Crafted with Integrity, Shared with Love.";
+                founderQuoteText.textContent = data.founderQuoteText || "Founder quote not set.";
+
+                // Success: Hide loading, show content
+                loadingState.classList.add('hidden');
+                aboutSection.classList.remove('hidden');
+
+            } else {
+                console.warn("About Us Page: Document 'siteContent/about' does not exist.");
+                loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Configuration Error: The 'siteContent/about' document is missing from Firestore. Please populate it in the Admin Panel.</p>`;
+            }
+        } catch (error) {
+            console.error("Error fetching About Us content:", error);
+            loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Error loading content: ${error.message}</p>`;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadAboutContent);
+</script>
+
+Next file to update: **None.** The full structural audit and stabilization plan is complete. Please confirm if you require any further changes or want to proceed with a final check.

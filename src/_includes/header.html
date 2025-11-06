@@ -1,7 +1,57 @@
-<header class="relative w-full h-64 md:h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
-    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
-        <h1 class="font-playfair text-5xl md:text-6xl font-extrabold text-parchment drop-shadow-lg text-center px-4">
-            {{ pageTitle }}
-        </h1>
+<nav id="main-header" class="fixed top-0 left-0 right-0 z-40 bg-parchment transition-all duration-300 ease-in-out">
+    <div class="container mx-auto px-4 py-4">
+        <div class="flex justify-between items-center">
+            
+            <a href="/" class="flex items-center space-x-2">
+                <img src="/src/logo.webp" alt="Southern Sense Logo" class="h-8 w-auto">
+                <span class="text-xl font-playfair font-bold text-charcoal">Southern Sense</span>
+            </a>
+
+            <div class="hidden md:flex space-x-6 lg:space-x-8 items-center">
+                <a href="/shop/" class="text-charcoal hover:text-burnt-orange transition duration-150 font-medium">Shop</a>
+                <a href="/scent-quiz/" class="text-charcoal hover:text-burnt-orange transition duration-150 font-medium">Scent Quiz</a>
+                <a href="/subscriptions/" class="text-charcoal hover:text-burnt-orange transition duration-150 font-medium">Subscriptions</a>
+                <a href="/gifting/" class="text-charcoal hover:text-burnt-orange transition duration-150 font-medium">Gifting</a>
+                <a href="/about/" class="text-charcoal hover:text-burnt-orange transition duration-150 font-medium">Our Story</a>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                
+                <a id="account-link" href="/login/" class="text-charcoal hover:text-burnt-orange transition duration-150" aria-label="My Account">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </a>
+                
+                <a id="cart-toggle" href="/cart/" class="relative text-charcoal hover:text-burnt-orange transition duration-150" aria-label="Shopping Cart">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span class="cart-item-count absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs font-bold rounded-full bg-burnt-orange text-parchment hidden">
+                        0
+                    </span>
+                </a>
+
+                <button id="mobile-menu-button" class="md:hidden text-charcoal hover:text-burnt-orange" aria-label="Toggle Menu" aria-expanded="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
     </div>
-</header>
+    
+    <div id="mobile-menu" class="hidden md:hidden bg-parchment/95 shadow-lg border-t border-stone/10 py-2">
+        <nav class="flex flex-col space-y-1 px-4 pb-2">
+            <a href="/shop/" class="block py-2 text-charcoal hover:bg-stone/10 px-2 rounded font-medium">Shop All</a>
+            <a href="/scent-quiz/" class="block py-2 text-charcoal hover:bg-stone/10 px-2 rounded font-medium">Scent Quiz</a>
+            <a href="/subscriptions/" class="block py-2 text-charcoal hover:bg-stone/10 px-2 rounded font-medium">Subscriptions</a>
+            <a href="/gifting/" class="block py-2 text-charcoal hover:bg-stone/10 px-2 rounded font-medium">Gifting</a>
+            <a href="/about/" class="block py-2 text-charcoal hover:bg-stone/10 px-2 rounded font-medium">Our Story</a>
+            <a href="/contact/" class="block py-2 text-charcoal hover:bg-stone/10 px-2 rounded font-medium">Contact Us</a>
+            <div class="mt-2 pt-2 border-t border-stone/10">
+                <a href="/login/" class="block py-2 text-burnt-orange hover:bg-stone/10 px-2 rounded font-semibold">Sign In / Account</a>
+            </div>
+        </nav>
+    </div>
+</nav>

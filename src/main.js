@@ -5,6 +5,8 @@
  * and is now intended to be contained within src/scent-quiz.html's inline script.
  */
 
+import { auth, onAuthStateChanged } from '/src/firebase-loader.js';
+
 // --- 1. Global UI / Navigation (Executed immediately on module import, after DOMContentLoaded) ---
 
 // Mobile Menu Toggle
@@ -37,6 +39,31 @@ if (header) {
         }
     });
 }
+
+// --- UX FIX: Dynamically update the Account/Login link based on auth status ---
+const accountLink = document.getElementById('account-link');
+const mobileLoginLink = document.querySelector('#mobile-menu a[href="/login/"]');
+
+if (accountLink) {
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // Logged In: Change link to Account
+            accountLink.href = '/account/';
+            if (mobileLoginLink) {
+                mobileLoginLink.href = '/account/';
+                mobileLoginLink.textContent = 'My Account';
+            }
+        } else {
+            // Logged Out: Change link to Login
+            accountLink.href = '/login/';
+            if (mobileLoginLink) {
+                mobileLoginLink.href = '/login/';
+                mobileLoginLink.textContent = 'Sign In / Account';
+            }
+        }
+    });
+}
+
 
 // FIX: Removed the global call to initializeScentQuiz() to prevent dependency conflicts 
 // and is now intended to be contained within src/scent-quiz.html's inline script.

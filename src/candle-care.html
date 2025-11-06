@@ -3,11 +3,7 @@ layout: layout
 title: Candle Care Guide
 ---
 
-<header class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
-    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
-        <h1 id="care-header-title" class="font-playfair text-6xl font-extrabold text-parchment drop-shadow-lg">Candle Care Guide</h1>
-    </div>
-</header>
+{% include "page-header.html" with pageTitle: title %}
 
 <main class="container mx-auto p-4 lg:p-8 py-16">
 
@@ -90,26 +86,24 @@ title: Candle Care Guide
                 const data = docSnap.data();
                 
                 // 1. Header and Overview
-                careHeaderTitle.textContent = data.careTitle || "Candle Care Guide";
+                // The main page title is set by the Eleventy layout/include now, but we keep this for console logging/future use.
+                // careHeaderTitle.textContent = data.careTitle || "Candle Care Guide";
                 // CRITICAL FIX: The CMS structure uses 'careIntro' in the data but the script was looking for a field that wasn't consistently set. Reverting to original expected CMS fields.
                 careOverviewContent.innerHTML = data.careIntro || "<p>A well-maintained candle burns cleanly, smells better, and lasts longer. Follow these simple steps to get the most luxurious experience from your hand-poured candle.</p>";
                 
                 // 2. Care Tips
                 // FIX: Map to the correct CMS fields: careTitle/coreTipsTitle and tipXHeading/tipXText
-                tip1Title.textContent = data.tip2Heading || "Wick Trimming";
-                tip1Text.textContent = data.tip2Text || "Details about trimming loading...";
-                tip2Title.textContent = data.tip1Heading || "The First Burn";
-                tip2Text.textContent = data.tip1Text || "Details about first burn loading...";
+                tip1Title.textContent = data.tip1Heading || "Trim Your Wick";
+                tip1Text.textContent = data.tip1Text || "Details about trimming loading...";
+                tip2Title.textContent = data.tip2Heading || "The First Burn";
+                tip2Text.textContent = data.tip2Text || "Details about first burn loading...";
                 tip3Title.textContent = data.tip3Heading || "Optimal Burn Time";
                 tip3Text.textContent = data.tip3Text || "Details about burn time loading...";
                 tip4Title.textContent = data.tip4Heading || "Store Safely";
                 tip4Text.textContent = data.tip4Text || "Details about safety loading...";
                 
-                // If the data structure used the other set of keys in the CMS backup, use them instead.
-                // The provided snapshot uses: careTitle, careIntro, coreTipsTitle, tip1Heading, tip1Text, etc.
+                // Re-map based on the structure check against CMS fields in the snapshot
                 if (data.coreTipsTitle) {
-                    // Re-map titles based on a quick check of the full CMS content from the snapshot
-                    // The HTML structure has 4 tips, we map the most relevant ones:
                     tip1Title.textContent = data.tip1Heading || "Trim Your Wick";
                     tip1Text.textContent = data.tip1Text || "Always trim the cotton wick to 1/4 inch before each burn.";
                     tip2Title.textContent = data.tip2Heading || "The First Burn";
@@ -121,7 +115,7 @@ title: Candle Care Guide
                     tip4Title.textContent = data.safetyTitle || "Crucial Safety Warnings";
                     tip4Text.innerHTML = data.safetyContent || "Never leave a burning candle unattended. Keep out of reach of children and pets.";
                     
-                    careHeaderTitle.textContent = data.careTitle || "Candle Care Guide";
+                    // careHeaderTitle.textContent = data.careTitle || "Candle Care Guide"; // Removed
                     careOverviewContent.innerHTML = data.careIntro || "<p>Care overview loading...</p>";
                 }
 

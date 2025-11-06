@@ -230,40 +230,44 @@ title: Southern Sense - Hand-Poured Luxury Candles
 
 <main class="min-h-screen">
     
-    <div class="relative w-full bg-parchment py-24 md:py-32">
-        <div class="container mx-auto px-4 text-center">
-            <p class="font-southern text-5xl text-burnt-orange mb-4">Welcome Home</p>
-            <h1 id="hero-title" class="text-7xl md:text-8xl font-playfair text-charcoal font-bold mb-6 drop-shadow-lg">
-                Southern Sense
-            </h1>
-            <p id="hero-subtitle" class="text-xl text-stone max-w-2xl mx-auto mb-8">
-                Experience the warmth and charm of the South with our hand-poured, luxury soy-blend candles. Clean, comforting, and crafted for your home.
-            </p>
-            <a href="/shop/" class="px-10 py-4 bg-burnt-orange text-parchment text-lg font-bold rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
-                Shop Our Scents
-            </a>
+    <div class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
+        <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+            <div class="container mx-auto px-4 text-center">
+                <p class="font-southern text-5xl text-burnt-orange mb-4 drop-shadow-lg">Welcome Home</p>
+                <h1 id="hero-title" class="text-7xl md:text-8xl font-playfair text-parchment font-bold mb-6 drop-shadow-lg">
+                    Southern Sense
+                </h1>
+                <p id="hero-subtitle" class="text-xl text-parchment max-w-2xl mx-auto mb-8 drop-shadow-lg">
+                    Experience the warmth and charm of the South with our hand-poured, luxury soy-blend candles. Clean, comforting, and crafted for your home.
+                </p>
+                <a href="/shop/" class="px-10 py-4 bg-burnt-orange text-parchment text-lg font-bold rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
+                    Shop Our Scents
+                </a>
+            </div>
         </div>
     </div>
     
     <section class="container mx-auto px-4 py-20">
-        <h2 id="featured-product-title" class="text-4xl font-playfair text-charcoal text-center mb-12">Featured Scents</h2>
-        
-        <div id="featured-loader" class="flex justify-center items-center h-48">
-            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-burnt-orange"></div>
-        </div>
-
-        <div id="featured-products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
+            <h2 id="featured-product-title" class="text-4xl font-playfair text-charcoal text-center mb-12">Featured Scents</h2>
+            
+            <div id="featured-loader" class="flex justify-center items-center h-48">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-burnt-orange"></div>
             </div>
 
-        <div class="text-center mt-12">
-            <a href="/shop/" class="px-8 py-3 border border-stone/30 text-charcoal font-bold rounded-lg hover:bg-parchment/70 transition duration-300">
-                View All Candles & Melts
-            </a>
+            <div id="featured-products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            </div>
+
+            <div class="text-center mt-12">
+                <a href="/shop/" class="px-8 py-3 border border-stone/30 text-charcoal font-bold rounded-lg hover:bg-parchment/70 transition duration-300">
+                    View All Candles & Melts
+                </a>
+            </div>
         </div>
     </section>
 
     <section class="bg-stone/10 py-20 border-t border-b border-stone/10">
-        <div class="container mx-auto px-4">
+        <div class="container mx-auto px-4 max-w-6xl">
             <h2 class="text-5xl font-southern text-burnt-orange text-center mb-12">The Southern Sense Promise</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
@@ -289,12 +293,14 @@ title: Southern Sense - Hand-Poured Luxury Candles
     </section>
 
     <section class="container mx-auto px-4 py-20 text-center">
-        <h2 class="text-4xl font-playfair text-charcoal mb-4">Can't Decide? Try Our Scent Quiz!</h2>
-        <p class="text-lg text-stone max-w-xl mx-auto mb-8">Answer a few quick questions and we'll match you with the perfect Southern Sense fragrance for your home and mood.</p>
-        <a href="/scent-quiz/" class="px-8 py-3 bg-stone text-parchment font-bold rounded-lg shadow-lg hover:bg-charcoal transition duration-300">
-            Take the Quiz Now
-        </a>
+        <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
+            <h2 class="text-4xl font-playfair text-charcoal mb-4">Can't Decide? Try Our Scent Quiz!</h2>
+            <p class="text-lg text-stone max-w-xl mx-auto mb-8">Answer a few quick questions and we'll match you with the perfect Southern Sense fragrance for your home and mood.</p>
+            <a href="/scent-quiz/" class="px-8 py-3 bg-stone text-parchment font-bold rounded-lg shadow-lg hover:bg-charcoal transition duration-300">
+                Take the Quiz Now
+            </a>
+        </div>
     </section>
 </main>
 
-**Next file to update: `src/shop.html`** (for product card hover effect)
+**Next file to update: None.** The visual and structural fixes are complete.

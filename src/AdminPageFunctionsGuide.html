@@ -13,42 +13,55 @@ eleventyExcludeFromCollections: true
         </h1>
         
         <p class="text-lg text-stone leading-relaxed mb-8">
-            This panel gives you full control over the e-commerce operations, product catalog, and public-facing content. All changes are saved instantly to the database.
+            This panel is the command center, giving you full control over all e-commerce operations, product catalog, and public-facing content. All changes are saved instantly to the database.
         </p>
+        
+        <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
+            1. Dashboard (The Control Center)
+        </h2>
+        <div class="text-charcoal mb-8 space-y-3">
+            <p><strong>Purpose:</strong> Provides a real-time, high-level summary of store health and pending operational tasks.</p>
+            <ul class="list-disc list-inside ml-4">
+                <li>**Total Orders:** The aggregate count of all completed and pending customer orders.</li>
+                <li>**Pending Reviews:** The number of customer reviews currently awaiting moderation and approval.</li>
+                <li>**Active Stock Alerts:** The total count of customers waiting for an item to be restocked.</li>
+                <li>**Low Stock Items (CRITICAL):** The number of unique products where the inventory level is **10 or less**. These items require immediate attention.</li>
+            </ul>
+        </div>
 
         <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
-            1. Orders Tab (Order Management)
+            2. Orders Tab (Order Management)
         </h2>
         <div class="text-charcoal mb-8 space-y-3">
             <p><strong>Purpose:</strong> Track all sales and monitor shipping status.</p>
             <ul class="list-disc list-inside ml-4">
-                <li><strong>Data Source:</strong> Reads all documents from the <code>/orders</code> collection.</li>
-                <li><strong>Functionality:</strong> Lists orders, sorted newest first. Displays Order # (truncated), Date, Total, Status (Paid, Pending, etc.), and Customer (Guest or Authenticated).</li>
-                <li><strong>Action:</strong> The "Details" button provides a popup with full customer shipping information and itemized line items.</li>
+                <li>**Data Source:** Reads all documents from the <code>/orders</code> collection.</li>
+                <li>**Functionality:** Lists orders, sorted newest first. Displays Order # (truncated), Date, Total, Status (Paid, Shipped, Pending, etc.), and Customer.</li>
+                <li>**Action:** The "Details" button provides a popup with full customer shipping information and itemized line items for fulfillment.</li>
             </ul>
         </div>
         
         <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
-            2. Products Tab (Catalog & Inventory)
+            3. Products Tab (Catalog & Inventory)
         </h2>
         <div class="text-charcoal mb-8 space-y-3">
             <p><strong>Purpose:</strong> Manage inventory, pricing, and product visibility.</p>
             <ul class="list-disc list-inside ml-4">
-                <li><strong>Data Source:</strong> Reads and writes to the <code>/products</code> collection.</li>
-                <li><strong>Functionality:</strong> Lists all products with their Scent Family, Price, Stock Level, and **Featured** status.</li>
-                <li><strong>Action:</strong> The "Edit" button opens a modal allowing instantaneous updates to `name`, `price`, `stock`, `scentFamily`, `category`, and the critical `featured: boolean` flag (used on the Homepage).</li>
+                <li>**Data Source:** Reads and writes to the <code>/products</code> collection.</li>
+                <li>**Functionality:** Lists all products with their Scent Family, Price, Stock Level, and **Featured** status.</li>
+                <li>**Action:** The "Edit" button opens a modal allowing instantaneous updates to core fields, including `stock` and the critical `featured: boolean` flag (used to promote a product on the Homepage).</li>
             </ul>
         </div>
 
         <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
-            3. Reviews Tab (Social Proof Moderation)
+            4. Reviews Tab (Social Proof Moderation)
         </h2>
         <div class="text-charcoal mb-8 space-y-3">
             <p><strong>Purpose:</strong> Moderate and approve customer feedback before it appears on product pages.</p>
             <ul class="list-disc list-inside ml-4">
-                <li><strong>Data Source:</strong> Reads and writes to the <code>/reviews</code> collection.</li>
-                <li><strong>Functionality:</strong> Fetches all reviews, prioritizing those with <code>approved: false</code> (Pending).</li>
-                <li><strong>Actions:</strong>
+                <li>**Data Source:** Reads and writes to the <code>/reviews</code> collection.</li>
+                <li>**Functionality:** Fetches all reviews, prioritizing those with <code>approved: false</code> (Pending).</li>
+                <li>**Actions:**
                     <ul>
                         <li>**Approve:** Sets `approved: true`. Review immediately appears on the corresponding product page.</li>
                         <li>**Unapprove:** Sets `approved: false`. Hides the review.</li>
@@ -59,30 +72,42 @@ eleventyExcludeFromCollections: true
         </div>
         
         <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
-            4. Stock Alerts Tab (Pillar 3 Management)
+            5. Stock Alerts Tab (Acquisition Management)
         </h2>
         <div class="text-charcoal mb-8 space-y-3">
             <p><strong>Purpose:</strong> View and clear back-in-stock requests from customers.</p>
             <ul class="list-disc list-inside ml-4">
-                <li><strong>Data Source:</strong> Reads and deletes from the <code>/backInStockRequests</code> collection.</li>
-                <li><strong>Functionality:</strong> Lists all unresolved requests (those still in the database).</li>
-                <li><strong>Actions:</strong>
+                <li>**Data Source:** Reads and deletes from the <code>/backInStockRequests</code> collection.</li>
+                <li>**Functionality:** Lists all unresolved requests, indicating the customer email and requested product name.</li>
+                <li>**Actions:**
                     <ul>
                         <li>**Email Customer:** Provides a quick `mailto:` link to notify the customer of restock.</li>
-                        <li>**Mark as Resolved:** Deletes the request from the database, clearing the alert from the Admin queue.</li>
+                        <li>**Mark as Resolved:** **Deletes the request from the database**, clearing the alert from the Admin queue (used after stock has been replenished and the customer has been notified).</li>
                     </ul>
                 </li>
             </ul>
         </div>
         
         <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
-            5. Site Content Tab (CMS)
+            6. Site Content Tab (CMS)
         </h2>
         <div class="text-charcoal mb-8 space-y-3">
-            <p><strong>Purpose:</strong> Update static content pages without touching code.</p>
+            <p><strong>Purpose:</strong> Update the text and content blocks on all major public pages without touching code.</p>
             <ul class="list-disc list-inside ml-4">
-                <li><strong>Data Source:</strong> Reads and writes to the <code>/siteContent</code> collection (documents: <code>about</code>, <code>candleCare</code>, <code>refillProgram</code>).</li>
-                <li><strong>Functionality:</strong> Dynamically loads all text fields from the selected document and allows the Admin to edit and save changes instantly. Public pages automatically reflect these updates.</li>
+                <li>**Data Source:** Reads and writes to the <code>/siteContent</code> collection.</li>
+                <li>**Managed Documents:** You can manage: <code>homepage</code>, <code>about</code>, <code>candleCare</code>, <code>refillProgram</code>, <code>gifting</code>, <code>subscriptions</code>, <code>scent-guide</code>, and <code>scent-glossary</code>.</li>
+                <li>**Functionality:** Dynamically loads all text fields (including rich HTML fields) for the selected page and allows you to save changes instantly.</li>
+            </ul>
+        </div>
+        
+        <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
+            7. Tools / Utility (Developer Access)
+        </h2>
+        <div class="text-charcoal mb-8 space-y-3">
+            <p><strong>Purpose:</strong> Provides developer utilities for manual database maintenance, typically for backup or restoration.</p>
+            <ul class="list-disc list-inside ml-4">
+                <li>**Export Database:** Provides the command (`node export-firestore.mjs`) to create a local, safe JSON backup of the entire Firestore database.</li>
+                <li>**Import Database:** Provides the command (`node import-firestore.mjs`) to restore the database from a local JSON file. **Warning:** This will overwrite your current live data.</li>
             </ul>
         </div>
         

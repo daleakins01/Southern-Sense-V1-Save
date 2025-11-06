@@ -28,9 +28,10 @@ title: Admin Panel
     let currentProducts = [];
     let currentReviews = [];
     let currentAlerts = [];
+    let currentInquiries = []; // NEW: State for unread contact form inquiries
     let siteContent = {}; 
     let lowStockCount = 0; // Global state for Low Stock Summary
-    let outOfStockCount = 0; // NEW: Global state for Out of Stock Summary
+    let outOfStockCount = 0; // Global state for Out of Stock Summary
 
     // --- DOM Elements ---
     const adminLoader = document.getElementById('admin-loader');
@@ -129,7 +130,8 @@ title: Admin Panel
         const lowStockEl = document.getElementById('low-stock-count-summary'); 
         const totalRevenueEl = document.getElementById('total-revenue-summary');
         const aovEl = document.getElementById('aov-summary');
-        const outOfStockEl = document.getElementById('out-of-stock-count-summary'); // NEW ELEMENT ID
+        const outOfStockEl = document.getElementById('out-of-stock-count-summary'); 
+        const pendingInquiriesEl = document.getElementById('pending-inquiries-summary'); // NEW
 
         // NEW: Calculate Financials
         const totalRevenue = currentOrders.reduce((sum, order) => sum + (order.totals?.total || 0), 0);
@@ -154,9 +156,7 @@ title: Admin Panel
         
         // 4. Low Stock
         if(lowStockEl) {
-            // lowStockCount is updated by fetchAllProducts
             lowStockEl.textContent = lowStockCount;
-            // Optionally, change color based on stock health
             if (lowStockCount > 0) {
                 lowStockEl.classList.remove('text-stone');
                 lowStockEl.classList.add('text-red-600');
@@ -166,10 +166,9 @@ title: Admin Panel
             }
         }
         
-        // 5. Out of Stock (NEW)
+        // 5. Out of Stock
         if(outOfStockEl) {
             outOfStockEl.textContent = outOfStockCount;
-            // Highlight in red if there are any out-of-stock items
             if (outOfStockCount > 0) {
                 outOfStockEl.classList.remove('text-stone');
                 outOfStockEl.classList.add('text-red-600');
@@ -187,6 +186,19 @@ title: Admin Panel
         // 7. AOV
         if (aovEl) {
             aovEl.textContent = `$${aov.toFixed(2)}`;
+        }
+        
+        // 8. Pending Inquiries (NEW)
+        if (pendingInquiriesEl) {
+            // Assuming we only fetch UNRESOLVED inquiries
+            pendingInquiriesEl.textContent = currentInquiries.length;
+             if (currentInquiries.length > 0) {
+                pendingInquiriesEl.classList.remove('text-stone');
+                pendingInquiriesEl.classList.add('text-burnt-orange');
+            } else {
+                pendingInquiriesEl.classList.remove('text-burnt-orange');
+                pendingInquiriesEl.classList.add('text-stone');
+            }
         }
     }
 
@@ -698,7 +710,7 @@ title: Admin Panel
             const productName = product ? product.productName : alertId.slice(-6);
 
             alert(`Alert for ${productName} resolved and removed.`);
-            await fetchStockAlerts();
+            await fetchAllStockAlerts();
 
         } catch (error) {
             console.error("Error resolving alert:", error);
@@ -706,6 +718,29 @@ title: Admin Panel
         }
     }
     
+    // --- Core Admin Logic: Inquiry Tab (NEW FETCH FUNCTION) ---
+
+    async function fetchAllInquiries() {
+        currentInquiries = [];
+        try {
+            const inquiriesRef = collection(db, 'inquiries');
+            // Assuming all inquiries fetched are considered "pending" or "new" until manually managed via the API/Admin system
+            const q = query(inquiriesRef); 
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                querySnapshot.forEach(doc => {
+                    const inquiry = doc.data();
+                    inquiry.id = doc.id;
+                    currentInquiries.push(inquiry);
+                });
+            }
+        } catch (error) {
+            console.error("Error fetching all inquiries:", error);
+        }
+        updateDashboardSummary(); // UPDATE SUMMARY on completion (success or fail)
+    }
+
     // --- Core Admin Logic: Site Content Tab (CMS) ---
     
     // CRITICAL CMS MAPPING: Ensures the admin controls every page document.
@@ -970,7 +1005,8 @@ title: Admin Panel
             fetchAllOrders(),
             fetchAllProducts(),
             fetchAllReviews(),
-            fetchStockAlerts()
+            fetchStockAlerts(),
+            fetchAllInquiries() // NEW: Fetch all inquiries immediately
         ]);
 
 
@@ -1127,6 +1163,12 @@ title: Admin Panel
                             <h3 class="text-xl font-medium text-charcoal">Active Stock Alerts</h3>
                             <p id="total-stock-alerts-count" class="text-4xl font-bold text-stone mt-2">--</p>
                             <a data-tab="tab-stock-alerts" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">View Alerts &rarr;</a>
+                        </div>
+                        
+                         <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                            <h3 class="text-xl font-medium text-charcoal">New Inquiries</h3>
+                            <p id="pending-inquiries-summary" class="text-4xl font-bold text-stone mt-2">--</p>
+                            <span class="text-sm text-stone mt-1">Unread contact form submissions.</span>
                         </div>
                     </div>
 

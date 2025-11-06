@@ -9,105 +9,90 @@ eleventyExcludeFromCollections: true
     <div class="w-full max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-xl">
         
         <h1 class="text-4xl font-playfair text-charcoal mb-4 border-b pb-2">
-            Southern Sense Admin Panel User Guide
+            The Secret Boss Page Guide (Admin Panel)
         </h1>
         
         <p class="text-lg text-stone leading-relaxed mb-8">
-            This panel is the command center, giving you full control over all e-commerce operations, product catalog, and public-facing content. All changes are saved instantly to the database.
+            This is the control room for our whole store! You can check orders, make more candles, and change the words on the website. Use the buttons on the left to jump to a section.
         </p>
         
         <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
-            1. Dashboard (The Control Center)
+            1. Dashboard (The Store's Report Card)
         </h2>
         <div class="text-charcoal mb-8 space-y-3">
-            <p><strong>Purpose:</strong> Provides a real-time, high-level summary of store health and pending operational tasks.</p>
+            <p><strong>What it does:</strong> This is like a quick morning check-up. It shows if our store is healthy and what we need to work on right now.</p>
             <ul class="list-disc list-inside ml-4">
-                <li>**Total Orders:** The aggregate count of all completed and pending customer orders.</li>
-                <li>**Pending Reviews:** The number of customer reviews currently awaiting moderation and approval.</li>
-                <li>**Active Stock Alerts:** The total count of customers waiting for an item to be restocked.</li>
-                <li>**Low Stock Items (CRITICAL):** The number of unique products where the inventory level is **10 or less**. These items require immediate attention.</li>
+                <li>**Total Orders:** Tells us how many things people bought.</li>
+                <li>**Pending Reviews:** Shows how many people wrote little notes (reviews) that you need to read before they go on the website.</li>
+                <li>**Active Stock Alerts:** Tells us how many people are waiting for a sold-out candle to come back in stock.</li>
+                <li>**Low Stock Items (WARNING!):** Shows the list of products we are almost out of (10 or less left). Time to make more!</li>
             </ul>
         </div>
 
         <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
-            2. Orders Tab (Order Management)
+            2. Orders Tab (The Mailbox)
         </h2>
         <div class="text-charcoal mb-8 space-y-3">
-            <p><strong>Purpose:</strong> Track all sales and monitor shipping status.</p>
+            <p><strong>What it does:</strong> This is where you see everything people have bought so we know what to put in the mail. The newest orders are always at the top.</p>
             <ul class="list-disc list-inside ml-4">
-                <li>**Data Source:** Reads all documents from the <code>/orders</code> collection.</li>
-                <li>**Functionality:** Lists orders, sorted newest first. Displays Order # (truncated), Date, Total, Status (Paid, Shipped, Pending, etc.), and Customer.</li>
-                <li>**Action:** The "Details" button provides a popup with full customer shipping information and itemized line items for fulfillment.</li>
+                <li>**Status:** Tells you if the order is **Paid** (good to ship) or **Pending** (waiting for money).</li>
+                <li>**Action: Details:** Click this to see the person's name and address so you know where to send the candle boxes.</li>
             </ul>
         </div>
         
         <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
-            3. Products Tab (Catalog & Inventory)
+            3. Products Tab (The Warehouse)
         </h2>
         <div class="text-charcoal mb-8 space-y-3">
-            <p><strong>Purpose:</strong> Manage inventory, pricing, and product visibility.</p>
+            <p><strong>What it does:</strong> This lists every single candle and wax melt we sell. This is where you count the inventory!</p>
             <ul class="list-disc list-inside ml-4">
-                <li>**Data Source:** Reads and writes to the <code>/products</code> collection.</li>
-                <li>**Functionality:** Lists all products with their Scent Family, Price, Stock Level, and **Featured** status.</li>
-                <li>**Action:** The "Edit" button opens a modal allowing instantaneous updates to core fields, including `stock` and the critical `featured: boolean` flag (used to promote a product on the Homepage).</li>
+                <li>**Stock:** Shows exactly how many we have right now. If this is 0, the product is sold out.</li>
+                <li>**Featured:** If this says "Featured," it means the candle is special and is on the front page of the website.</li>
+                <li>**Action: Edit:** Click to open a little window where you can change the **Price** or update the **Stock** number after you make a new batch of candles.</li>
             </ul>
         </div>
 
         <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
-            4. Reviews Tab (Social Proof Moderation)
+            4. Reviews Tab (The Note Checker)
         </h2>
         <div class="text-charcoal mb-8 space-y-3">
-            <p><strong>Purpose:</strong> Moderate and approve customer feedback before it appears on product pages.</p>
+            <p><strong>What it does:</strong> People write notes (reviews) to tell us if they liked the candle. You have to check them before they go live!</p>
             <ul class="list-disc list-inside ml-4">
-                <li>**Data Source:** Reads and writes to the <code>/reviews</code> collection.</li>
-                <li>**Functionality:** Fetches all reviews, prioritizing those with <code>approved: false</code> (Pending).</li>
-                <li>**Actions:**
-                    <ul>
-                        <li>**Approve:** Sets `approved: true`. Review immediately appears on the corresponding product page.</li>
-                        <li>**Unapprove:** Sets `approved: false`. Hides the review.</li>
-                        <li>**Delete Permanently:** Removes the review from the database entirely.</li>
-                    </ul>
-                </li>
+                <li>**Action: Approve:** Click this button when you read a nice note! It makes the note show up on the website for everyone to see.</li>
+                <li>**Action: Unapprove:** Click this if a note is mean or confusing. It hides the note from the public.</li>
+                <li>**Action: Delete Permanently:** Click this to throw the note away forever (only use this if you have to).</li>
             </ul>
         </div>
         
         <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
-            5. Stock Alerts Tab (Acquisition Management)
+            5. Stock Alerts Tab (The Waiting List)
         </h2>
         <div class="text-charcoal mb-8 space-y-3">
-            <p><strong>Purpose:</strong> View and clear back-in-stock requests from customers.</p>
+            <p><strong>What it does:</strong> This is the list of customers who are waiting for a sold-out candle to come back.</p>
             <ul class="list-disc list-inside ml-4">
-                <li>**Data Source:** Reads and deletes from the <code>/backInStockRequests</code> collection.</li>
-                <li>**Functionality:** Lists all unresolved requests, indicating the customer email and requested product name.</li>
-                <li>**Actions:**
-                    <ul>
-                        <li>**Email Customer:** Provides a quick `mailto:` link to notify the customer of restock.</li>
-                        <li>**Mark as Resolved:** **Deletes the request from the database**, clearing the alert from the Admin queue (used after stock has been replenished and the customer has been notified).</li>
-                    </ul>
-                </li>
+                <li>**Action: Email Customer:** Click this link to send the customer an email to tell them, "Good news! Your candle is back!"</li>
+                <li>**Action: Mark as Resolved:** **Click this button AFTER you have sent the email.** It takes the person off the waiting list so you don't get confused.</li>
             </ul>
         </div>
         
         <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
-            6. Site Content Tab (CMS)
+            6. Site Content Tab (The Word Changer)
         </h2>
         <div class="text-charcoal mb-8 space-y-3">
-            <p><strong>Purpose:</strong> Update the text and content blocks on all major public pages without touching code.</p>
+            <p><strong>What it does:</strong> This is a magical button! It lets you change the words and pictures on the public pages, like the **About Us** story or the **Candle Care** tips. No coding needed!</p>
             <ul class="list-disc list-inside ml-4">
-                <li>**Data Source:** Reads and writes to the <code>/siteContent</code> collection.</li>
-                <li>**Managed Documents:** You can manage: <code>homepage</code>, <code>about</code>, <code>candleCare</code>, <code>refillProgram</code>, <code>gifting</code>, <code>subscriptions</code>, <code>scent-guide</code>, and <code>scent-glossary</code>.</li>
-                <li>**Functionality:** Dynamically loads all text fields (including rich HTML fields) for the selected page and allows you to save changes instantly.</li>
+                <li>**Managed Pages:** You can change almost everything: the Homepage, About Us, Candle Care, Refill Program, Gifting, Subscriptions, and our Scent Guides.</li>
+                <li>**Action:** Click the page you want to edit, change the words in the boxes, and click **"Save Page Content"**.</li>
             </ul>
         </div>
         
         <h2 class="text-3xl font-playfair text-burnt-orange mb-4 pt-4 border-t">
-            7. Tools / Utility (Developer Access)
+            7. Tools / Utility (The Secret Power Box)
         </h2>
         <div class="text-charcoal mb-8 space-y-3">
-            <p><strong>Purpose:</strong> Provides developer utilities for manual database maintenance, typically for backup or restoration.</p>
+            <p><strong>What it does:</strong> This tab has secret, strong buttons. These are for when the big boss needs to make a copy of ALL the store's information or load a backup copy. </p>
             <ul class="list-disc list-inside ml-4">
-                <li>**Export Database:** Provides the command (`node export-firestore.mjs`) to create a local, safe JSON backup of the entire Firestore database.</li>
-                <li>**Import Database:** Provides the command (`node import-firestore.mjs`) to restore the database from a local JSON file. **Warning:** This will overwrite your current live data.</li>
+                <li>**Rule:** **DO NOT** click or touch anything in this section unless an adult developer tells you it's okay. It can erase all our candles!</li>
             </ul>
         </div>
         

@@ -3,65 +3,63 @@ layout: layout
 title: Subscription Boxes
 ---
 
-<header class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
-    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
-        <h1 id="sub-header-title" class="font-playfair text-6xl font-extrabold text-parchment drop-shadow-lg">Scent Subscriptions</h1>
-    </div>
-</header>
+{% include "page-header.html" with pageTitle: title %}
 
 <main class="container mx-auto p-4 lg:p-8 py-16">
 
-    <div id="loading-state" class="text-center p-12 bg-parchment rounded-xl shadow-lg border border-stone/10">
-        <p class="font-playfair text-2xl text-stone">Loading monthly scent boxes...</p>
-        <div class="mt-4 animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
-    </div>
+    <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
 
-    <section id="subscriptions-section" class="max-w-5xl mx-auto space-y-12 hidden">
-
-        <div class="text-center mb-10">
-            <h2 class="font-playfair text-4xl font-bold text-charcoal mb-4">Never Run Out of Comfort</h2>
-            <div id="sub-overview-content" class="prose max-w-none text-stone font-roboto text-lg mx-auto">
-                <p>Subscription overview loading...</p>
-            </div>
+        <div id="loading-state" class="text-center p-12 bg-parchment rounded-xl shadow-lg border border-stone/10">
+            <p class="font-playfair text-2xl text-stone">Loading monthly scent boxes...</p>
+            <div class="mt-4 animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
         </div>
 
-        <div class="grid md:grid-cols-3 gap-8 text-center">
-            
-            <div id="option-1-card" class="bg-white p-6 rounded-xl shadow-2xl border-4 border-transparent hover:border-burnt-orange transition-all duration-300 space-y-3">
-                <h3 id="option-1-title" class="font-playfair text-2xl font-bold text-burnt-orange">The Classic Box</h3>
-                <p id="option-1-price" class="font-playfair text-3xl font-extrabold text-charcoal">$XX/Month</p>
-                <p id="option-1-desc" class="text-stone">Description loading...</p>
-                <a href="/cart/" class="inline-block py-2 px-6 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150 mt-4">
-                    Select Plan
-                </a>
+        <section id="subscriptions-section" class="max-w-5xl mx-auto space-y-12 hidden">
+
+            <div class="text-center mb-10">
+                <h2 class="font-playfair text-4xl font-bold text-charcoal mb-4">Never Run Out of Comfort</h2>
+                <div id="sub-overview-content" class="prose max-w-none text-stone font-roboto text-lg mx-auto">
+                    <p>Subscription overview loading...</p>
+                </div>
             </div>
 
-            <div id="option-2-card" class="bg-white p-6 rounded-xl shadow-2xl border-4 border-transparent hover:border-burnt-orange transition-all duration-300 space-y-3">
-                <h3 id="option-2-title" class="font-playfair text-2xl font-bold text-burnt-orange">The Luxe Box</h3>
-                <p id="option-2-price" class="font-playfair text-3xl font-extrabold text-charcoal">$XX/Month</p>
-                <p id="option-2-desc" class="text-stone">Description loading...</p>
-                <a href="/cart/" class="inline-block py-2 px-6 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150 mt-4">
-                    Select Plan
-                </a>
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                
+                <div id="option-1-card" class="bg-white p-6 rounded-xl shadow-2xl border-4 border-transparent hover:border-burnt-orange transition-all duration-300 space-y-3">
+                    <h3 id="option-1-title" class="font-playfair text-2xl font-bold text-burnt-orange">The Classic Box</h3>
+                    <p id="option-1-price" class="font-playfair text-3xl font-extrabold text-charcoal">$XX/Month</p>
+                    <p id="option-1-desc" class="text-stone">Description loading...</p>
+                    <a href="/cart/" class="inline-block py-2 px-6 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150 mt-4">
+                        Select Plan
+                    </a>
+                </div>
+
+                <div id="option-2-card" class="bg-white p-6 rounded-xl shadow-2xl border-4 border-transparent hover:border-burnt-orange transition-all duration-300 space-y-3">
+                    <h3 id="option-2-title" class="font-playfair text-2xl font-bold text-burnt-orange">The Luxe Box</h3>
+                    <p id="option-2-price" class="font-playfair text-3xl font-extrabold text-charcoal">$XX/Month</p>
+                    <p id="option-2-desc" class="text-stone">Description loading...</p>
+                    <a href="/cart/" class="inline-block py-2 px-6 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150 mt-4">
+                        Select Plan
+                    </a>
+                </div>
+
+                <div id="option-3-card" class="bg-white p-6 rounded-xl shadow-2xl border-4 border-transparent hover:border-burnt-orange transition-all duration-300 space-y-3">
+                    <h3 id="option-3-title" class="font-playfair text-2xl font-bold text-burnt-orange">The Melt Box</h3>
+                    <p id="option-3-price" class="font-playfair text-3xl font-extrabold text-charcoal">$XX/Month</p>
+                    <p id="option-3-desc" class="text-stone">Description loading...</p>
+                    <a href="/cart/" class="inline-block py-2 px-6 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150 mt-4">
+                        Select Plan
+                    </a>
+                </div>
             </div>
 
-            <div id="option-3-card" class="bg-white p-6 rounded-xl shadow-2xl border-4 border-transparent hover:border-burnt-orange transition-all duration-300 space-y-3">
-                <h3 id="option-3-title" class="font-playfair text-2xl font-bold text-burnt-orange">The Melt Box</h3>
-                <p id="option-3-price" class="font-playfair text-3xl font-extrabold text-charcoal">$XX/Month</p>
-                <p id="option-3-desc" class="text-stone">Description loading...</p>
-                <a href="/cart/" class="inline-block py-2 px-6 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150 mt-4">
-                    Select Plan
-                </a>
+            <div id="sub-faqs-content" class="bg-parchment p-8 rounded-xl shadow-inner border border-stone/10 mt-12">
+                <h2 class="font-playfair text-3xl font-bold text-charcoal mb-6 text-center">Frequently Asked Questions</h2>
+                <p class="text-stone text-center">FAQs loading...</p>
             </div>
-        </div>
+        </section>
 
-        <div id="sub-faqs-content" class="bg-parchment p-8 rounded-xl shadow-inner border border-stone/10 mt-12">
-            <h2 class="font-playfair text-3xl font-bold text-charcoal mb-6 text-center">Frequently Asked Questions</h2>
-            <p class="text-stone text-center">FAQs loading...</p>
-        </div>
-    </section>
-
-</main>
+    </div> </main>
 
 <script type="module">
     // FIX: Corrected import path to include /src/ directory
@@ -109,7 +107,7 @@ title: Subscription Boxes
                 const data = docSnap.data();
                 
                 // 1. Header and Overview
-                subHeaderTitle.textContent = data.subHeaderTitle || "Scent Subscriptions";
+                // subHeaderTitle.textContent = data.subHeaderTitle || "Scent Subscriptions"; // Removed, set by Eleventy
                 subOverviewContent.innerHTML = data.subOverviewContent || "<p>Subscription overview not set.</p>";
                 
                 // 2. Subscription Options
@@ -135,7 +133,7 @@ title: Subscription Boxes
             } else {
                 // FIX: Better error handling for missing document
                 console.warn("Subscriptions Page: Document 'siteContent/subscriptions' does not exist. Falling back to default content.");
-                subHeaderTitle.textContent = "Subscriptions (Content Missing)";
+                // subHeaderTitle.textContent = "Subscriptions (Content Missing)"; // Removed, set by Eleventy
                 loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Configuration Error: The 'siteContent/subscriptions' document is missing from Firestore. Please populate it in the Admin Panel.</p>`;
                 
                 // Still show the general section layout with default texts
@@ -149,3 +147,5 @@ title: Subscription Boxes
 
     document.addEventListener('DOMContentLoaded', loadSubscriptionsContent);
 </script>
+
+**Next file to update: `src/scent-guide.html`** (for visual separation)

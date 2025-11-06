@@ -3,78 +3,76 @@ layout: layout
 title: Find Your Perfect Scent
 ---
 
-<header class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
-    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
-        <h1 class="font-playfair text-6xl font-extrabold text-parchment drop-shadow-lg">Find Your Perfect Scent</h1>
-    </div>
-</header>
+{% include "page-header.html" with pageTitle: title %}
 
 <main class="container mx-auto p-4 lg:p-8 py-16">
-    <div class="max-w-3xl mx-auto bg-parchment p-8 rounded-xl shadow-2xl border border-stone/10">
+    <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
 
-        <div id="quiz-container">
-            <h2 id="quiz-title" class="font-playfair text-4xl font-bold text-charcoal text-center mb-6">Let's Begin</h2>
-            <p id="progress-text" class="text-center font-roboto text-sm text-stone mb-8">Welcome</p>
+        <div class="max-w-3xl mx-auto bg-parchment p-8 rounded-xl shadow-2xl border border-stone/10">
 
-            <form id="scent-quiz-form-container"> 
-                
-                <div id="step-0" class="quiz-step">
-                    <p class="text-center text-lg text-stone mb-8">Answer a few quick questions to discover the scent family that best matches your personal sanctuary.</p>
-                    <button type="button" data-next-step="1" class="w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg shadow-md hover:bg-opacity-90 transition duration-150 start-quiz-button">
-                        Start Quiz
-                    </button>
-                </div>
+            <div id="quiz-container">
+                <h2 id="quiz-title" class="font-playfair text-4xl font-bold text-charcoal text-center mb-6">Let's Begin</h2>
+                <p id="progress-text" class="text-center font-roboto text-sm text-stone mb-8">Welcome</p>
 
-                <div id="step-1" class="quiz-step hidden">
-                    <h3 class="font-playfair text-2xl font-bold text-charcoal mb-4">1. How do you want to feel right now?</h3>
-                    <div class="space-y-3">
-                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q1" value="calm" class="mr-3 accent-burnt-orange" required> Cozy & Calm (E.g., Sunday morning)</label>
-                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q1" value="uplifted" class="mr-3 accent-burnt-orange"> Refreshed & Uplifted (E.g., Spring break)</label>
-                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q1" value="warm" class="mr-3 accent-burnt-orange"> Warm & Inviting (E.g., Dinner party)</label>
+                <form id="scent-quiz-form-container"> 
+                    
+                    <div id="step-0" class="quiz-step">
+                        <p class="text-center text-lg text-stone mb-8">Answer a few quick questions to discover the scent family that best matches your personal sanctuary.</p>
+                        <button type="button" data-next-step="1" class="w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg shadow-md hover:bg-opacity-90 transition duration-150 start-quiz-button">
+                            Start Quiz
+                        </button>
                     </div>
-                    <button type="button" data-next-step="2" class="mt-6 w-full py-3 bg-burnt-orange text-parchment font-bold rounded-lg transition duration-150 next-step-button">Next &rarr;</button>
-                </div>
 
-                <div id="step-2" class="quiz-step hidden">
-                    <h3 class="font-playfair text-2xl font-bold text-charcoal mb-4">2. Which environment do you prefer?</h3>
-                    <div class="space-y-3">
-                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q2" value="nature" class="mr-3 accent-burnt-orange" required> A deep forest after the rain</label>
-                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q2" value="bakery" class="mr-3 accent-burnt-orange"> A gourmet bakery full of fresh pastry</label>
-                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q2" value="patio" class="mr-3 accent-burnt-orange"> A sun-drenched coastal patio</label>
+                    <div id="step-1" class="quiz-step hidden">
+                        <h3 class="font-playfair text-2xl font-bold text-charcoal mb-4">1. How do you want to feel right now?</h3>
+                        <div class="space-y-3">
+                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q1" value="calm" class="mr-3 accent-burnt-orange" required> Cozy & Calm (E.g., Sunday morning)</label>
+                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q1" value="uplifted" class="mr-3 accent-burnt-orange"> Refreshed & Uplifted (E.g., Spring break)</label>
+                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q1" value="warm" class="mr-3 accent-burnt-orange"> Warm & Inviting (E.g., Dinner party)</label>
+                        </div>
+                        <button type="button" data-next-step="2" class="mt-6 w-full py-3 bg-burnt-orange text-parchment font-bold rounded-lg transition duration-150 next-step-button">Next &rarr;</button>
                     </div>
-                    <button type="button" data-next-step="3" class="mt-6 w-full py-3 bg-burnt-orange text-parchment font-bold rounded-lg transition duration-150 next-step-button">Next &rarr;</button>
-                </div>
 
-                <div id="step-3" class="quiz-step hidden">
-                    <h3 class="font-playfair text-2xl font-bold text-charcoal mb-4">3. What's your ideal dessert?</h3>
-                    <div class="space-y-3">
-                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q3" value="citrus" class="mr-3 accent-burnt-orange" required> Bright, fresh lemon meringue pie</label>
-                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q3" value="wood" class="mr-3 accent-burnt-orange"> A rich, dark chocolate truffle</label>
-                        <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q3" value="spice" class="mr-3 accent-burnt-orange"> Gingerbread cookies with cinnamon frosting</label>
+                    <div id="step-2" class="quiz-step hidden">
+                        <h3 class="font-playfair text-2xl font-bold text-charcoal mb-4">2. Which environment do you prefer?</h3>
+                        <div class="space-y-3">
+                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q2" value="nature" class="mr-3 accent-burnt-orange" required> A deep forest after the rain</label>
+                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q2" value="bakery" class="mr-3 accent-burnt-orange"> A gourmet bakery full of fresh pastry</label>
+                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q2" value="patio" class="mr-3 accent-burnt-orange"> A sun-drenched coastal patio</label>
+                        </div>
+                        <button type="button" data-next-step="3" class="mt-6 w-full py-3 bg-burnt-orange text-parchment font-bold rounded-lg transition duration-150 next-step-button">Next &rarr;</button>
                     </div>
-                    <button type="submit" id="submit-quiz-button" class="mt-6 w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg transition duration-150">
-                        Show My Scent
-                    </button>
-                </div>
-            </form>
 
-            <div id="result-step" class="quiz-step hidden text-center">
-                <h2 class="font-playfair text-3xl font-bold text-charcoal mb-4">Your Perfect Match:</h2>
-                <div id="result-display" class="bg-white p-6 rounded-lg shadow-inner mb-6 space-y-3">
-                    <div id="loading-result" class="space-y-3">
-                        <p class="font-roboto text-stone text-lg">Analyzing your preferences...</p>
-                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
+                    <div id="step-3" class="quiz-step hidden">
+                        <h3 class="font-playfair text-2xl font-bold text-charcoal mb-4">3. What's your ideal dessert?</h3>
+                        <div class="space-y-3">
+                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q3" value="citrus" class="mr-3 accent-burnt-orange" required> Bright, fresh lemon meringue pie</label>
+                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q3" value="wood" class="mr-3 accent-burnt-orange"> A rich, dark chocolate truffle</label>
+                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q3" value="spice" class="mr-3 accent-burnt-orange"> Gingerbread cookies with cinnamon frosting</label>
+                        </div>
+                        <button type="submit" id="submit-quiz-button" class="mt-6 w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg transition duration-150">
+                            Show My Scent
+                        </button>
                     </div>
-                    <h3 id="result-family-title" class="font-playfair text-4xl font-extrabold text-burnt-orange hidden"></h3>
-                    <p id="result-description" class="font-roboto text-lg text-stone hidden"></p>
+                </form>
+
+                <div id="result-step" class="quiz-step hidden text-center">
+                    <h2 class="font-playfair text-3xl font-bold text-charcoal mb-4">Your Perfect Match:</h2>
+                    <div id="result-display" class="bg-white p-6 rounded-lg shadow-inner mb-6 space-y-3">
+                        <div id="loading-result" class="space-y-3">
+                            <p class="font-roboto text-stone text-lg">Analyzing your preferences...</p>
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
+                        </div>
+                        <h3 id="result-family-title" class="font-playfair text-4xl font-extrabold text-burnt-orange hidden"></h3>
+                        <p id="result-description" class="font-roboto text-lg text-stone hidden"></p>
+                    </div>
+                    <a id="result-link" href="/shop/" class="inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150 hidden">
+                        Shop This Scent Family &rarr;
+                    </a>
                 </div>
-                <a id="result-link" href="/shop/" class="inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150 hidden">
-                    Shop This Scent Family &rarr;
-                </a>
             </div>
         </div>
-    </div>
-</main>
+    </div> </main>
 
 <script type="module">
     // CRITICAL FIX: The logic is now self-contained, importing Firebase only where needed.
@@ -136,6 +134,7 @@ title: Find Your Perfect Scent
 
     /**
      * Hides all steps and shows the current step/result.
+     * @param {number} stepNumber - The step index (0-4).
      */
     function showStep(stepNumber) {
         // 1. Hide all elements with the class .quiz-step
@@ -180,6 +179,7 @@ title: Find Your Perfect Scent
 
     /**
      * Collects answers from the current step and moves to the next.
+     * @param {Event} e - The click event.
      */
     function handleNextStep(e) {
         // Only validate if we are transitioning from a question step (1-3)
@@ -209,6 +209,7 @@ title: Find Your Perfect Scent
 
     /**
      * Determines the top-voted scent family and displays the result.
+     * @param {Event} e - The form submission event.
      */
     async function calculateResult(e) {
         e.preventDefault();
@@ -289,3 +290,5 @@ title: Find Your Perfect Scent
         formContainer.addEventListener('submit', calculateResult);
     });
 </script>
+
+**Next file to update: `src/admin.html`** (for visual separation)

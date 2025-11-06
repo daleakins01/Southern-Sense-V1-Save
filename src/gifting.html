@@ -3,57 +3,55 @@ layout: layout
 title: Thoughtful Gifting
 ---
 
-<header class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
-    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
-        <h1 id="gifting-header-title" class="font-playfair text-6xl font-extrabold text-parchment drop-shadow-lg">The Art of Gifting</h1>
-    </div>
-</header>
+{% include "page-header.html" with pageTitle: title %}
 
 <main class="container mx-auto p-4 lg:p-8 py-16">
 
-    <div id="loading-state" class="text-center p-12 bg-parchment rounded-xl shadow-lg border border-stone/10">
-        <p class="font-playfair text-2xl text-stone">Loading personalized gift options...</p>
-        <div class="mt-4 animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
-    </div>
+    <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
 
-    <section id="gifting-section" class="max-w-5xl mx-auto space-y-12 hidden">
-
-        <div class="text-center mb-10">
-            <h2 class="font-playfair text-4xl font-bold text-charcoal mb-4">Gifts That Impress</h2>
-            <div id="gifting-overview-content" class="prose max-w-none text-stone font-roboto text-lg mx-auto">
-                <p>Overview loading...</p>
-            </div>
+        <div id="loading-state" class="text-center p-12 bg-parchment rounded-xl shadow-lg border border-stone/10">
+            <p class="font-playfair text-2xl text-stone">Loading personalized gift options...</p>
+            <div class="mt-4 animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
         </div>
 
-        <div class="grid md:grid-cols-3 gap-8 text-center">
-            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
-                <h3 id="option-1-title" class="font-playfair text-2xl font-bold text-burnt-orange">Curated Gift Sets</h3>
-                <p id="option-1-text" class="text-stone">Text loading...</p>
-                <a href="/shop/?filter=sets" class="text-burnt-orange font-semibold hover:underline mt-2 inline-block">Shop Sets &rarr;</a>
+        <section id="gifting-section" class="max-w-5xl mx-auto space-y-12 hidden">
+
+            <div class="text-center mb-10">
+                <h2 class="font-playfair text-4xl font-bold text-charcoal mb-4">Gifts That Impress</h2>
+                <div id="gifting-overview-content" class="prose max-w-none text-stone font-roboto text-lg mx-auto">
+                    <p>Overview loading...</p>
+                </div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
-                <h3 id="option-2-title" class="font-playfair text-2xl font-bold text-burnt-orange">Luxury Gift Wrapping</h3>
-                <p id="option-2-text" class="text-stone">Text loading...</p>
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+                    <h3 id="option-1-title" class="font-playfair text-2xl font-bold text-burnt-orange">Curated Gift Sets</h3>
+                    <p id="option-1-text" class="text-stone">Text loading...</p>
+                    <a href="/shop/?filter=sets" class="text-burnt-orange font-semibold hover:underline mt-2 inline-block">Shop Sets &rarr;</a>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+                    <h3 id="option-2-title" class="font-playfair text-2xl font-bold text-burnt-orange">Luxury Gift Wrapping</h3>
+                    <p id="option-2-text" class="text-stone">Text loading...</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+                    <h3 id="option-3-title" class="font-playfair text-2xl font-bold text-burnt-orange">E-Gift Cards</h3>
+                    <p id="option-3-text" class="text-stone">Text loading...</p>
+                    <a href="/gift-cards/" class="text-burnt-orange font-semibold hover:underline mt-2 inline-block">Purchase Now &rarr;</a>
+                </div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
-                <h3 id="option-3-title" class="font-playfair text-2xl font-bold text-burnt-orange">E-Gift Cards</h3>
-                <p id="option-3-text" class="text-stone">Text loading...</p>
-                <a href="/gift-cards/" class="text-burnt-orange font-semibold hover:underline mt-2 inline-block">Purchase Now &rarr;</a>
+            <div class="bg-parchment p-8 rounded-xl shadow-2xl border border-stone/10 text-center mt-12">
+                <h2 id="corporate-title" class="font-playfair text-3xl font-bold text-charcoal mb-4">Corporate & Bulk Orders</h2>
+                <p id="corporate-text" class="text-stone text-lg max-w-3xl mx-auto mb-6">Text loading...</p>
+                <a href="/contact/?subject=Wholesale Inquiry" class="inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150">
+                    Inquire Today
+                </a>
             </div>
-        </div>
+        </section>
 
-        <div class="bg-parchment p-8 rounded-xl shadow-2xl border border-stone/10 text-center mt-12">
-            <h2 id="corporate-title" class="font-playfair text-3xl font-bold text-charcoal mb-4">Corporate & Bulk Orders</h2>
-            <p id="corporate-text" class="text-stone text-lg max-w-3xl mx-auto mb-6">Text loading...</p>
-            <a href="/contact/?subject=Wholesale Inquiry" class="inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-amber-700 transition duration-150">
-                Inquire Today
-            </a>
-        </div>
-    </section>
-
-</main>
+    </div> </main>
 
 <script type="module">
     // FIX: Corrected import path to include /src/ directory
@@ -96,7 +94,8 @@ title: Thoughtful Gifting
                 const data = docSnap.data();
                 
                 // 1. Header and Overview
-                giftingHeaderTitle.textContent = data.giftingHeaderTitle || "The Art of Gifting";
+                // NOTE: The title is now set via the Eleventy include in the layout
+                // giftingHeaderTitle.textContent = data.giftingHeaderTitle || "The Art of Gifting";
                 giftingOverviewContent.innerHTML = data.giftingOverviewContent || "<p>Gifting overview not set.</p>";
                 
                 // 2. Gift Options Grid
@@ -127,3 +126,5 @@ title: Thoughtful Gifting
 
     document.addEventListener('DOMContentLoaded', loadGiftingContent);
 </script>
+
+**Next file to update: `src/refill-program.html`** (Syntactic Correction and Visual Fix)

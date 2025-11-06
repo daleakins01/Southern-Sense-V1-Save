@@ -177,79 +177,83 @@ title: Order Confirmed
 ; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
 </script>
 
+{% include "page-header.html" with pageTitle: title %}
+
 <main class="container mx-auto px-4 py-12 min-h-screen">
-    
-    <div id="confirmation-loader" class="flex justify-center items-center h-96">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-burnt-orange"></div>
-    </div>
-    
-    <div id="error-section" class="hidden text-center max-w-lg mx-auto py-20 bg-parchment rounded-lg shadow-lg">
-        <h1 class="text-4xl font-playfair text-red-600 mb-4">Oops! Order Not Found</h1>
-        <p id="error-message" class="text-lg text-stone mb-6">
-            The order ID provided could not be matched with any record.
-        </p>
-        <a href="/shop/" class="px-8 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-lg hover:bg-burnt-orange/80 transition duration-300">
-            Return to Shop
-        </a>
-    </div>
+    <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
 
-    <div id="confirmation-content" class="hidden max-w-4xl mx-auto">
+        <div id="confirmation-loader" class="flex justify-center items-center h-96">
+            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-burnt-orange"></div>
+        </div>
         
-        <div class="text-center pb-8 border-b border-stone/20 mb-8">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-600 mx-auto mb-4" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-            <h1 class="text-5xl font-playfair text-charcoal mb-2">Order Confirmed!</h1>
-            <p class="text-xl text-stone">Thank you for your purchase from Southern Sense.</p>
-            <p class="text-lg text-charcoal font-medium mt-4">Order #<span id="order-id-display">...</span></p>
-            <div id="auth-message-container">
-                </div>
+        <div id="error-section" class="hidden text-center max-w-lg mx-auto py-20 bg-parchment rounded-lg shadow-lg">
+            <h1 class="text-4xl font-playfair text-red-600 mb-4">Oops! Order Not Found</h1>
+            <p id="error-message" class="text-lg text-stone mb-6">
+                The order ID provided could not be matched with any record.
+            </p>
+            <a href="/shop/" class="px-8 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-lg hover:bg-burnt-orange/80 transition duration-300">
+                Return to Shop
+            </a>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div id="confirmation-content" class="hidden max-w-4xl mx-auto">
             
-            <div class="lg:col-span-2">
-                <h2 class="text-3xl font-playfair text-charcoal mb-4 border-b pb-2">What You Ordered</h2>
-                <div id="itemized-list-container">
+            <div class="text-center pb-8 border-b border-stone/20 mb-8">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-600 mx-auto mb-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <h1 class="text-5xl font-playfair text-charcoal mb-2">Order Confirmed!</h1>
+                <p class="text-xl text-stone">Thank you for your purchase from Southern Sense.</p>
+                <p class="text-lg text-charcoal font-medium mt-4">Order #<span id="order-id-display">...</span></p>
+                <div id="auth-message-container">
                     </div>
+            </div>
 
-                <div class="mt-6 space-y-2 max-w-xs ml-auto">
-                    <div class="flex justify-between text-stone">
-                        <span>Subtotal:</span>
-                        <span id="subtotal-display" class="font-medium"></span>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <div class="lg:col-span-2">
+                    <h2 class="text-3xl font-playfair text-charcoal mb-4 border-b pb-2">What You Ordered</h2>
+                    <div id="itemized-list-container">
+                        </div>
+
+                    <div class="mt-6 space-y-2 max-w-xs ml-auto">
+                        <div class="flex justify-between text-stone">
+                            <span>Subtotal:</span>
+                            <span id="subtotal-display" class="font-medium"></span>
+                        </div>
+                        <div class="flex justify-between text-stone">
+                            <span>Shipping:</span>
+                            <span id="shipping-display" class="font-medium"></span>
+                        </div>
+                        <div class="flex justify-between text-xl font-bold text-burnt-orange pt-2 border-t">
+                            <span>GRAND TOTAL:</span>
+                            <span id="order-total-display"></span> 
+                        </div>
                     </div>
-                    <div class="flex justify-between text-stone">
-                        <span>Shipping:</span>
-                        <span id="shipping-display" class="font-medium"></span>
-                    </div>
-                    <div class="flex justify-between text-xl font-bold text-burnt-orange pt-2 border-t">
-                        <span>GRAND TOTAL:</span>
-                        <span id="order-total-display"></span> 
+                    
+                    <div class="mt-8 pt-4 border-t border-stone/20">
+                        <p class="text-sm text-stone">
+                            Questions about your order? Email us at <a href="mailto:support@southernsense.org" class="text-burnt-orange hover:underline">support@southernsense.org</a> and reference your Order #.
+                        </p>
                     </div>
                 </div>
-                
-                <div class="mt-8 pt-4 border-t border-stone/20">
-                    <p class="text-sm text-stone">
-                        Questions about your order? Email us at <a href="mailto:support@southernsense.org" class="text-burnt-orange hover:underline">support@southernsense.org</a> and reference your Order #.
+
+                <div class="lg:col-span-1 p-6 bg-parchment rounded-lg shadow-md border-l-4 border-stone">
+                    <h2 class="text-3xl font-playfair text-charcoal mb-4 border-b pb-2">Shipping To</h2>
+                    <p id="shipping-name-display" class="text-lg font-semibold text-charcoal mb-1">
+                        Shipping Name
                     </p>
+                    <address id="shipping-address-display" class="text-stone not-italic leading-relaxed">
+                        </address>
+
+                    <h3 class="text-2xl font-playfair text-charcoal mt-6 mb-2 pt-4 border-t">Estimated Delivery</h3>
+                    <p class="text-stone">5-7 Business Days (Excludes processing time)</p>
+                    
+                    <h3 class="text-2xl font-playfair text-charcoal mt-6 mb-2 pt-4 border-t">Date Placed</h3>
+                    <p id="order-date-display" class="text-stone"></p>
                 </div>
-            </div>
-
-            <div class="lg:col-span-1 p-6 bg-parchment rounded-lg shadow-md border-l-4 border-stone">
-                <h2 class="text-3xl font-playfair text-charcoal mb-4 border-b pb-2">Shipping To</h2>
-                <p id="shipping-name-display" class="text-lg font-semibold text-charcoal mb-1">
-                    Shipping Name
-                </p>
-                <address id="shipping-address-display" class="text-stone not-italic leading-relaxed">
-                    </address>
-
-                <h3 class="text-2xl font-playfair text-charcoal mt-6 mb-2 pt-4 border-t">Estimated Delivery</h3>
-                <p class="text-stone">5-7 Business Days (Excludes processing time)</p>
                 
-                <h3 class="text-2xl font-playfair text-charcoal mt-6 mb-2 pt-4 border-t">Date Placed</h3>
-                <p id="order-date-display" class="text-stone"></p>
             </div>
-            
         </div>
-    </div>
-</main>
+
+    </div> </main>

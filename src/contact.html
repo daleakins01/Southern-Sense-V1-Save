@@ -94,72 +94,79 @@ title: Contact Us
 
 </script>
 
+{% include "page-header.html" with pageTitle: title %}
+
 <main class="container mx-auto px-4 py-12 min-h-screen">
     
-    <div class="max-w-4xl mx-auto">
-        <header class="text-center mb-12">
-            <h1 class="text-5xl font-playfair text-charcoal mb-4">Get In Touch</h1>
-            <p class="text-lg text-stone max-w-2xl mx-auto">
-                Whether you have a question about an order, our refill program, or need scent advice, we're here to help.
-            </p>
-        </header>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-white p-8 rounded-xl shadow-lg border border-stone/10">
+    <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
 
-            <div class="lg:order-1">
-                <form id="contact-form" class="space-y-6">
-                    
-                    <h2 class="text-2xl font-playfair text-burnt-orange mb-4">Send Us a Message</h2>
+        <div class="max-w-4xl mx-auto">
+            <header class="text-center mb-12">
+                <h1 class="text-5xl font-playfair text-charcoal mb-4">Get In Touch</h1>
+                <p class="text-lg text-stone max-w-2xl mx-auto">
+                    Whether you have a question about an order, our refill program, or need scent advice, we're here to help.
+                </p>
+            </header>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-white p-8 rounded-xl shadow-lg border border-stone/10">
 
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-stone mb-1">Your Name</label>
-                        <input type="text" id="name" name="name" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
-                    </div>
-                    
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-stone mb-1">Email Address</label>
-                        <input type="email" id="email" name="email" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
-                    </div>
-                    
-                    <div>
-                        <label for="subject" class="block text-sm font-medium text-stone mb-1">Subject (Optional)</label>
-                        <input type="text" id="subject" name="subject" class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
-                    </div>
+                <div class="lg:order-1">
+                    <form id="contact-form" class="space-y-6">
+                        
+                        <h2 class="text-2xl font-playfair text-burnt-orange mb-4">Send Us a Message</h2>
 
-                    <div>
-                        <label for="message" class="block text-sm font-medium text-stone mb-1">Your Message</label>
-                        <textarea id="message" name="message" rows="5" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange"></textarea>
-                    </div>
-                    
-                    <div id="form-message" class="hidden text-sm font-medium p-3 rounded-lg"></div>
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-stone mb-1">Your Name</label>
+                            <input type="text" id="name" name="name" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
+                        </div>
+                        
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-stone mb-1">Email Address</label>
+                            <input type="email" id="email" name="email" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
+                        </div>
+                        
+                        <div>
+                            <label for="subject" class="block text-sm font-medium text-stone mb-1">Subject (Optional)</label>
+                            <input type="text" id="subject" name="subject" class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
+                        </div>
 
-                    <button type="submit" class="w-full px-4 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-burnt-orange/80 transition duration-300">
-                        Send Message
-                    </button>
-                </form>
-            </div>
+                        <div>
+                            <label for="message" class="block text-sm font-medium text-stone mb-1">Your Message</label>
+                            <textarea id="message" name="message" rows="5" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange"></textarea>
+                        </div>
+                        
+                        <div id="form-message" class="hidden text-sm font-medium p-3 rounded-lg"></div>
 
-            <div class="lg:order-2 space-y-8 p-4 bg-parchment rounded-lg border-l-4 border-stone">
-                
-                <h2 class="text-2xl font-playfair text-charcoal mb-4">Direct Contact & Support</h2>
-
-                <div>
-                    <h3 class="font-bold text-lg text-charcoal mb-1">Email Support</h3>
-                    <a href="mailto:support@southernsense.org" class="text-burnt-orange hover:underline">support@southernsense.org</a>
-                    <p class="text-sm text-stone">Best for order inquiries, returns, and general questions.</p>
+                        <button type="submit" class="w-full px-4 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-burnt-orange/80 transition duration-300">
+                            Send Message
+                        </button>
+                    </form>
                 </div>
 
-                <div>
-                    <h3 class="font-bold text-lg text-charcoal mb-1">Business Hours</h3>
-                    <p class="text-stone">Monday - Friday: 9:00 AM - 5:00 PM EST</p>
-                    <p class="text-stone">Closed on weekends and major holidays.</p>
-                </div>
+                <div class="lg:order-2 space-y-8 p-4 bg-parchment rounded-lg border-l-4 border-stone">
+                    
+                    <h2 class="text-2xl font-playfair text-charcoal mb-4">Direct Contact & Support</h2>
 
-                <div>
-                    <h3 class="font-bold text-lg text-charcoal mb-1">Press & Media</h3>
-                    <a href="mailto:media@southernsense.org" class="text-burnt-orange hover:underline">media@southernsense.org</a>
+                    <div>
+                        <h3 class="font-bold text-lg text-charcoal mb-1">Email Support</h3>
+                        <a href="mailto:support@southernsense.org" class="text-burnt-orange hover:underline">support@southernsense.org</a>
+                        <p class="text-sm text-stone">Best for order inquiries, returns, and general questions.</p>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-lg text-charcoal mb-1">Business Hours</h3>
+                        <p class="text-stone">Monday - Friday: 9:00 AM - 5:00 PM EST</p>
+                        <p class="text-stone">Closed on weekends and major holidays.</p>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-lg text-charcoal mb-1">Press & Media</h3>
+                        <a href="mailto:media@southernsense.org" class="text-burnt-orange hover:underline">media@southernsense.org</a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</main>
+
+    </div> </main>
+
+**Next file to update: `src/admin-login.html`** (to continue with visual fix consistency)

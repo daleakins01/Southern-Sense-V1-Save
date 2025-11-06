@@ -1070,233 +1070,236 @@ title: Admin Panel
 </script>
 
 <main class="container mx-auto px-4 py-12 min-h-screen">
+    
     <div id="admin-loader" class="flex justify-center items-center h-64">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-stone"></div>
     </div>
+    
+    <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
 
-    <div id="admin-content" class="hidden">
-        <h1 class="text-4xl font-playfair text-charcoal mb-8 border-b pb-4">Southern Sense Admin Panel</h1>
+        <div id="admin-content" class="hidden">
+            <h1 class="text-4xl font-playfair text-charcoal mb-8 border-b pb-4">Southern Sense Admin Panel</h1>
 
-        <div class="flex flex-col lg:flex-row gap-8">
-            <div class="lg:w-1/4">
-                <nav class="bg-parchment p-4 rounded-lg shadow-md sticky top-6">
-                    <p class="text-sm font-bold text-stone uppercase tracking-wider mb-2">Operations</p>
-                    <button data-tab="tab-dashboard" class="tab-button w-full text-left p-3 rounded-lg font-medium transition duration-150 ease-in-out bg-stone text-parchment">
-                        Dashboard
-                    </button>
-                    <button data-tab="tab-orders" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
-                        Orders
-                    </button>
-                    <button data-tab="tab-products" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
-                        Products
-                    </button>
-                    <button data-tab="tab-reviews" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
-                        Reviews
-                    </button>
-                    <button data-tab="tab-stock-alerts" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
-                        Stock Alerts
-                    </button>
-                    
-                    <p class="text-sm font-bold text-stone uppercase tracking-wider mt-6 mb-2 border-t pt-4">Configuration</p>
-                    <button data-tab="tab-content" class="tab-button w-full text-left p-3 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
-                        Site Content
-                    </button>
-                    <button data-tab="tab-tools" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
-                        Tools / Utility
-                    </button>
-                    
-                    <p class="text-sm font-bold text-stone uppercase tracking-wider mt-6 mb-2 border-t pt-4">Help & Documentation</p>
-                    <a href="/admin-guide/" target="_blank" class="w-full block text-left p-3 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
-                        User Guide
-                    </a>
-                    <button id="logout-button" class="w-full text-left p-3 mt-6 rounded-lg font-medium text-red-600 hover:bg-red-50/50 transition duration-150 ease-in-out">
-                        Log Out
-                    </button>
-                </nav>
-            </div>
-
-            <div class="lg:w-3/4">
-                
-                <div id="tab-dashboard" class="tab-content bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-3xl font-playfair text-charcoal mb-4 border-b pb-2">Admin Dashboard</h2>
-                    <p class="text-stone mb-6">Welcome to the control center. Use the sidebar to navigate management tasks.</p>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        
-                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                            <h3 class="text-xl font-medium text-charcoal">Total Orders</h3>
-                            <p id="total-orders-count" class="text-4xl font-bold text-burnt-orange mt-2">--</p>
-                            <p class="text-sm text-stone mt-1">Orders recorded to date.</p>
-                        </div>
-                        
-                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                            <h3 class="text-xl font-medium text-charcoal">Total Revenue</h3>
-                            <p id="total-revenue-summary" class="text-4xl font-bold text-green-600 mt-2">--</p>
-                            <p class="text-sm text-stone mt-1">Total lifetime sales.</p>
-                        </div>
-                        
-                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                            <h3 class="text-xl font-medium text-charcoal">Avg. Order Value</h3>
-                            <p id="aov-summary" class="text-4xl font-bold text-burnt-orange mt-2">--</p>
-                            <p class="text-sm text-stone mt-1">Sales average per transaction.</p>
-                        </div>
-
-                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                            <h3 class="text-xl font-medium text-charcoal">Pending Reviews</h3>
-                            <p id="pending-reviews-count" class="text-4xl font-bold text-stone mt-2">--</p>
-                            <a data-tab="tab-reviews" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Approve Reviews &rarr;</a>
-                        </div>
-                        
-                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                            <h3 class="text-xl font-medium text-charcoal">Low Stock Items</h3>
-                            <p id="low-stock-count-summary" class="text-4xl font-bold text-stone mt-2">--</p>
-                            <a data-tab="tab-products" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Manage Inventory &rarr;</a>
-                        </div>
-                        
-                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                            <h3 class="text-xl font-medium text-charcoal">Out of Stock Items</h3>
-                            <p id="out-of-stock-count-summary" class="text-4xl font-bold text-stone mt-2">--</p>
-                            <a data-tab="tab-products" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Restock Now &rarr;</a>
-                        </div>
-                        
-                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                            <h3 class="text-xl font-medium text-charcoal">Active Stock Alerts</h3>
-                            <p id="total-stock-alerts-count" class="text-4xl font-bold text-stone mt-2">--</p>
-                            <a data-tab="tab-stock-alerts" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">View Alerts &rarr;</a>
-                        </div>
-                        
-                         <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                            <h3 class="text-xl font-medium text-charcoal">New Inquiries</h3>
-                            <p id="pending-inquiries-summary" class="text-4xl font-bold text-stone mt-2">--</p>
-                            <span class="text-sm text-stone mt-1">Unread contact form submissions.</span>
-                        </div>
-                    </div>
-
-                    <div class="mt-8 p-6 bg-parchment rounded-lg border-l-4 border-burnt-orange">
-                        <h3 class="text-xl font-playfair text-charcoal mb-3">System Health Summary:</h3>
-                        <p class="text-stone">E-commerce flow **STABLE** (Authenticated checkout fixed). All Admin operational tabs are now **ACTIVE**.</p>
-                        <p class="text-sm text-stone mt-2 font-semibold">Admin Panel features are **COMPLETE**.</p>
-                    </div>
-                </div>
-
-                <div id="tab-orders" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Order Management</h2>
-                    
-                    <p id="orders-message" class="text-stone mb-4"></p>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-stone/30">
-                            <thead>
-                                <tr class="text-left text-sm font-medium text-charcoal uppercase tracking-wider bg-parchment">
-                                    <th class="px-6 py-3">Order #</th>
-                                    <th class="px-6 py-3">Date</th>
-                                    <th class="px-6 py-3">Total</th>
-                                    <th class="px-6 py-3">Status</th>
-                                    <th class="px-6 py-3">Customer</th>
-                                    <th class="px-6 py-3 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="orders-table-body" class="bg-white divide-y divide-stone/20">
-                                </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div id="tab-products" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
-                    <div class="flex justify-between items-center mb-6 border-b pb-2">
-                        <h2 class="text-3xl font-playfair text-charcoal">Product Catalog Management</h2>
-                        <button class="px-4 py-2 bg-burnt-orange text-parchment font-semibold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
-                            + Add New Product
+            <div class="flex flex-col lg:flex-row gap-8">
+                <div class="lg:w-1/4">
+                    <nav class="bg-parchment p-4 rounded-lg shadow-md sticky top-6">
+                        <p class="text-sm font-bold text-stone uppercase tracking-wider mb-2">Operations</p>
+                        <button data-tab="tab-dashboard" class="tab-button w-full text-left p-3 rounded-lg font-medium transition duration-150 ease-in-out bg-stone text-parchment">
+                            Dashboard
                         </button>
-                    </div>
-                    
-                    <p id="products-message" class="text-stone mb-4"></p>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-stone/30">
-                            <thead>
-                                <tr class="text-left text-sm font-medium text-charcoal uppercase tracking-wider bg-parchment">
-                                    <th class="px-6 py-3">Product Name</th>
-                                    <th class="px-6 py-3">Scent Family</th>
-                                    <th class="px-6 py-3">Price</th>
-                                    <th class="px-6 py-3">Stock</th>
-                                    <th class="px-6 py-3">Featured</th>
-                                    <th class="px-6 py-3 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="products-table-body" class="bg-white divide-y divide-stone/20">
-                                </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div id="tab-reviews" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Review Moderation</h2>
-                    <p id="reviews-message" class="text-stone mb-4"></p>
-                    <div id="reviews-container">
-                        </div>
-                </div>
-                
-                <div id="tab-stock-alerts" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Back-in-Stock Requests</h2>
-                    <p id="stock-alerts-message" class="text-stone mb-4">Fetching current back-in-stock requests.</p>
-
-                    <div class="mt-4 p-4 bg-gray-50 border rounded-lg border-burnt-orange/50">
-                        <h3 class="font-semibold text-charcoal">Action Guide:</h3>
-                        <p class="text-sm text-stone">1. Replenish stock for the item listed below in the **Products** tab.</p>
-                        <p class="text-sm text-stone">2. Click **Email Customer** to notify them.</p>
-                        <p class="text-sm text-stone">3. Click **Mark as Resolved** to clear the alert.</p>
-                    </div>
-
-                    <div id="stock-alerts-container" class="mt-6">
-                        </div>
-                </div>
-
-                <div id="tab-content" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Site Content Management (CMS)</h2>
-                    
-                    <div id="content-tabs-container" class="mb-4 border-b pb-2">
-                        </div>
-                    
-                    <p id="content-save-message" class="hidden px-4 py-2 bg-green-100 text-green-700 rounded-lg mb-4 text-sm">Content saved successfully!</p>
-
-                    <form id="site-content-form" data-content-id="about" class="space-y-4">
-                        <p class="text-stone">Loading editable fields...</p>
-                        </form>
-                </div>
-
-                <div id="tab-tools" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Utility & Developer Tools</h2>
-                    
-                    <div class="mt-4 p-4 bg-gray-50 border rounded-lg border-stone/50">
-                        <h3 class="font-semibold text-charcoal text-xl mb-2">Database Backup & Restore</h3>
-                        <p class="text-stone mb-3">These tools are for maintaining the Firestore database, typically used by developers or for initial setup.</p>
-                        <p class="text-sm text-red-600 font-semibold mb-4">WARNING: Only run these scripts from a secure local environment. They overwrite data.</p>
+                        <button data-tab="tab-orders" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
+                            Orders
+                        </button>
+                        <button data-tab="tab-products" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
+                            Products
+                        </button>
+                        <button data-tab="tab-reviews" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
+                            Reviews
+                        </button>
+                        <button data-tab="tab-stock-alerts" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
+                            Stock Alerts
+                        </button>
                         
-                        <div class="space-y-3">
-                            <p class="text-sm text-charcoal font-medium">1. **Export Database (Backup)**</p>
-                            <div class="flex justify-between items-center bg-white p-3 border rounded">
-                                <code class="text-sm bg-gray-100 p-1 rounded">node export-firestore.mjs</code>
-                                <a href="/admin-guide/" class="px-3 py-1 bg-stone text-parchment rounded text-sm hover:bg-stone/80 transition">
-                                    Instructions
-                                </a>
+                        <p class="text-sm font-bold text-stone uppercase tracking-wider mt-6 mb-2 border-t pt-4">Configuration</p>
+                        <button data-tab="tab-content" class="tab-button w-full text-left p-3 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
+                            Site Content
+                        </button>
+                        <button data-tab="tab-tools" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
+                            Tools / Utility
+                        </button>
+                        
+                        <p class="text-sm font-bold text-stone uppercase tracking-wider mt-6 mb-2 border-t pt-4">Help & Documentation</p>
+                        <a href="/admin-guide/" target="_blank" class="w-full block text-left p-3 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
+                            User Guide
+                        </a>
+                        <button id="logout-button" class="w-full text-left p-3 mt-6 rounded-lg font-medium text-red-600 hover:bg-red-50/50 transition duration-150 ease-in-out">
+                            Log Out
+                        </button>
+                    </nav>
+                </div>
+
+                <div class="lg:w-3/4">
+                    
+                    <div id="tab-dashboard" class="tab-content bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-3xl font-playfair text-charcoal mb-4 border-b pb-2">Admin Dashboard</h2>
+                        <p class="text-stone mb-6">Welcome to the control center. Use the sidebar to navigate management tasks.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                                <h3 class="text-xl font-medium text-charcoal">Total Orders</h3>
+                                <p id="total-orders-count" class="text-4xl font-bold text-burnt-orange mt-2">--</p>
+                                <p class="text-sm text-stone mt-1">Orders recorded to date.</p>
                             </div>
                             
-                            <p class="text-sm text-charcoal font-medium pt-2">2. **Import Database (Restore/Bootstrap)**</p>
-                            <div class="flex justify-between items-center bg-white p-3 border rounded">
-                                <code class="text-sm bg-gray-100 p-1 rounded">node import-firestore.mjs</code>
-                                <a href="/admin-guide/" class="px-3 py-1 bg-burnt-orange text-parchment rounded text-sm hover:bg-burnt-orange/80 transition">
-                                    Instructions
-                                </a>
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                                <h3 class="text-xl font-medium text-charcoal">Total Revenue</h3>
+                                <p id="total-revenue-summary" class="text-4xl font-bold text-green-600 mt-2">--</p>
+                                <p class="text-sm text-stone mt-1">Total lifetime sales.</p>
+                            </div>
+                            
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                                <h3 class="text-xl font-medium text-charcoal">Avg. Order Value</h3>
+                                <p id="aov-summary" class="text-4xl font-bold text-burnt-orange mt-2">--</p>
+                                <p class="text-sm text-stone mt-1">Sales average per transaction.</p>
+                            </div>
+
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                                <h3 class="text-xl font-medium text-charcoal">Pending Reviews</h3>
+                                <p id="pending-reviews-count" class="text-4xl font-bold text-stone mt-2">--</p>
+                                <a data-tab="tab-reviews" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Approve Reviews &rarr;</a>
+                            </div>
+                            
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                                <h3 class="text-xl font-medium text-charcoal">Low Stock Items</h3>
+                                <p id="low-stock-count-summary" class="text-4xl font-bold text-stone mt-2">--</p>
+                                <a data-tab="tab-products" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Manage Inventory &rarr;</a>
+                            </div>
+                            
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                                <h3 class="text-xl font-medium text-charcoal">Out of Stock Items</h3>
+                                <p id="out-of-stock-count-summary" class="text-4xl font-bold text-stone mt-2">--</p>
+                                <a data-tab="tab-products" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Restock Now &rarr;</a>
+                            </div>
+                            
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                                <h3 class="text-xl font-medium text-charcoal">Active Stock Alerts</h3>
+                                <p id="total-stock-alerts-count" class="text-4xl font-bold text-stone mt-2">--</p>
+                                <a data-tab="tab-stock-alerts" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">View Alerts &rarr;</a>
+                            </div>
+                            
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                                <h3 class="text-xl font-medium text-charcoal">New Inquiries</h3>
+                                <p id="pending-inquiries-summary" class="text-4xl font-bold text-stone mt-2">--</p>
+                                <span class="text-sm text-stone mt-1">Unread contact form submissions.</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 p-6 bg-parchment rounded-lg border-l-4 border-burnt-orange">
+                            <h3 class="text-xl font-playfair text-charcoal mb-3">System Health Summary:</h3>
+                            <p class="text-stone">E-commerce flow **STABLE** (Authenticated checkout fixed). All Admin operational tabs are **ACTIVE**.</p>
+                            <p class="text-sm text-stone mt-2 font-semibold">Admin Panel features are **COMPLETE**.</p>
+                        </div>
+                    </div>
+
+                    <div id="tab-orders" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Order Management</h2>
+                        
+                        <p id="orders-message" class="text-stone mb-4"></p>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-stone/30">
+                                <thead>
+                                    <tr class="text-left text-sm font-medium text-charcoal uppercase tracking-wider bg-parchment">
+                                        <th class="px-6 py-3">Order #</th>
+                                        <th class="px-6 py-3">Date</th>
+                                        <th class="px-6 py-3">Total</th>
+                                        <th class="px-6 py-3">Status</th>
+                                        <th class="px-6 py-3">Customer</th>
+                                        <th class="px-6 py-3 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orders-table-body" class="bg-white divide-y divide-stone/20">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="tab-products" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+                        <div class="flex justify-between items-center mb-6 border-b pb-2">
+                            <h2 class="text-3xl font-playfair text-charcoal">Product Catalog Management</h2>
+                            <button class="px-4 py-2 bg-burnt-orange text-parchment font-semibold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
+                                + Add New Product
+                            </button>
+                        </div>
+                        
+                        <p id="products-message" class="text-stone mb-4"></p>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-stone/30">
+                                <thead>
+                                    <tr class="text-left text-sm font-medium text-charcoal uppercase tracking-wider bg-parchment">
+                                        <th class="px-6 py-3">Product Name</th>
+                                        <th class="px-6 py-3">Scent Family</th>
+                                        <th class="px-6 py-3">Price</th>
+                                        <th class="px-6 py-3">Stock</th>
+                                        <th class="px-6 py-3">Featured</th>
+                                        <th class="px-6 py-3 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="products-table-body" class="bg-white divide-y divide-stone/20">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="tab-reviews" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Review Moderation</h2>
+                        <p id="reviews-message" class="text-stone mb-4"></p>
+                        <div id="reviews-container">
+                            </div>
+                    </div>
+                    
+                    <div id="tab-stock-alerts" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Back-in-Stock Requests</h2>
+                        <p id="stock-alerts-message" class="text-stone mb-4">Fetching current back-in-stock requests.</p>
+
+                        <div class="mt-4 p-4 bg-gray-50 border rounded-lg border-burnt-orange/50">
+                            <h3 class="font-semibold text-charcoal">Action Guide:</h3>
+                            <p class="text-sm text-stone">1. Replenish stock for the item listed below in the **Products** tab.</p>
+                            <p class="text-sm text-stone">2. Click **Email Customer** to notify them.</p>
+                            <p class="text-sm text-stone">3. Click **Mark as Resolved** to clear the alert.</p>
+                        </div>
+
+                        <div id="stock-alerts-container" class="mt-6">
+                            </div>
+                    </div>
+
+                    <div id="tab-content" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Site Content Management (CMS)</h2>
+                        
+                        <div id="content-tabs-container" class="mb-4 border-b pb-2">
+                            </div>
+                        
+                        <p id="content-save-message" class="hidden px-4 py-2 bg-green-100 text-green-700 rounded-lg mb-4 text-sm">Content saved successfully!</p>
+
+                        <form id="site-content-form" data-content-id="about" class="space-y-4">
+                            <p class="text-stone">Loading editable fields...</p>
+                            </form>
+                    </div>
+
+                    <div id="tab-tools" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Utility & Developer Tools</h2>
+                        
+                        <div class="mt-4 p-4 bg-gray-50 border rounded-lg border-stone/50">
+                            <h3 class="font-semibold text-charcoal text-xl mb-2">Database Backup & Restore</h3>
+                            <p class="text-stone mb-3">These tools are for maintaining the Firestore database, typically used by developers or for initial setup.</p>
+                            <p class="text-sm text-red-600 font-semibold mb-4">WARNING: Only run these scripts from a secure local environment. They overwrite data.</p>
+                            
+                            <div class="space-y-3">
+                                <p class="text-sm text-charcoal font-medium">1. **Export Database (Backup)**</p>
+                                <div class="flex justify-between items-center bg-white p-3 border rounded">
+                                    <code class="text-sm bg-gray-100 p-1 rounded">node export-firestore.mjs</code>
+                                    <a href="/admin-guide/" class="px-3 py-1 bg-stone text-parchment rounded text-sm hover:bg-stone/80 transition">
+                                        Instructions
+                                    </a>
+                                </div>
+                                
+                                <p class="text-sm text-charcoal font-medium pt-2">2. **Import Database (Restore/Bootstrap)**</p>
+                                <div class="flex justify-between items-center bg-white p-3 border rounded">
+                                    <code class="text-sm bg-gray-100 p-1 rounded">node import-firestore.mjs</code>
+                                    <a href="/admin-guide/" class="px-3 py-1 bg-burnt-orange text-parchment rounded text-sm hover:bg-burnt-orange/80 transition">
+                                        Instructions
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div id="product-edit-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-charcoal bg-opacity-75 flex items-center justify-center">
+        
+    </div> <div id="product-edit-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-charcoal bg-opacity-75 flex items-center justify-center">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg mx-4 p-6 relative">
             
             <div class="flex justify-between items-start border-b pb-3 mb-4">
@@ -1351,3 +1354,5 @@ title: Admin Panel
         </div>
     </div>
 </main>
+
+**Next file to update: `src/contact.html`** (Final attempt at full syntactic correction and fix)

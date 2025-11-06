@@ -419,7 +419,9 @@ title: Product Name
         <div class="flex flex-col lg:flex-row gap-10">
             
             <div class="lg:w-1/2">
-                <img id="product-image-url" src="" alt="" class="w-full h-auto object-cover rounded-xl shadow-lg border border-stone/10">
+                <div class="group relative overflow-hidden rounded-xl shadow-xl border border-stone/10"> 
+                    <img id="product-image-url" src="" alt="" class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105">
+                </div>
             </div>
 
             <div class="lg:w-1/2">
@@ -458,7 +460,7 @@ title: Product Name
                 
                 <div class="flex items-center space-x-4 mb-4">
                     <input type="number" id="quantity-input" value="1" min="1" class="w-20 p-3 border border-stone/30 rounded-lg text-center text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
-                    <button id="add-to-cart-button" class="flex-grow px-6 py-3 bg-stone text-parchment font-bold rounded-lg shadow-md hover:bg-charcoal transition duration-300">
+                    <button id="add-to-cart-button" class="flex-grow px-6 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-burnt-orange/80 transition duration-300">
                         Add to Cart
                     </button>
                 </div>

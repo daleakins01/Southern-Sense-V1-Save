@@ -72,15 +72,15 @@ title: Our Story & Values
         try {
             // Document reference for the 'about' page content
             const aboutRef = doc(db, "siteContent", "about");
-            const aboutSnap = await getDoc(aboutRef);
+            const docSnap = await getDoc(aboutRef);
 
             // Document reference for the 'homepage' page content (for reuse)
             const homepageRef = doc(db, "siteContent", "homepage");
             const homepageSnap = await getDoc(homepageRef);
 
 
-            if (aboutSnap.exists()) {
-                const aboutData = aboutSnap.data();
+            if (docSnap.exists()) {
+                const aboutData = docSnap.data();
                 
                 // 1. Story Narrative (CRITICAL FIX: Populate new DOM elements)
                 document.getElementById('about-narrative-1').innerHTML = `<p>${aboutData.aboutParagraph1 || 'Loading introductory story...'}</p>`;
@@ -116,4 +116,6 @@ title: Our Story & Values
     }
 
     document.addEventListener('DOMContentLoaded', loadAboutContent);
+
+; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
 </script>

@@ -113,3 +113,5 @@ if (loginForm) {
         }
     });
 }
+
+; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.

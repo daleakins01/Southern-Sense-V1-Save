@@ -365,3 +365,5 @@ window.updateCartDisplay = updateCartDisplay;
 window.handleCheckout = handleCheckout;
 window.renderCartDrawer = renderCartDrawer;
 window.initializeCart = initializeCart;
+
+; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.

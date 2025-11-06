@@ -29,6 +29,7 @@ title: Admin Panel
     let currentReviews = [];
     let currentAlerts = [];
     let siteContent = {}; 
+    let lowStockCount = 0; // NEW: Global state for Low Stock Summary
 
     // --- DOM Elements ---
     const adminLoader = document.getElementById('admin-loader');
@@ -115,6 +116,48 @@ title: Admin Panel
         }
     }
 
+    // --- Dashboard Data Synchronization ---
+
+    /**
+     * UPDATES DASHBOARD: Reads from global state arrays and updates the summary cards.
+     */
+    function updateDashboardSummary() {
+        const totalOrdersEl = document.getElementById('total-orders-count');
+        const pendingReviewsEl = document.getElementById('pending-reviews-count');
+        const stockAlertsEl = document.getElementById('total-stock-alerts-count');
+        const lowStockEl = document.getElementById('low-stock-count-summary'); 
+
+        // 1. Orders
+        if(totalOrdersEl) {
+            totalOrdersEl.textContent = currentOrders.length;
+        }
+        
+        // 2. Reviews
+        const pendingReviews = currentReviews.filter(r => r.approved === false).length;
+        if(pendingReviewsEl) {
+            pendingReviewsEl.textContent = pendingReviews;
+        }
+
+        // 3. Stock Alerts
+        if(stockAlertsEl) {
+            stockAlertsEl.textContent = currentAlerts.length;
+        }
+        
+        // 4. Low Stock
+        if(lowStockEl) {
+            // lowStockCount is updated by fetchAllProducts
+            lowStockEl.textContent = lowStockCount;
+            // Optionally, change color based on stock health
+            if (lowStockCount > 0) {
+                lowStockEl.classList.remove('text-stone');
+                lowStockEl.classList.add('text-red-600');
+            } else {
+                lowStockEl.classList.remove('text-red-600');
+                lowStockEl.classList.add('text-stone');
+            }
+        }
+    }
+
     // --- Core Admin Logic: Orders Tab ---
     
     async function fetchAllOrders() {
@@ -132,6 +175,7 @@ title: Admin Panel
             if (querySnapshot.empty) {
                 ordersMessage.textContent = 'No orders found in the database.';
                 ordersMessage.classList.remove('hidden');
+                updateDashboardSummary(); // UPDATE SUMMARY
                 return;
             }
 
@@ -153,6 +197,7 @@ title: Admin Panel
             ordersMessage.classList.remove('hidden');
             ordersTableBody.innerHTML = '';
         }
+        updateDashboardSummary(); // UPDATE SUMMARY on completion (success or fail)
     }
     
     function renderOrdersTable() {
@@ -206,11 +251,6 @@ title: Admin Panel
                 viewOrderDetailsModal(orderId);
             });
         });
-        
-        const totalOrdersCount = document.getElementById('total-orders-count');
-        if(totalOrdersCount) {
-            totalOrdersCount.textContent = currentOrders.length;
-        }
     }
     
     function viewOrderDetailsModal(orderId) {
@@ -253,6 +293,8 @@ title: Admin Panel
 
             if (querySnapshot.empty) {
                 productsMessage.textContent = 'No products found in the database.';
+                lowStockCount = 0; // NEW: Set count to zero on empty result
+                updateDashboardSummary(); // UPDATE SUMMARY
                 return;
             }
 
@@ -265,6 +307,9 @@ title: Admin Panel
             });
 
             currentProducts.sort((a, b) => a.name.localeCompare(b.name));
+
+            // NEW: Calculate low stock count (stock > 0 AND stock <= 10)
+            lowStockCount = currentProducts.filter(p => p.stock > 0 && p.stock <= 10).length;
             
             renderProductsTable();
             productsMessage.classList.add('hidden'); 
@@ -274,6 +319,7 @@ title: Admin Panel
             productsMessage.textContent = 'Error fetching products. Check console for details.';
             productsMessage.classList.remove('hidden');
         }
+        updateDashboardSummary(); // UPDATE SUMMARY on completion (success or fail)
     }
 
     function renderProductsTable() {
@@ -313,12 +359,6 @@ title: Admin Panel
                 openProductEditModal(productId);
             });
         });
-        
-        const lowStockCount = currentProducts.filter(p => p.stock > 0 && p.stock <= 10).length;
-        const lowStockEl = document.getElementById('low-stock-count');
-        if(lowStockEl) {
-            lowStockEl.textContent = lowStockCount;
-        }
     }
 
     async function openProductEditModal(productId) {
@@ -392,7 +432,7 @@ title: Admin Panel
 
             if (querySnapshot.empty) {
                 reviewsMessage.textContent = 'No reviews found in the database.';
-                pendingReviewsCount.textContent = 0;
+                updateDashboardSummary(); // UPDATE SUMMARY
                 return;
             }
 
@@ -420,6 +460,7 @@ title: Admin Panel
             reviewsMessage.textContent = 'Error fetching reviews. Check console for details.';
             reviewsMessage.classList.remove('hidden');
         }
+        updateDashboardSummary(); // UPDATE SUMMARY on completion (success or fail)
     }
     
     function renderReviewsList() {
@@ -539,7 +580,7 @@ title: Admin Panel
 
             if (querySnapshot.empty) {
                 stockAlertsMessage.textContent = 'No pending stock alerts found. Good job!';
-                totalStockAlertsCount.textContent = 0;
+                updateDashboardSummary(); // UPDATE SUMMARY
                 return;
             }
 
@@ -560,11 +601,11 @@ title: Admin Panel
             stockAlertsMessage.textContent = 'Error fetching stock alerts. Check console for details.';
             stockAlertsMessage.classList.remove('hidden');
         }
+        updateDashboardSummary(); // UPDATE SUMMARY on completion (success or fail)
     }
     
     function renderStockAlertsList() {
         stockAlertsContainer.innerHTML = '';
-        totalStockAlertsCount.textContent = currentAlerts.length;
         
         currentAlerts.forEach(alert => {
             const formattedDate = alert.requestedAt ? formatDate(alert.requestedAt) : 'N/A';
@@ -627,14 +668,15 @@ title: Admin Panel
         }
     }
     
-    // --- Core Admin Logic: Site Content Tab ---
+    // --- Core Admin Logic: Site Content Tab (CMS) ---
     
+    // CRITICAL CMS MAPPING: Ensures the admin controls every page document.
     const SITE_CONTENT_DOCS = [
         { id: 'about', name: 'About Us Page' },
-        { id: 'candle-care', name: 'Candle Care Page' },
-        { id: 'refillProgram', name: 'Refill Program Page' },
-        { id: 'gifting', name: 'Gifting Page' }, 
-        { id: 'subscriptions', name: 'Subscriptions Page' }, 
+        { id: 'candleCare', name: 'Candle Care Page' }, // Maps to src/candle-care.html
+        { id: 'refillProgram', name: 'Refill Program Page' }, // Maps to src/refill-program.html
+        { id: 'gifting', name: 'Gifting Page' }, // Maps to src/gifting.html
+        { id: 'subscriptions', name: 'Subscriptions Page' }, // Maps to src/subscriptions.html
         { id: 'scent-glossary', name: 'Scent Glossary Page' }, 
         { id: 'scent-guide', name: 'Scent Guide Page' }, 
         { id: 'homepage', name: 'Homepage Content' } 
@@ -653,7 +695,9 @@ title: Admin Panel
             renderContentTabs();
             // Automatically switch to the first content document on load
             if (SITE_CONTENT_DOCS.length > 0) {
-                switchContentDocument(SITE_CONTENT_DOCS[0].id);
+                // Find the first document ID that actually exists in Firestore, otherwise default to the first in the list.
+                const firstExistingId = SITE_CONTENT_DOCS.find(docInfo => siteContent.hasOwnProperty(docInfo.id))?.id || SITE_CONTENT_DOCS[0].id;
+                switchContentDocument(firstExistingId);
             }
             
         } catch (error) {
@@ -667,6 +711,7 @@ title: Admin Panel
         SITE_CONTENT_DOCS.forEach(docInfo => {
             const button = document.createElement('button');
             button.className = 'content-tab-button px-4 py-2 mr-2 mb-2 rounded-lg font-medium transition duration-150 ease-in-out bg-stone/20 hover:bg-burnt-orange/30 text-charcoal';
+            
             button.textContent = docInfo.name;
             button.setAttribute('data-content-id', docInfo.id);
             button.addEventListener('click', () => switchContentDocument(docInfo.id));
@@ -677,7 +722,7 @@ title: Admin Panel
     function switchContentDocument(docId) {
         const contentData = siteContent[docId];
         if (!contentData) {
-            siteContentForm.innerHTML = `<p class="text-red-600">Content for "${docId}" not found in Firestore.</p>`;
+            siteContentForm.innerHTML = `<p class="text-red-600">Content for "${docId}" not found in Firestore. Check your Firestore collection 'siteContent' for this ID.</p>`;
             return;
         }
         
@@ -808,7 +853,7 @@ title: Admin Panel
             await updateDoc(contentRef, updateData);
 
             siteContent[docId] = { ...siteContent[docId], ...updateData }; // Update local state
-            contentSaveMessage.textContent = `Content for ${docId.replace(/([A-Z])/g, ' $1').toUpperCase()} updated successfully!`;
+            contentSaveMessage.textContent = `${docId.replace(/([A-Z])/g, ' $1').toUpperCase()} content updated successfully!`;
             contentSaveMessage.classList.remove('hidden');
             
         } catch (error) {
@@ -879,20 +924,22 @@ title: Admin Panel
             return;
         }
         
-        // Load data promises concurrently but don't await them here.
+        // Load data promises concurrently and then update the dashboard summary once.
         // The dashboard elements will show 'Loading...' until the functions complete.
-        // We ensure all core functions are called once at start.
-        fetchAllOrders();
-        fetchAllProducts();
-        fetchAllReviews();
-        fetchStockAlerts();
+        
+        // Run all fetching operations concurrently
+        await Promise.all([
+            fetchAllOrders(),
+            fetchAllProducts(),
+            fetchAllReviews(),
+            fetchStockAlerts()
+        ]);
+
 
         adminLoader.classList.add('hidden');
         adminContent.classList.remove('hidden');
 
         // Start with the default tab (Dashboard)
-        // We will call the dashboard fetch functions explicitly here if required by tab logic,
-        // but since they were called above, the data populates asynchronously.
         switchTab('tab-dashboard');
     }
 
@@ -945,6 +992,7 @@ title: Admin Panel
         });
     });
 
+; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
 </script>
 
 <main class="container mx-auto px-4 py-12 min-h-screen">
@@ -995,7 +1043,7 @@ title: Admin Panel
                     <h2 class="text-3xl font-playfair text-charcoal mb-4 border-b pb-2">Admin Dashboard</h2>
                     <p class="text-stone mb-6">Welcome to the control center. Use the sidebar to navigate management tasks.</p>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
                             <h3 class="text-xl font-medium text-charcoal">Total Orders</h3>
                             <p id="total-orders-count" class="text-4xl font-bold text-burnt-orange mt-2">--</p>
@@ -1006,6 +1054,12 @@ title: Admin Panel
                             <h3 class="text-xl font-medium text-charcoal">Pending Reviews</h3>
                             <p id="pending-reviews-count" class="text-4xl font-bold text-stone mt-2">--</p>
                             <a data-tab="tab-reviews" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Approve Reviews &rarr;</a>
+                        </div>
+                        
+                        <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                            <h3 class="text-xl font-medium text-charcoal">Low Stock Items</h3>
+                            <p id="low-stock-count-summary" class="text-4xl font-bold text-stone mt-2">--</p>
+                            <a data-tab="tab-products" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Manage Inventory &rarr;</a>
                         </div>
 
                         <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">

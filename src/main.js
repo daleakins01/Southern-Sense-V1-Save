@@ -40,3 +40,5 @@ if (header) {
 
 // FIX: Removed the global call to initializeScentQuiz() to prevent dependency conflicts 
 // and is now intended to be contained within src/scent-quiz.html's inline script.
+
+; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.

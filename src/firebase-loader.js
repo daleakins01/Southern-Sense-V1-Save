@@ -83,3 +83,5 @@ export {
     orderBy,
     serverTimestamp // CRITICAL FIX: Export serverTimestamp
 };
+
+; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.

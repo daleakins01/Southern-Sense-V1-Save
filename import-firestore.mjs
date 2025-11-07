@@ -28,6 +28,14 @@ async function importData() {
     const collectionRef = db.collection(collectionName);
 
     for (const [docId, docData] of Object.entries(documents)) {
+      // CRITICAL FIX: Data Normalization
+      // The front-end expects 'wax-melt', but the data sometimes uses 'melt'.
+      // Normalize 'melt' to 'wax-melt' only for the 'products' collection.
+      if (collectionName === 'products' && docData.category === 'melt') {
+          docData.category = 'wax-melt';
+          console.log(`   ⚙️ Normalized category for ${docId} to 'wax-melt'`);
+      }
+      
       await collectionRef.doc(docId).set(docData);
       console.log(`✅ Imported: ${collectionName}/${docId}`);
     }

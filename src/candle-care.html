@@ -99,7 +99,7 @@ title: Candle Care Guide
                 tip2Text.textContent = data.tip2Text || "Details about first burn loading...";
                 tip3Title.textContent = data.tip3Heading || "Optimal Burn Time";
                 tip3Text.textContent = data.tip3Text || "Details about burn time loading...";
-                tip4Title.textContent = data.tip4Heading || "Store Safely";
+                tip4Title.textContent = data.tip4Heading || "Safety First";
                 tip4Text.textContent = data.tip4Text || "Details about safety loading...";
                 
                 // Re-map based on the structure check against CMS fields in the snapshot
@@ -135,4 +135,6 @@ title: Candle Care Guide
     }
 
     document.addEventListener('DOMContentLoaded', loadCareContent);
+
+; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
 </script>

@@ -80,6 +80,7 @@ title: Contact Us
 
         try {
             // 1. LOG INQUIRY TO FIRESTORE (Admin Panel Record)
+            // This is required for the new Admin Panel 'Customer Inquiries' tab to function.
             await addDoc(collection(db, "inquiries"), data);
             
             // 2. SEND EMAIL VIA FORMSPREE (Customer/Owner Notification)
@@ -139,6 +140,7 @@ title: Contact Us
         }
     });
 
+; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
 </script>
 
 {% include "page-header.html" with pageTitle: title %}

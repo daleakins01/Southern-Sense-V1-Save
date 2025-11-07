@@ -54,21 +54,3 @@ title: Your Shopping Cart
         
     </div>
 </main>
-
-<script type="module">
-    // CRITICAL FIX: The functions are now globally available (window.renderCartDrawer, window.handleCheckout) 
-    // due to the modular stability changes in cart.js. We remove the old import to prevent conflicts.
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        // Renders the cart contents into the main page view
-        if (window.renderCartDrawer) {
-            window.renderCartDrawer();
-        }
-        
-        // Attach the handleCheckout function directly
-        const checkoutButton = document.getElementById('checkout-button');
-        if (checkoutButton && window.handleCheckout) {
-            checkoutButton.addEventListener('click', window.handleCheckout);
-        }
-    });
-</script>

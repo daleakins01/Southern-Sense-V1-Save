@@ -426,6 +426,9 @@ title: Admin Panel
         document.getElementById('edit-scent-family').value = product.scentFamily;
         document.getElementById('edit-category').value = product.category;
         
+        // ENHANCEMENT: Populate image URL for editing
+        document.getElementById('edit-image-url').value = product.imageUrl || ''; 
+
         // Update modal UI for editing
         productEditModal.classList.remove('hidden');
         document.querySelector('#product-edit-modal h3').textContent = 'Edit Product Details';
@@ -444,6 +447,9 @@ title: Admin Panel
         document.getElementById('edit-scent-family').value = '';
         document.getElementById('edit-category').value = 'candle';
         
+        // ENHANCEMENT: Clear image URL input for new product
+        document.getElementById('edit-image-url').value = '';
+
         productEditModal.classList.remove('hidden');
         document.querySelector('#product-edit-modal h3').textContent = 'Add New Product';
         document.getElementById('product-save-button').textContent = 'Create Product';
@@ -467,7 +473,9 @@ title: Admin Panel
                 stock: parseInt(formData.get('stock'), 10),
                 scentFamily: formData.get('scentFamily'),
                 category: formData.get('category'),
-                featured: formData.get('featured') === 'on' 
+                featured: formData.get('featured') === 'on',
+                // ENHANCEMENT: Include Image URL from modal input
+                imageUrl: formData.get('imageUrl')
             };
             
             const isNewProduct = productId === 'NEW_PRODUCT';
@@ -477,7 +485,8 @@ title: Admin Panel
             if (isNewProduct) {
                 updateData.longDescription = '<p>A default long description for this new product. Click the Site Content tab to add full product details.</p>';
                 updateData.shortDescription = 'A new fragrance for your home.';
-                updateData.imageUrl = 'logo.webp'; // Default fallback image
+                // CRITICAL FIX: Use provided URL or fallback to logo.webp
+                updateData.imageUrl = updateData.imageUrl || 'logo.webp'; 
                 updateData.strength = 3; 
                 updateData.pairing = 'A great match for any occasion.';
             }
@@ -813,7 +822,7 @@ title: Admin Panel
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-lg font-playfair text-charcoal font-semibold">${inquiry.subject || 'No Subject Provided'}</p>
-                            <p class="text-sm text-stone">From: ${inquiry.name || 'Unknown'} | ${formattedDate}</p>
+                            <p class="text-sm text-stone">From: ${inquiry.name || 'Unknown'} | ${inquiry.email}</p>
                         </div>
                         <a href="mailto:${inquiry.email}?subject=RE: ${inquiry.subject || 'Inquiry'}" class="px-3 py-1 bg-stone text-parchment rounded-full text-sm font-semibold hover:bg-stone/80 transition">
                             Reply to Email
@@ -1501,7 +1510,11 @@ title: Admin Panel
                     <label for="edit-product-name" class="block text-sm font-medium text-stone mb-1">Product Name</label>
                     <input type="text" id="edit-product-name" name="name" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
                 </div>
-
+                
+                <div>
+                    <label for="edit-image-url" class="block text-sm font-medium text-stone mb-1">Image URL (e.g., strawberry-rose-candle.webp)</label>
+                    <input type="text" id="edit-image-url" name="imageUrl" class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
+                </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label for="edit-price" class="block text-sm font-medium text-stone mb-1">Price ($)</label>

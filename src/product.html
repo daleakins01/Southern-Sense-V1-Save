@@ -227,7 +227,7 @@ title: Product Name
 
         // Render individual reviews
         let reviewsHtml = '';
-        // CRITICAL FIX: Use the new robust getTimeInMs helper for sorting, eliminating the TypeError
+        // FIX 1: Use the robust getTimeInMs helper for sorting, eliminating the TypeError
         reviewsList.sort((a, b) => getTimeInMs(b.submittedAt) - getTimeInMs(a.submittedAt)); // Newest first
 
         reviewsList.forEach(review => {
@@ -320,7 +320,7 @@ title: Product Name
         submitButton.textContent = 'Requesting...';
         
         try {
-            // CRITICAL FIX: Check if alert already exists for this email/product
+            // FIX 2: Check if alert already exists for this email/product BEFORE adding the new one
             const alertsRef = collection(db, 'backInStockRequests');
             const q = query(alertsRef, 
                             where('productId', '==', currentProduct.id), 
@@ -334,6 +334,7 @@ title: Product Name
             }
             
             // CRITICAL FIX: Ensure all 5 required fields are present for Firestore rule compliance
+            // Rule: hasAll(['productId', 'productName', 'email', 'requestedAt']) && resolved == false && size() == 5;
             const alertData = {
                 productId: currentProduct.id,
                 productName: currentProduct.name,
@@ -537,5 +538,3 @@ title: Product Name
             
         </div> </div>
 </main>
-
-**Next file to update: `src/contact.html`** (to check for remaining build errors and syntactic conflicts)

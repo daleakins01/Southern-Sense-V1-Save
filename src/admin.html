@@ -877,7 +877,8 @@ title: Admin Panel
         siteContent = {};
         try {
             const contentRef = collection(db, 'siteContent');
-            const querySnapshot = await getDocs(query(contentRef));
+            const q = query(contentRef);
+            const querySnapshot = await getDocs(q);
             
             querySnapshot.forEach(doc => {
                 siteContent[doc.id] = doc.data();
@@ -891,7 +892,16 @@ title: Admin Panel
                     } else if (docInfo.id === 'scent-glossary') {
                         siteContent[docInfo.id] = { glossaryContent: "Example: The word is 'Amber' and it is a warm, musky base note." };
                     } else if (docInfo.id === 'scent-guide') {
-                         siteContent[docInfo.id] = { guideOverviewContent: "<p>Define your three main scent families here.</p>", family1Title: "Fruity", family2Title: "Woody", family3Title: "Fresh" };
+                        // CRITICAL FIX: Ensure all expected fields for src/scent-guide.html exist in the CMS fallback
+                         siteContent[docInfo.id] = { 
+                            guideOverviewContent: "<p>Define your three main scent families here.</p>", 
+                            family1Title: "Woodsy/Earthy", 
+                            family1Desc: "Details about woody scents...", // ADDED
+                            family2Title: "Floral/Fresh", 
+                            family2Desc: "Details about fresh scents...", // ADDED
+                            family3Title: "Gourmand/Spicy",
+                            family3Desc: "Details about gourmand scents..." // ADDED
+                        };
                     } else {
                         siteContent[docInfo.id] = { [`${docInfo.name.replace(/[^A-Z0-9]/ig, '')}InitialContent`]: "This document was missing. Please fill and save to create it." };
                     }

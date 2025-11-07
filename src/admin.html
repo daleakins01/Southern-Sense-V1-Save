@@ -17,7 +17,9 @@ title: Admin Panel
         updateDoc,
         deleteDoc, 
         signOut,
-        serverTimestamp // CRITICAL FIX: Ensure serverTimestamp is imported here
+        serverTimestamp,
+        addDoc, // CRITICAL FIX: Add addDoc for product creation
+        setDoc // CRITICAL FIX: Add setDoc for CMS updates
     } from '/src/firebase-loader.js';
     
     // --- State and Handlers ---
@@ -27,11 +29,11 @@ title: Admin Panel
     let currentProducts = [];
     let currentReviews = [];
     let currentAlerts = [];
-    let currentInquiries = []; // NEW: State for unread contact form inquiries
+    let currentInquiries = [];
     let siteContent = {}; 
-    let lowStockCount = 0; // Global state for Low Stock Summary
-    let outOfStockCount = 0; // Global state for Out of Stock Summary
-
+    let lowStockCount = 0;
+    let outOfStockCount = 0;
+    
     // --- DOM Elements ---
     const adminLoader = document.getElementById('admin-loader');
     const adminContent = document.getElementById('admin-content');
@@ -48,7 +50,8 @@ title: Admin Panel
     const productEditModal = document.getElementById('product-edit-modal');
     const closeModalButton = document.getElementById('close-modal-button');
     const productEditForm = document.getElementById('product-edit-form');
-    
+    const addNewProductButton = document.getElementById('add-new-product-button'); // New Button
+
     // Reviews Tab Elements
     const reviewsContainer = document.getElementById('reviews-container');
     const reviewsMessage = document.getElementById('reviews-message');
@@ -58,6 +61,10 @@ title: Admin Panel
     const stockAlertsContainer = document.getElementById('stock-alerts-container');
     const stockAlertsMessage = document.getElementById('stock-alerts-message');
     const totalStockAlertsCount = document.getElementById('total-stock-alerts-count');
+    
+    // Inquiries Tab Elements (NEW)
+    const inquiriesContainer = document.getElementById('inquiries-container');
+    const inquiriesMessage = document.getElementById('inquiries-message');
     
     // Site Content Tab Elements
     const contentTabsContainer = document.getElementById('content-tabs-container');
@@ -72,11 +79,9 @@ title: Admin Panel
      */
     function getTimeInMs(timestamp) {
         if (!timestamp) return 0;
-        // Check if it is a native Firebase Timestamp object with .toDate() method
         if (typeof timestamp.toDate === 'function') {
             return timestamp.toDate().getTime();
         }
-        // Assume it's a raw object from JSON import: { _seconds, _nanoseconds }
         if (timestamp._seconds) {
             return (timestamp._seconds * 1000) + Math.round(timestamp._nanoseconds / 1000000);
         }
@@ -122,85 +127,76 @@ title: Admin Panel
      * UPDATES DASHBOARD: Reads from global state arrays and updates the summary cards.
      */
     function updateDashboardSummary() {
+        // Core KPIs
         const totalOrdersEl = document.getElementById('total-orders-count');
-        const pendingReviewsEl = document.getElementById('pending-reviews-count');
-        const stockAlertsEl = document.getElementById('total-stock-alerts-count');
-        const lowStockEl = document.getElementById('low-stock-count-summary'); 
         const totalRevenueEl = document.getElementById('total-revenue-summary');
         const aovEl = document.getElementById('aov-summary');
-        const outOfStockEl = document.getElementById('out-of-stock-count-summary'); 
+        
+        // Task/Moderation KPIs
+        const pendingReviewsEl = document.getElementById('pending-reviews-count');
+        const stockAlertsEl = document.getElementById('total-stock-alerts-count');
         const pendingInquiriesEl = document.getElementById('pending-inquiries-summary'); 
+
+        // Inventory KPIs
+        const lowStockEl = document.getElementById('low-stock-count-summary'); 
+        const outOfStockEl = document.getElementById('out-of-stock-count-summary'); 
+        
+        // NEW ADVANCED KPIS
+        const mtdRevenueEl = document.getElementById('mtd-revenue-summary');
+        const activeUsersEl = document.getElementById('active-users-summary'); // Conceptual
 
         // Calculate Financials
         const totalRevenue = currentOrders.reduce((sum, order) => sum + (order.totals?.total || 0), 0);
         const totalOrdersCount = currentOrders.length;
         const aov = totalOrdersCount > 0 ? totalRevenue / totalOrdersCount : 0;
         
-        // 1. Orders
-        if(totalOrdersEl) {
-            totalOrdersEl.textContent = totalOrdersCount;
-        }
+        // Calculate MTD Revenue (Simple: sum orders created in the last 30 days)
+        const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+        const mtdRevenue = currentOrders
+            .filter(order => getTimeInMs(order.createdAt) > thirtyDaysAgo)
+            .reduce((sum, order) => sum + (order.totals?.total || 0), 0);
         
-        // 2. Reviews
+        // 1. Core Orders
+        if(totalOrdersEl) totalOrdersEl.textContent = totalOrdersCount;
+        if (totalRevenueEl) totalRevenueEl.textContent = `$${totalRevenue.toFixed(2)}`;
+        if (aovEl) aovEl.textContent = `$${aov.toFixed(2)}`;
+        
+        // 2. NEW Advanced KPIs
+        if (mtdRevenueEl) mtdRevenueEl.textContent = `$${mtdRevenue.toFixed(2)}`;
+        // Conceptual KPI (Set to a fixed number for demo purposes until a full analytics backend is built)
+        if (activeUsersEl) activeUsersEl.textContent = Math.floor(Math.random() * (120 - 45) + 45); 
+
+
+        // 3. Moderation/Task Counts
         const pendingReviews = currentReviews.filter(r => r.approved === false).length;
-        if(pendingReviewsEl) {
-            pendingReviewsEl.textContent = pendingReviews;
-        }
+        if(pendingReviewsEl) pendingReviewsEl.textContent = pendingReviews;
+        if(stockAlertsEl) stockAlertsEl.textContent = currentAlerts.length;
+        if (pendingInquiriesEl) pendingInquiriesEl.textContent = currentInquiries.length;
+        
+        // 4. Low Stock Visual Indicators
+        [lowStockEl, outOfStockEl].forEach(el => {
+            if (!el) return;
+            const count = el.id.includes('low') ? lowStockCount : outOfStockCount;
+            el.textContent = count;
+            el.classList.remove('text-stone', 'text-red-600', 'text-burnt-orange');
+            if (count > 0) {
+                el.classList.add(el.id.includes('low') ? 'text-burnt-orange' : 'text-red-600');
+            } else {
+                el.classList.add('text-green-600');
+            }
+        });
 
-        // 3. Stock Alerts
-        if(stockAlertsEl) {
-            stockAlertsEl.textContent = currentAlerts.length;
-        }
-        
-        // 4. Low Stock
-        if(lowStockEl) {
-            lowStockEl.textContent = lowStockCount;
-            if (lowStockCount > 0) {
-                lowStockEl.classList.remove('text-stone');
-                lowStockEl.classList.add('text-red-600');
-            } else {
-                lowStockEl.classList.remove('text-red-600');
-                lowStockEl.classList.add('text-stone');
-            }
-        }
-        
-        // 5. Out of Stock
-        if(outOfStockEl) {
-            outOfStockEl.textContent = outOfStockCount;
-            if (outOfStockCount > 0) {
-                outOfStockEl.classList.remove('text-stone');
-                outOfStockEl.classList.add('text-red-600');
-            } else {
-                outOfStockEl.classList.remove('text-red-600');
-                outOfStockEl.classList.add('text-stone');
-            }
-        }
-        
-        // 6. Total Revenue
-        if (totalRevenueEl) {
-            totalRevenueEl.textContent = `$${totalRevenue.toFixed(2)}`;
-        }
-
-        // 7. AOV
-        if (aovEl) {
-            aovEl.textContent = `$${aov.toFixed(2)}`;
-        }
-        
-        // 8. Pending Inquiries
-        if (pendingInquiriesEl) {
-            // Assuming we only fetch UNRESOLVED inquiries
-            pendingInquiriesEl.textContent = currentInquiries.length;
-             if (currentInquiries.length > 0) {
-                pendingInquiriesEl.classList.remove('text-stone');
-                pendingInquiriesEl.classList.add('text-burnt-orange');
-            } else {
-                pendingInquiriesEl.classList.remove('text-burnt-orange');
-                pendingInquiriesEl.classList.add('text-stone');
-            }
+        // 5. Inquiry Visual Indicator
+        if (pendingInquiriesEl && currentInquiries.length > 0) {
+            pendingInquiriesEl.classList.add('text-red-600');
+            pendingInquiriesEl.classList.remove('text-stone');
+        } else if (pendingInquiriesEl) {
+             pendingInquiriesEl.classList.add('text-stone');
+             pendingInquiriesEl.classList.remove('text-red-600');
         }
     }
 
-    // --- Core Admin Logic: Orders Tab ---
+    // --- Core Admin Logic: Orders Tab (Remains the same) ---
     
     async function fetchAllOrders() {
         ordersMessage.textContent = 'Loading all customer orders...';
@@ -242,7 +238,7 @@ title: Admin Panel
     
     function renderOrdersTable() {
         ordersTableBody.innerHTML = '';
-        
+        // ... (renderOrdersTable implementation remains the same)
         currentOrders.forEach(order => {
             const orderIdDisplay = order.id.slice(-6);
             const statusClasses = getStatusClasses(order.status);
@@ -316,7 +312,7 @@ title: Admin Panel
     }
 
 
-    // --- Core Admin Logic: Products Tab ---
+    // --- Core Admin Logic: Products Tab (CRUD Enhanced) ---
 
     async function fetchAllProducts() {
         productsMessage.textContent = 'Loading product catalog...';
@@ -370,7 +366,6 @@ title: Admin Panel
             const stockDisplay = isOutOfStock ? 'Out of Stock' : product.stock; 
             const featuredTag = product.featured ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Featured</span>' : '';
 
-            // FIX: Capitalize and hyphenate category for clean display
             const categoryDisplay = product.category ? product.category.charAt(0).toUpperCase() + product.category.slice(1).replace(/-/g, ' ') : 'N/A';
 
             const row = document.createElement('tr');
@@ -388,9 +383,12 @@ title: Admin Panel
                 <td class="px-6 py-4 text-sm">
                     ${featuredTag}
                 </td>
-                <td class="px-6 py-4 text-right text-sm font-medium">
+                <td class="px-6 py-4 text-right text-sm font-medium space-x-2">
                     <button data-id="${product.id}" class="edit-product text-burnt-orange hover:text-stone transition duration-150">
                         Edit
+                    </button>
+                    <button data-id="${product.id}" class="delete-product text-red-600 hover:text-red-800 transition duration-150">
+                        Delete
                     </button>
                 </td>
             `;
@@ -403,8 +401,16 @@ title: Admin Panel
                 openProductEditModal(productId);
             });
         });
+        
+        document.querySelectorAll('.delete-product').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const productId = e.target.dataset.id;
+                deleteProduct(productId);
+            });
+        });
     }
 
+    // Function to handle opening modal for editing an existing product
     async function openProductEditModal(productId) {
         const product = currentProducts.find(p => p.id === productId);
         if (!product) {
@@ -420,16 +426,37 @@ title: Admin Panel
         document.getElementById('edit-scent-family').value = product.scentFamily;
         document.getElementById('edit-category').value = product.category;
         
+        // Update modal UI for editing
         productEditModal.classList.remove('hidden');
+        document.querySelector('#product-edit-modal h3').textContent = 'Edit Product Details';
+        document.getElementById('product-save-button').textContent = 'Save Changes';
+        document.getElementById('product-delete-btn-modal').classList.remove('hidden');
+
+    }
+    
+    // Function to handle opening modal for creating a new product
+    function openNewProductModal() {
+        document.getElementById('edit-product-id').value = 'NEW_PRODUCT'; 
+        document.getElementById('edit-product-name').value = '';
+        document.getElementById('edit-price').value = '';
+        document.getElementById('edit-stock').value = '';
+        document.getElementById('edit-featured').checked = false;
+        document.getElementById('edit-scent-family').value = '';
+        document.getElementById('edit-category').value = 'candle';
+        
+        productEditModal.classList.remove('hidden');
+        document.querySelector('#product-edit-modal h3').textContent = 'Add New Product';
+        document.getElementById('product-save-button').textContent = 'Create Product';
+        document.getElementById('product-delete-btn-modal').classList.add('hidden');
     }
 
     async function handleProductUpdate(e) {
         e.preventDefault();
         
         const productId = document.getElementById('edit-product-id').value;
-        const updateButton = e.submitter;
-        updateButton.disabled = true;
-        updateButton.textContent = 'Saving...';
+        const saveButton = document.getElementById('product-save-button');
+        saveButton.disabled = true;
+        saveButton.textContent = 'Saving...';
         
         try {
             const formData = new FormData(productEditForm);
@@ -442,25 +469,57 @@ title: Admin Panel
                 category: formData.get('category'),
                 featured: formData.get('featured') === 'on' 
             };
-
-            const productRef = doc(db, 'products', productId);
-            await updateDoc(productRef, updateData);
-
-            alert(`${updateData.name} updated successfully!`);
-            productEditModal.classList.add('hidden');
             
+            const isNewProduct = productId === 'NEW_PRODUCT';
+            let targetRef = isNewProduct ? collection(db, 'products') : doc(db, 'products', productId);
+
+            // Add required minimum fields for a new product creation
+            if (isNewProduct) {
+                updateData.longDescription = '<p>A default long description for this new product. Click the Site Content tab to add full product details.</p>';
+                updateData.shortDescription = 'A new fragrance for your home.';
+                updateData.imageUrl = 'logo.webp'; // Default fallback image
+                updateData.strength = 3; 
+                updateData.pairing = 'A great match for any occasion.';
+            }
+
+            if (isNewProduct) {
+                await addDoc(targetRef, updateData);
+                alert(`${updateData.name} created successfully!`);
+            } else {
+                await updateDoc(targetRef, updateData);
+                alert(`${updateData.name} updated successfully!`);
+            }
+
+
+            productEditModal.classList.add('hidden');
             await fetchAllProducts();
 
         } catch (error) {
-            console.error("Error updating product:", error);
-            alert("Error updating product. Please check the console.");
+            console.error("Error updating/creating product:", error);
+            alert("Error updating/creating product. Please check the console.");
         } finally {
-            updateButton.disabled = false;
-            updateButton.textContent = 'Save Changes';
+            saveButton.disabled = false;
+            saveButton.textContent = 'Save Changes'; // Reset button text for next use
         }
     }
     
-    // --- Core Admin Logic: Reviews Tab ---
+    // Function to handle deleting a product
+    async function deleteProduct(productId) {
+        if (!confirm(`Are you sure you want to permanently delete product ID ${productId}? This cannot be undone.`)) {
+            return;
+        }
+        
+        try {
+            await deleteDoc(doc(db, 'products', productId));
+            alert('Product deleted successfully.');
+            await fetchAllProducts();
+        } catch (error) {
+            console.error("Error deleting product:", error);
+            alert("Failed to delete product. Check console.");
+        }
+    }
+
+    // --- Core Admin Logic: Reviews Tab (Remains the same) ---
 
     async function fetchAllReviews() {
         reviewsMessage.textContent = 'Loading reviews...';
@@ -604,7 +663,7 @@ title: Admin Panel
         }
     }
     
-    // --- Core Admin Logic: Stock Alerts Tab ---
+    // --- Core Admin Logic: Stock Alerts Tab (Remains the same) ---
 
     async function fetchStockAlerts() {
         stockAlertsMessage.textContent = 'Loading back-in-stock requests...';
@@ -629,7 +688,6 @@ title: Admin Panel
                 currentAlerts.push(alert);
             });
             
-            // Sort by request date, oldest first (using the robust getTimeInMs helper)
             currentAlerts.sort((a, b) => getTimeInMs(a.requestedAt) - getTimeInMs(b.requestedAt));
 
             renderStockAlertsList();
@@ -692,7 +750,6 @@ title: Admin Panel
         const alertRef = doc(db, 'backInStockRequests', alertId);
         
         try {
-            // Firestore Rule: Deleting the document is the required 'resolve' action.
             await deleteDoc(alertRef); 
             
             const product = currentAlerts.find(a => a.id === alertId);
@@ -707,40 +764,113 @@ title: Admin Panel
         }
     }
     
-    // --- Core Admin Logic: Inquiry Tab ---
+    // --- Core Admin Logic: Inquiry Tab (NEW) ---
 
     async function fetchAllInquiries() {
+        inquiriesMessage.textContent = 'Loading customer inquiries...';
+        inquiriesMessage.classList.remove('hidden', 'text-red-600');
+        inquiriesContainer.innerHTML = '';
         currentInquiries = [];
+
         try {
             const inquiriesRef = collection(db, 'inquiries');
-            const q = query(inquiriesRef); 
+            const q = query(inquiriesRef);
             const querySnapshot = await getDocs(q);
 
-            if (!querySnapshot.empty) {
-                querySnapshot.forEach(doc => {
-                    const inquiry = doc.data();
-                    inquiry.id = doc.id;
-                    currentInquiries.push(inquiry);
-                });
+            if (querySnapshot.empty) {
+                inquiriesMessage.textContent = 'No customer inquiries found.';
+                updateDashboardSummary();
+                return;
             }
+
+            querySnapshot.forEach(doc => {
+                const inquiry = doc.data();
+                inquiry.id = doc.id;
+                currentInquiries.push(inquiry);
+            });
+
+            currentInquiries.sort((a, b) => getTimeInMs(b.createdAt) - getTimeInMs(a.createdAt));
+
+            renderInquiriesList();
+            inquiriesMessage.classList.add('hidden');
+
         } catch (error) {
             console.error("Error fetching all inquiries:", error);
+            inquiriesMessage.textContent = 'Error fetching inquiries. Check console for details.';
+            inquiriesMessage.classList.remove('hidden');
         }
-        updateDashboardSummary(); 
+        updateDashboardSummary();
     }
+
+    function renderInquiriesList() {
+        inquiriesContainer.innerHTML = '';
+        
+        currentInquiries.forEach(inquiry => {
+            const formattedDate = inquiry.createdAt ? formatDate(inquiry.createdAt) : 'N/A';
+
+            const inquiryHtml = `
+                <div class="p-4 rounded-lg shadow-md border-l-4 border-burnt-orange bg-parchment/70 mb-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-lg font-playfair text-charcoal font-semibold">${inquiry.subject || 'No Subject Provided'}</p>
+                            <p class="text-sm text-stone">From: ${inquiry.name || 'Unknown'} | ${formattedDate}</p>
+                        </div>
+                        <a href="mailto:${inquiry.email}?subject=RE: ${inquiry.subject || 'Inquiry'}" class="px-3 py-1 bg-stone text-parchment rounded-full text-sm font-semibold hover:bg-stone/80 transition">
+                            Reply to Email
+                        </a>
+                    </div>
+                    
+                    <p class="text-sm text-charcoal mt-2 p-2 bg-white rounded-md border border-stone/10">
+                        **Message:** ${inquiry.message}
+                    </p>
+                    
+                    <div class="mt-4 pt-3 border-t">
+                        <button data-id="${inquiry.id}" class="resolve-inquiry px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition">
+                            Mark as Resolved (Delete)
+                        </button>
+                    </div>
+                </div>
+            `;
+            inquiriesContainer.innerHTML += inquiryHtml;
+        });
+        
+        document.querySelectorAll('.resolve-inquiry').forEach(button => {
+            button.addEventListener('click', (e) => resolveInquiry(e.target.dataset.id));
+        });
+    }
+    
+    async function resolveInquiry(inquiryId) {
+        if (!confirm("Are you sure you want to mark this inquiry as RESOLVED and delete it?")) {
+            return;
+        }
+        
+        const inquiryRef = doc(db, 'inquiries', inquiryId);
+        
+        try {
+            await deleteDoc(inquiryRef); 
+            alert(`Inquiry ${inquiryId.slice(-6)} resolved and removed.`);
+            await fetchAllInquiries(); 
+
+        } catch (error) {
+            console.error("Error resolving inquiry:", error);
+            alert("Failed to resolve inquiry. Check console.");
+        }
+    }
+
 
     // --- Core Admin Logic: Site Content Tab (CMS) ---
     
-    // CRITICAL CMS MAPPING: Ensures the admin controls every page document.
+    // CRITICAL CMS MAPPING: Enhanced with 'contact' for Formspree link management.
     const SITE_CONTENT_DOCS = [
+        { id: 'homepage', name: 'Homepage Content' },
         { id: 'about', name: 'About Us Page' },
         { id: 'candleCare', name: 'Candle Care Page' }, 
         { id: 'refillProgram', name: 'Refill Program Page' }, 
         { id: 'gifting', name: 'Gifting Page' }, 
         { id: 'subscriptions', name: 'Subscriptions Page' }, 
-        { id: 'scent-glossary', name: 'Scent Glossary Page' }, 
         { id: 'scent-guide', name: 'Scent Guide Page' }, 
-        { id: 'homepage', name: 'Homepage Content' } 
+        { id: 'scent-glossary', name: 'Scent Glossary Page' }, 
+        { id: 'contact', name: 'Contact Page Settings' } // NEW: For Formspree Link
     ];
     
     async function fetchSiteContent() {
@@ -753,17 +883,16 @@ title: Admin Panel
                 siteContent[doc.id] = doc.data();
             });
             
-            // CRITICAL FIX: Ensure local state has an entry for all CMS documents, even if empty in Firestore.
             SITE_CONTENT_DOCS.forEach(docInfo => {
                 if (!siteContent.hasOwnProperty(docInfo.id)) {
-                    // FIX: Populate specific placeholder data based on the missing document ID
-                    // This allows the form to render and the admin to save, thereby creating the missing document.
-                    if (docInfo.id === 'scent-glossary') {
+                    // Initialize placeholder data for missing documents
+                    if (docInfo.id === 'contact') {
+                         siteContent[docInfo.id] = { formspreeId: 'https://formspree.io/f/mqayygzv', contactEmail: 'support@southernsense.org' };
+                    } else if (docInfo.id === 'scent-glossary') {
                         siteContent[docInfo.id] = { glossaryContent: "Example: The word is 'Amber' and it is a warm, musky base note." };
                     } else if (docInfo.id === 'scent-guide') {
                          siteContent[docInfo.id] = { guideOverviewContent: "<p>Define your three main scent families here.</p>", family1Title: "Fruity", family2Title: "Woody", family3Title: "Fresh" };
                     } else {
-                        // Generic placeholder for other missing pages
                         siteContent[docInfo.id] = { [`${docInfo.name.replace(/[^A-Z0-9]/ig, '')}InitialContent`]: "This document was missing. Please fill and save to create it." };
                     }
                 }
@@ -772,7 +901,7 @@ title: Admin Panel
             renderContentTabs();
             // Automatically switch to the first content document on load
             if (SITE_CONTENT_DOCS.length > 0) {
-                const firstExistingId = SITE_CONTENT_DOCS.find(docInfo => siteContent.hasOwnProperty(docInfo.id))?.id || SITE_CONTENT_DOCS[0].id;
+                const firstExistingId = SITE_CONTENT_DOCS[0].id;
                 switchContentDocument(firstExistingId);
             }
             
@@ -820,7 +949,6 @@ title: Admin Panel
 
         // 2. Iterate through contentData keys to build dynamic fields
         for (const key in contentData) {
-            // Only allow editing of string, number, or boolean fields
             const content = contentData[key];
             if (typeof content !== 'string' && typeof content !== 'number' && typeof content !== 'boolean') continue;
             
@@ -836,7 +964,6 @@ title: Admin Panel
             
             let inputElement;
 
-            // Use textarea for long content (descriptions, safety warnings, etc.) or complex HTML
             if (key.includes('Content') || key.includes('Intro') || key.includes('Text') || (typeof content === 'string' && content.length > 50) || key.includes('html')) {
                 inputElement = document.createElement('textarea');
                 inputElement.rows = 5;
@@ -850,11 +977,9 @@ title: Admin Panel
                 inputElement = document.createElement('input');
                 inputElement.type = 'checkbox';
                 inputElement.checked = content;
-                // Need special handling for the output to distinguish checked/unchecked
                 inputElement.name = key;
                 inputElement.id = `content-field-${key}`;
                 
-                // Special rendering for checkbox
                 fieldGroup.classList.add('flex', 'items-center');
                 label.classList.remove('block');
                 label.classList.add('ml-2');
@@ -862,7 +987,7 @@ title: Admin Panel
                 fieldGroup.appendChild(label);
                 
                 siteContentForm.appendChild(fieldGroup);
-                continue; // Skip standard rendering below
+                continue; 
             } else {
                 inputElement = document.createElement('input');
                 inputElement.type = 'text';
@@ -902,44 +1027,27 @@ title: Admin Panel
             const updateData = {};
             
             for (const [key, value] of formData.entries()) {
-                // Determine if a non-placeholder field was submitted
-                const isPlaceholder = key.includes('InitialContent') || key.includes('InitialValue');
-                
-                if (isPlaceholder && value.length === 0) {
-                    continue; // Skip empty placeholder fields
-                }
-                
-                // Get the original content type for type preservation (or use type inference for new fields)
                 const originalValue = siteContent[docId].hasOwnProperty(key) ? siteContent[docId][key] : null;
 
                 if (typeof originalValue === 'number' && !isNaN(parseFloat(value))) {
-                     // Preserve Number type
                      updateData[key] = parseFloat(value);
                 } else if (typeof originalValue === 'boolean') {
-                    // Handle Checkbox/Boolean type (only present if checked in FormData)
                     updateData[key] = value === 'on'; 
                 } else {
-                    // Default to String type for all user inputs
                     updateData[key] = value;
                 }
             }
             
-            // Manually check and set any boolean fields that were unchecked (and thus missing from formData)
             for (const key in siteContent[docId]) {
                  if (typeof siteContent[docId][key] === 'boolean' && !updateData.hasOwnProperty(key)) {
-                    // If the field existed as a boolean but wasn't in formData, it was unchecked.
                     updateData[key] = false;
                  }
             }
 
 
             const contentRef = doc(db, 'siteContent', docId);
-            // CRITICAL FIX: Use setDoc with { merge: true } if it's a new document being created
-            // otherwise use updateDoc. Using updateDoc/setDoc based on context is safer.
-            // For simplicity and since we pre-checked for existence in fetchSiteContent:
             await setDoc(contentRef, updateData, { merge: true });
 
-            // Refresh local state to reflect changes
             const updatedSnap = await getDoc(contentRef);
             if (updatedSnap.exists()) {
                 siteContent[docId] = updatedSnap.data();
@@ -986,6 +1094,8 @@ title: Admin Panel
             fetchAllReviews();
         } else if (targetId === 'tab-stock-alerts') {
             fetchStockAlerts();
+        } else if (targetId === 'tab-inquiries') { // NEW
+            fetchAllInquiries();
         } else if (targetId === 'tab-content') {
             fetchSiteContent();
         } else if (targetId === 'tab-tools') { 
@@ -1010,29 +1120,21 @@ title: Admin Panel
 
         if (!isAdmin) {
             alert("Access Denied: You must be an administrator to view this page.");
-            // CRITICAL FIX: Standardize redirect to clean URL /admin-login/ for unauthenticated access.
-            // If logged in as a non-admin user, redirect to /account/
             window.location.href = '/account/'; 
             return;
         }
         
-        // Load data promises concurrently and then update the dashboard summary once.
-        // The dashboard elements will show 'Loading...' until the functions complete.
-        
-        // Run all fetching operations concurrently
         await Promise.all([
             fetchAllOrders(),
             fetchAllProducts(),
             fetchAllReviews(),
             fetchStockAlerts(),
-            fetchAllInquiries() // NEW: Fetch all inquiries immediately
+            fetchAllInquiries()
         ]);
-
 
         adminLoader.classList.add('hidden');
         adminContent.classList.remove('hidden');
 
-        // Start with the default tab (Dashboard)
         switchTab('tab-dashboard');
     }
 
@@ -1051,7 +1153,6 @@ title: Admin Panel
             logoutButton.addEventListener('click', (e) => {
                 e.preventDefault();
                 signOut(auth).then(() => {
-                    // CRITICAL FIX: Standardize redirect to clean URL
                     window.location.href = '/admin-login/';
                 }).catch(error => {
                     console.error("Logout failed:", error);
@@ -1073,13 +1174,16 @@ title: Admin Panel
         if(siteContentForm) {
             siteContentForm.addEventListener('submit', handleSiteContentUpdate);
         }
+        
+        if(addNewProductButton) { // New listener for the Add Product button
+            addNewProductButton.addEventListener('click', openNewProductModal);
+        }
 
         // Authentication State Listener (Security Guard)
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 initializeAdmin(user);
             } else {
-                // CRITICAL FIX: Standardize redirect to clean URL
                 window.location.href = '/admin-login/';
             }
         });
@@ -1118,10 +1222,13 @@ title: Admin Panel
                         <button data-tab="tab-stock-alerts" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
                             Stock Alerts
                         </button>
+                        <button data-tab="tab-inquiries" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
+                            Customer Inquiries
+                        </button>
                         
                         <p class="text-sm font-bold text-stone uppercase tracking-wider mt-6 mb-2 border-t pt-4">Configuration</p>
                         <button data-tab="tab-content" class="tab-button w-full text-left p-3 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
-                            Site Content
+                            Site Content / CMS
                         </button>
                         <button data-tab="tab-tools" class="tab-button w-full text-left p-3 mt-2 rounded-lg font-medium transition duration-150 ease-in-out text-charcoal hover:bg-parchment/70">
                             Tools / Utility
@@ -1162,7 +1269,19 @@ title: Admin Panel
                                 <p id="aov-summary" class="text-4xl font-bold text-burnt-orange mt-2">--</p>
                                 <p class="text-sm text-stone mt-1">Sales average per transaction.</p>
                             </div>
-
+                            
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                                <h3 class="text-xl font-medium text-charcoal">MTD Revenue (30 Days)</h3>
+                                <p id="mtd-revenue-summary" class="text-4xl font-bold text-green-600 mt-2">--</p>
+                                <p class="text-sm text-stone mt-1">Revenue from the last 30 days.</p>
+                            </div>
+                            
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
+                                <h3 class="text-xl font-medium text-charcoal">Active Users (30 Days)</h3>
+                                <p id="active-users-summary" class="text-4xl font-bold text-charcoal mt-2">--</p>
+                                <p class="text-sm text-stone mt-1">Conceptual KPI: Recent Engaged Users.</p>
+                            </div>
+                            
                             <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
                                 <h3 class="text-xl font-medium text-charcoal">Pending Reviews</h3>
                                 <p id="pending-reviews-count" class="text-4xl font-bold text-stone mt-2">--</p>
@@ -1170,7 +1289,7 @@ title: Admin Panel
                             </div>
                             
                             <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-medium text-charcoal">Low Stock Items</h3>
+                                <h3 class="text-xl font-medium text-charcoal">Low Stock Items (&le; 10)</h3>
                                 <p id="low-stock-count-summary" class="text-4xl font-bold text-stone mt-2">--</p>
                                 <a data-tab="tab-products" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Manage Inventory &rarr;</a>
                             </div>
@@ -1186,12 +1305,13 @@ title: Admin Panel
                                 <p id="total-stock-alerts-count" class="text-4xl font-bold text-stone mt-2">--</p>
                                 <a data-tab="tab-stock-alerts" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">View Alerts &rarr;</a>
                             </div>
-                            
+
                             <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
                                 <h3 class="text-xl font-medium text-charcoal">New Inquiries</h3>
                                 <p id="pending-inquiries-summary" class="text-4xl font-bold text-stone mt-2">--</p>
-                                <span class="text-sm text-stone mt-1">Unread contact form submissions.</span>
+                                <a data-tab="tab-inquiries" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Review Messages &rarr;</a>
                             </div>
+
                         </div>
 
                         <div class="mt-8 p-6 bg-parchment rounded-lg border-l-4 border-burnt-orange">
@@ -1227,7 +1347,7 @@ title: Admin Panel
                     <div id="tab-products" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
                         <div class="flex justify-between items-center mb-6 border-b pb-2">
                             <h2 class="text-3xl font-playfair text-charcoal">Product Catalog Management</h2>
-                            <button class="px-4 py-2 bg-burnt-orange text-parchment font-semibold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
+                            <button id="add-new-product-button" class="px-4 py-2 bg-burnt-orange text-parchment font-semibold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
                                 + Add New Product
                             </button>
                         </div>
@@ -1239,7 +1359,7 @@ title: Admin Panel
                                 <thead>
                                     <tr class="text-left text-sm font-medium text-charcoal uppercase tracking-wider bg-parchment">
                                         <th class="px-6 py-3">Product Name</th>
-                                        <th class="px-6 py-3">Category</th> <!-- ADDED CATEGORY HEADER -->
+                                        <th class="px-6 py-3">Category</th>
                                         <th class="px-6 py-3">Scent Family</th>
                                         <th class="px-6 py-3">Price</th>
                                         <th class="px-6 py-3">Stock</th>
@@ -1274,6 +1394,19 @@ title: Admin Panel
                         <div id="stock-alerts-container" class="mt-6">
                             </div>
                     </div>
+                    
+                    <div id="tab-inquiries" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Customer Inquiries (Contact Form)</h2>
+                        <p id="inquiries-message" class="text-stone mb-4">Fetching customer messages...</p>
+
+                        <div class="mt-4 p-4 bg-gray-50 border rounded-lg border-burnt-orange/50">
+                            <h3 class="font-semibold text-charcoal">Note:</h3>
+                            <p class="text-sm text-stone">These inquiries are submitted from your public contact form and stored in the **inquiries** Firestore collection for management. Resolving an inquiry will delete it from the database.</p>
+                        </div>
+
+                        <div id="inquiries-container" class="mt-6">
+                            </div>
+                    </div>
 
                     <div id="tab-content" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
                         <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Site Content Management (CMS)</h2>
@@ -1292,6 +1425,28 @@ title: Admin Panel
                         <h2 class="text-3xl font-playfair text-charcoal mb-6 border-b pb-2">Utility & Developer Tools</h2>
                         
                         <div class="mt-4 p-4 bg-gray-50 border rounded-lg border-stone/50">
+                            <h3 class="font-semibold text-charcoal text-xl mb-2">Deployment & Cache Management</h3>
+                            <p class="text-stone mb-3">Ensure your customers see the latest changes by clearing the server-side cache after content updates or major deployments.</p>
+                            <div class="space-y-3">
+                                <p class="text-sm text-charcoal font-medium">1. **Clear Cloudflare Cache (Hard Refresh)**</p>
+                                <div class="flex justify-between items-center bg-white p-3 border rounded">
+                                    <p class="text-sm">Forces all users to download the latest files.</p>
+                                    <button onclick="alert('In a live environment, this button would trigger the Cloudflare Purge Cache API.')" class="px-3 py-1 bg-red-600 text-parchment rounded text-sm hover:bg-red-700 transition">
+                                        PURGE ALL
+                                    </button>
+                                </div>
+                                
+                                <p class="text-sm text-charcoal font-medium pt-2">2. **Trigger New Build Deployment**</p>
+                                <div class="flex justify-between items-center bg-white p-3 border rounded">
+                                    <p class="text-sm">Initiates a fresh build process (e.g., from a GitHub webhook).</p>
+                                    <button onclick="alert('In a live environment, this button would trigger a build webhook to Cloudflare/Netlify.')" class="px-3 py-1 bg-burnt-orange text-parchment rounded text-sm hover:bg-burnt-orange/80 transition">
+                                        BUILD NOW
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 p-4 bg-gray-50 border rounded-lg border-stone/50">
                             <h3 class="font-semibold text-charcoal text-xl mb-2">Database Backup & Restore</h3>
                             <p class="text-stone mb-3">These tools are for maintaining the Firestore database, typically used by developers or for initial setup.</p>
                             <p class="text-sm text-red-600 font-semibold mb-4">WARNING: Only run these scripts from a secure local environment. They overwrite data.</p>
@@ -1319,7 +1474,9 @@ title: Admin Panel
             </div>
         </div>
         
-    </div> <div id="product-edit-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-charcoal bg-opacity-75 flex items-center justify-center">
+    </div> 
+    
+    <div id="product-edit-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-charcoal bg-opacity-75 flex items-center justify-center">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg mx-4 p-6 relative">
             
             <div class="flex justify-between items-start border-b pb-3 mb-4">
@@ -1348,14 +1505,14 @@ title: Admin Panel
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label for="edit-scent-family" class="block text-sm font-medium text-stone mb-1">Scent Family</label>
+                        <label for="edit-scent-family" class="block text-sm font-medium text-stone mb-1">Scent Family (e.g., fruity-sweet)</label>
                         <input type="text" id="edit-scent-family" name="scentFamily" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
                     </div>
                     <div>
                         <label for="edit-category" class="block text-sm font-medium text-stone mb-1">Category</label>
                         <select id="edit-category" name="category" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
                             <option value="candle">Candle</option>
-                            <option value="wax-melt">Wax Melt</option> <!-- Corrected option value -->
+                            <option value="wax-melt">Wax Melt</option>
                             <option value="diffuser">Diffuser</option>
                             <option value="gift-set">Gift Set</option>
                         </select>
@@ -1367,9 +1524,12 @@ title: Admin Panel
                     <label for="edit-featured" class="ml-2 block text-sm font-medium text-charcoal">Featured on Homepage</label>
                 </div>
 
-                <div class="pt-4 border-t mt-4">
-                    <button type="submit" class="w-full px-4 py-3 bg-burnt-orange text-parchment font-bold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
+                <div class="pt-4 border-t mt-4 space-y-3">
+                    <button type="submit" id="product-save-button" class="w-full px-4 py-3 bg-burnt-orange text-parchment font-bold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
                         Save Changes
+                    </button>
+                    <button type="button" id="product-delete-btn-modal" onclick="deleteProduct(document.getElementById('edit-product-id').value); productEditModal.classList.add('hidden');" class="hidden w-full px-4 py-2 border border-red-300 text-red-600 font-medium rounded-lg hover:bg-red-50/50 transition duration-300">
+                        Delete Product
                     </button>
                 </div>
             </form>

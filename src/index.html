@@ -17,7 +17,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
     } from '/src/firebase-loader.js';
     // NOTE: addToCart and updateCartDisplay are now globally available after layout.html loads them.
     
-    // --- DOM Elements (CMS Content) ---
+    // --- DOM Elements ---
     const heroTitleEl = document.getElementById('hero-title');
     const heroSubtitleEl = document.getElementById('hero-subtitle');
     const diffWaxTextEl = document.getElementById('diff-wax-text');
@@ -48,7 +48,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
                 if (heroSubtitleEl) heroSubtitleEl.textContent = data.heroSubtitle || "Experience the warmth and charm of the South...";
                 
                 // 2. Our Difference Section (CRITICAL FIX: Use homepage fields directly if present)
-                if (diffWaxTextEl) diffWaxTextEl.textContent = data.diffWax || "We use a premium soy-coconut wax blend that ensures a clean, slow, and even burn every time.";
+                if (diffWaxTextEl) diffWaxTextEl.textContent = data.diffWax || "We use a premium coconut-apricot wax blend that ensures a clean, slow, and even burn every time.";
                 if (diffOilsTextEl) diffOilsTextEl.textContent = data.diffOils || "Our oils are 100% phthalate-free and safe, providing a rich scent throw without harmful chemicals.";
                 
                 // 3. Featured Product ID
@@ -274,7 +274,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
                 <div class="p-6 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300">
                     <img src="/src/finest-wax.webp" alt="Finest Wax" class="w-20 h-20 mx-auto mb-4">
                     <h3 class="text-2xl font-playfair text-charcoal mb-2">Finest Wax Blends</h3>
-                    <p id="diff-wax-text" class="text-stone">We use a premium soy-coconut wax blend that ensures a clean, slow, and even burn every time.</p>
+                    <p id="diff-wax-text" class="text-stone">We use a premium coconut-apricot wax blend that ensures a clean, slow, and even burn every time.</p>
                 </div>
                 <div class="p-6 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300">
                     <img src="/src/clean-oils.webp" alt="Clean Oils" class="w-20 h-20 mx-auto mb-4">
@@ -282,9 +282,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
                     <p id="diff-oils-text" class="text-stone">Our oils are 100% phthalate-free and safe, providing a rich scent throw without harmful chemicals.</p>
                 </div>
                 <div class="p-6 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-burnt-orange mx-auto mb-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM6.293 8.293a1 1 0 011.414 0L10 10.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
+                    <img src="/src/hand-poured-quality.webp" alt="Hand Poured Quality" class="w-20 h-20 mx-auto mb-4">
                     <h3 class="text-2xl font-playfair text-charcoal mb-2">Hand-Poured Quality</h3>
                     <p class="text-stone">Each candle is hand-poured in small batches in the South, guaranteeing attention to detail and superior quality.</p>
                 </div>
@@ -302,5 +300,3 @@ title: Southern Sense - Hand-Poured Luxury Candles
         </div>
     </section>
 </main>
-
-**Next file to update: None.** The visual and structural fixes are complete.

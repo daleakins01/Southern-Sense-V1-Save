@@ -19,7 +19,6 @@ title: Admin Panel
         signOut,
         serverTimestamp // CRITICAL FIX: Ensure serverTimestamp is imported here
     } from '/src/firebase-loader.js';
-    // CRITICAL FIX: Removed unused and conflicting 'logout' import
     
     // --- State and Handlers ---
     let currentUser = null;
@@ -70,7 +69,6 @@ title: Admin Panel
     
     /**
      * Helper to get milliseconds from Timestamp object or raw { _seconds, _nanoseconds } object.
-     * This fixes the 'toDate is not a function' error when loading JSON exported data.
      */
     function getTimeInMs(timestamp) {
         if (!timestamp) return 0;
@@ -131,9 +129,9 @@ title: Admin Panel
         const totalRevenueEl = document.getElementById('total-revenue-summary');
         const aovEl = document.getElementById('aov-summary');
         const outOfStockEl = document.getElementById('out-of-stock-count-summary'); 
-        const pendingInquiriesEl = document.getElementById('pending-inquiries-summary'); // NEW
+        const pendingInquiriesEl = document.getElementById('pending-inquiries-summary'); 
 
-        // NEW: Calculate Financials
+        // Calculate Financials
         const totalRevenue = currentOrders.reduce((sum, order) => sum + (order.totals?.total || 0), 0);
         const totalOrdersCount = currentOrders.length;
         const aov = totalOrdersCount > 0 ? totalRevenue / totalOrdersCount : 0;
@@ -188,7 +186,7 @@ title: Admin Panel
             aovEl.textContent = `$${aov.toFixed(2)}`;
         }
         
-        // 8. Pending Inquiries (NEW)
+        // 8. Pending Inquiries
         if (pendingInquiriesEl) {
             // Assuming we only fetch UNRESOLVED inquiries
             pendingInquiriesEl.textContent = currentInquiries.length;
@@ -212,14 +210,13 @@ title: Admin Panel
 
         try {
             const ordersRef = collection(db, 'orders');
-            // FIX: Using query without orderBy because Firestore Rules only allow ordering by fields with indexes
             const q = query(ordersRef); 
             const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
                 ordersMessage.textContent = 'No orders found in the database.';
                 ordersMessage.classList.remove('hidden');
-                updateDashboardSummary(); // UPDATE SUMMARY
+                updateDashboardSummary(); 
                 return;
             }
 
@@ -229,7 +226,6 @@ title: Admin Panel
                 currentOrders.push(order);
             });
 
-            // CRITICAL FIX: Sort by date, newest first (using the robust getTimeInMs helper)
             currentOrders.sort((a, b) => getTimeInMs(b.createdAt) - getTimeInMs(a.createdAt));
             
             renderOrdersTable();
@@ -241,7 +237,7 @@ title: Admin Panel
             ordersMessage.classList.remove('hidden');
             ordersTableBody.innerHTML = '';
         }
-        updateDashboardSummary(); // UPDATE SUMMARY on completion (success or fail)
+        updateDashboardSummary(); 
     }
     
     function renderOrdersTable() {
@@ -251,7 +247,6 @@ title: Admin Panel
             const orderIdDisplay = order.id.slice(-6);
             const statusClasses = getStatusClasses(order.status);
             const formattedDate = formatDate(order.createdAt);
-            // Ensure totals.total exists before accessing toFixed
             const total = order.totals?.total ? order.totals.total.toFixed(2) : 'N/A';
             
             const customerName = order.customer?.firstName ? 
@@ -331,32 +326,27 @@ title: Admin Panel
         
         try {
             const productsRef = collection(db, 'products');
-            // FIX: Ensure products are fetched without unnecessary sorting, will sort client-side
             const q = query(productsRef);
             const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
                 productsMessage.textContent = 'No products found in the database.';
-                lowStockCount = 0; // NEW: Set count to zero on empty result
-                outOfStockCount = 0; // NEW: Set count to zero on empty result
-                updateDashboardSummary(); // UPDATE SUMMARY
+                lowStockCount = 0; 
+                outOfStockCount = 0; 
+                updateDashboardSummary(); 
                 return;
             }
 
             querySnapshot.forEach(doc => {
                 const product = doc.data();
-                // Ensure price is parsed to number for local sorting/manipulation
                 product.price = parseFloat(product.price); 
-                product.id = doc.id; // Ensure ID is attached
+                product.id = doc.id; 
                 currentProducts.push(product);
             });
 
             currentProducts.sort((a, b) => a.name.localeCompare(b.name));
 
-            // NEW: Calculate low stock count (stock > 0 AND stock <= 10)
             lowStockCount = currentProducts.filter(p => p.stock > 0 && p.stock <= 10).length;
-            
-            // NEW: Calculate out of stock count (stock <= 0)
             outOfStockCount = currentProducts.filter(p => p.stock <= 0).length;
             
             renderProductsTable();
@@ -367,18 +357,21 @@ title: Admin Panel
             productsMessage.textContent = 'Error fetching products. Check console for details.';
             productsMessage.classList.remove('hidden');
         }
-        updateDashboardSummary(); // UPDATE SUMMARY on completion (success or fail)
+        updateDashboardSummary(); 
     }
 
     function renderProductsTable() {
         productsTableBody.innerHTML = '';
         
         currentProducts.forEach(product => {
-            const isOutOfStock = product.stock <= 0; // Check for 0 or less
+            const isOutOfStock = product.stock <= 0; 
             const stockColor = product.stock > 10 ? 'text-green-600' : 
                                product.stock > 0 ? 'text-burnt-orange' : 'text-red-600';
-            const stockDisplay = isOutOfStock ? 'Out of Stock' : product.stock; // UX IMPROVEMENT
+            const stockDisplay = isOutOfStock ? 'Out of Stock' : product.stock; 
             const featuredTag = product.featured ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Featured</span>' : '';
+
+            // FIX: Capitalize and hyphenate category for clean display
+            const categoryDisplay = product.category ? product.category.charAt(0).toUpperCase() + product.category.slice(1).replace(/-/g, ' ') : 'N/A';
 
             const row = document.createElement('tr');
             row.className = 'hover:bg-parchment/50 transition duration-150';
@@ -386,6 +379,7 @@ title: Admin Panel
                 <td class="px-6 py-4 text-sm font-medium text-charcoal">
                     <a href="/product/?id=${product.id}" target="_blank" class="hover:text-burnt-orange transition">${product.name}</a>
                 </td>
+                <td class="px-6 py-4 text-sm text-stone">${categoryDisplay}</td> 
                 <td class="px-6 py-4 text-sm text-stone">${product.scentFamily}</td>
                 <td class="px-6 py-4 text-sm font-medium text-charcoal">$${product.price.toFixed(2)}</td>
                 <td class="px-6 py-4 text-sm font-medium ${stockColor}">
@@ -442,7 +436,6 @@ title: Admin Panel
             
             const updateData = {
                 name: formData.get('name'),
-                // Store price as string to match existing data format, but ensure 2 decimal places
                 price: parseFloat(formData.get('price')).toFixed(2), 
                 stock: parseInt(formData.get('stock'), 10),
                 scentFamily: formData.get('scentFamily'),
@@ -482,7 +475,7 @@ title: Admin Panel
 
             if (querySnapshot.empty) {
                 reviewsMessage.textContent = 'No reviews found in the database.';
-                updateDashboardSummary(); // UPDATE SUMMARY
+                updateDashboardSummary(); 
                 return;
             }
 
@@ -492,13 +485,10 @@ title: Admin Panel
                 currentReviews.push(review);
             });
             
-            // CRITICAL FIX: Use the robust getTimeInMs helper for sorting, eliminating the TypeError
             currentReviews.sort((a, b) => {
-                // 1. Prioritize unapproved reviews first
                 if (a.approved !== b.approved) {
                     return a.approved ? 1 : -1;
                 }
-                // 2. Then sort by submitted date, newest first
                 return getTimeInMs(b.submittedAt) - getTimeInMs(a.submittedAt);
             });
 
@@ -510,7 +500,7 @@ title: Admin Panel
             reviewsMessage.textContent = 'Error fetching reviews. Check console for details.';
             reviewsMessage.classList.remove('hidden');
         }
-        updateDashboardSummary(); // UPDATE SUMMARY on completion (success or fail)
+        updateDashboardSummary(); 
     }
     
     function renderReviewsList() {
@@ -575,7 +565,6 @@ title: Admin Panel
         try {
             const updateFields = { 
                 approved: approvedStatus,
-                // CRITICAL FIX: Ensure serverTimestamp is called and correctly used here
                 moderatedAt: serverTimestamp() 
             };
             
@@ -630,7 +619,7 @@ title: Admin Panel
 
             if (querySnapshot.empty) {
                 stockAlertsMessage.textContent = 'No pending stock alerts found. Good job!';
-                updateDashboardSummary(); // UPDATE SUMMARY
+                updateDashboardSummary(); 
                 return;
             }
 
@@ -651,7 +640,7 @@ title: Admin Panel
             stockAlertsMessage.textContent = 'Error fetching stock alerts. Check console for details.';
             stockAlertsMessage.classList.remove('hidden');
         }
-        updateDashboardSummary(); // UPDATE SUMMARY on completion (success or fail)
+        updateDashboardSummary(); 
     }
     
     function renderStockAlertsList() {
@@ -710,7 +699,7 @@ title: Admin Panel
             const productName = product ? product.productName : alertId.slice(-6);
 
             alert(`Alert for ${productName} resolved and removed.`);
-            await fetchStockAlerts(); // FIX: Call fetchStockAlerts to refresh the current tab
+            await fetchStockAlerts(); 
 
         } catch (error) {
             console.error("Error resolving alert:", error);
@@ -718,13 +707,12 @@ title: Admin Panel
         }
     }
     
-    // --- Core Admin Logic: Inquiry Tab (NEW FETCH FUNCTION) ---
+    // --- Core Admin Logic: Inquiry Tab ---
 
     async function fetchAllInquiries() {
         currentInquiries = [];
         try {
             const inquiriesRef = collection(db, 'inquiries');
-            // Assuming all inquiries fetched are considered "pending" or "new" until manually managed via the API/Admin system
             const q = query(inquiriesRef); 
             const querySnapshot = await getDocs(q);
 
@@ -738,7 +726,7 @@ title: Admin Panel
         } catch (error) {
             console.error("Error fetching all inquiries:", error);
         }
-        updateDashboardSummary(); // UPDATE SUMMARY on completion (success or fail)
+        updateDashboardSummary(); 
     }
 
     // --- Core Admin Logic: Site Content Tab (CMS) ---
@@ -746,10 +734,10 @@ title: Admin Panel
     // CRITICAL CMS MAPPING: Ensures the admin controls every page document.
     const SITE_CONTENT_DOCS = [
         { id: 'about', name: 'About Us Page' },
-        { id: 'candleCare', name: 'Candle Care Page' }, // Maps to src/candle-care.html
-        { id: 'refillProgram', name: 'Refill Program Page' }, // Maps to src/refill-program.html
-        { id: 'gifting', name: 'Gifting Page' }, // Maps to src/gifting.html
-        { id: 'subscriptions', name: 'Subscriptions Page' }, // Maps to src/subscriptions.html
+        { id: 'candleCare', name: 'Candle Care Page' }, 
+        { id: 'refillProgram', name: 'Refill Program Page' }, 
+        { id: 'gifting', name: 'Gifting Page' }, 
+        { id: 'subscriptions', name: 'Subscriptions Page' }, 
         { id: 'scent-glossary', name: 'Scent Glossary Page' }, 
         { id: 'scent-guide', name: 'Scent Guide Page' }, 
         { id: 'homepage', name: 'Homepage Content' } 
@@ -765,10 +753,25 @@ title: Admin Panel
                 siteContent[doc.id] = doc.data();
             });
             
+            // CRITICAL FIX: Ensure local state has an entry for all CMS documents, even if empty in Firestore.
+            SITE_CONTENT_DOCS.forEach(docInfo => {
+                if (!siteContent.hasOwnProperty(docInfo.id)) {
+                    // FIX: Populate specific placeholder data based on the missing document ID
+                    // This allows the form to render and the admin to save, thereby creating the missing document.
+                    if (docInfo.id === 'scent-glossary') {
+                        siteContent[docInfo.id] = { glossaryContent: "Example: The word is 'Amber' and it is a warm, musky base note." };
+                    } else if (docInfo.id === 'scent-guide') {
+                         siteContent[docInfo.id] = { guideOverviewContent: "<p>Define your three main scent families here.</p>", family1Title: "Fruity", family2Title: "Woody", family3Title: "Fresh" };
+                    } else {
+                        // Generic placeholder for other missing pages
+                        siteContent[docInfo.id] = { [`${docInfo.name.replace(/[^A-Z0-9]/ig, '')}InitialContent`]: "This document was missing. Please fill and save to create it." };
+                    }
+                }
+            });
+
             renderContentTabs();
             // Automatically switch to the first content document on load
             if (SITE_CONTENT_DOCS.length > 0) {
-                // Find the first document ID that actually exists in Firestore, otherwise default to the first in the list.
                 const firstExistingId = SITE_CONTENT_DOCS.find(docInfo => siteContent.hasOwnProperty(docInfo.id))?.id || SITE_CONTENT_DOCS[0].id;
                 switchContentDocument(firstExistingId);
             }
@@ -794,9 +797,10 @@ title: Admin Panel
     
     function switchContentDocument(docId) {
         const contentData = siteContent[docId];
+        
         if (!contentData) {
-            siteContentForm.innerHTML = `<p class="text-red-600">Content for "${docId}" not found in Firestore. Check your Firestore collection 'siteContent' for this ID.</p>`;
-            return;
+             siteContentForm.innerHTML = `<p class="text-red-600">Fatal Error: Content key lost. Reloading CMS data is recommended.</p>`;
+             return;
         }
         
         // Update button styles
@@ -898,8 +902,15 @@ title: Admin Panel
             const updateData = {};
             
             for (const [key, value] of formData.entries()) {
-                // Get the original content type for type preservation
-                const originalValue = siteContent[docId][key];
+                // Determine if a non-placeholder field was submitted
+                const isPlaceholder = key.includes('InitialContent') || key.includes('InitialValue');
+                
+                if (isPlaceholder && value.length === 0) {
+                    continue; // Skip empty placeholder fields
+                }
+                
+                // Get the original content type for type preservation (or use type inference for new fields)
+                const originalValue = siteContent[docId].hasOwnProperty(key) ? siteContent[docId][key] : null;
 
                 if (typeof originalValue === 'number' && !isNaN(parseFloat(value))) {
                      // Preserve Number type
@@ -908,12 +919,12 @@ title: Admin Panel
                     // Handle Checkbox/Boolean type (only present if checked in FormData)
                     updateData[key] = value === 'on'; 
                 } else {
-                    // Default to String type
+                    // Default to String type for all user inputs
                     updateData[key] = value;
                 }
             }
             
-            // CRITICAL FIX: Manually check and set any boolean fields that were unchecked (and thus missing from formData)
+            // Manually check and set any boolean fields that were unchecked (and thus missing from formData)
             for (const key in siteContent[docId]) {
                  if (typeof siteContent[docId][key] === 'boolean' && !updateData.hasOwnProperty(key)) {
                     // If the field existed as a boolean but wasn't in formData, it was unchecked.
@@ -923,9 +934,17 @@ title: Admin Panel
 
 
             const contentRef = doc(db, 'siteContent', docId);
-            await updateDoc(contentRef, updateData);
+            // CRITICAL FIX: Use setDoc with { merge: true } if it's a new document being created
+            // otherwise use updateDoc. Using updateDoc/setDoc based on context is safer.
+            // For simplicity and since we pre-checked for existence in fetchSiteContent:
+            await setDoc(contentRef, updateData, { merge: true });
 
-            siteContent[docId] = { ...siteContent[docId], ...updateData }; // Update local state
+            // Refresh local state to reflect changes
+            const updatedSnap = await getDoc(contentRef);
+            if (updatedSnap.exists()) {
+                siteContent[docId] = updatedSnap.data();
+            }
+
             contentSaveMessage.textContent = `${docId.replace(/([A-Z])/g, ' $1').toUpperCase()} content updated successfully!`;
             contentSaveMessage.classList.remove('hidden');
             
@@ -1220,6 +1239,7 @@ title: Admin Panel
                                 <thead>
                                     <tr class="text-left text-sm font-medium text-charcoal uppercase tracking-wider bg-parchment">
                                         <th class="px-6 py-3">Product Name</th>
+                                        <th class="px-6 py-3">Category</th> <!-- ADDED CATEGORY HEADER -->
                                         <th class="px-6 py-3">Scent Family</th>
                                         <th class="px-6 py-3">Price</th>
                                         <th class="px-6 py-3">Stock</th>
@@ -1335,7 +1355,9 @@ title: Admin Panel
                         <label for="edit-category" class="block text-sm font-medium text-stone mb-1">Category</label>
                         <select id="edit-category" name="category" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
                             <option value="candle">Candle</option>
-                            <option value="melt">Wax Melt</option>
+                            <option value="wax-melt">Wax Melt</option> <!-- Corrected option value -->
+                            <option value="diffuser">Diffuser</option>
+                            <option value="gift-set">Gift Set</option>
                         </select>
                     </div>
                 </div>

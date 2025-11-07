@@ -871,6 +871,11 @@ video {
   height: auto;
 }
 
+.h-min{
+  height: -moz-min-content;
+  height: min-content;
+}
+
 .min-h-screen{
   min-height: 100vh;
 }
@@ -2109,5 +2114,9 @@ video {
 @media (min-width: 1280px){
   .xl\:grid-cols-4{
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .xl\:grid-cols-3{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

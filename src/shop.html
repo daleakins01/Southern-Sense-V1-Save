@@ -7,27 +7,65 @@ title: Shop All Candles & Melts
 
 <main class="container mx-auto px-4 py-12 min-h-screen">
     
-    <header class="max-w-4xl mx-auto text-center mb-12 bg-white p-8 rounded-xl shadow-lg border border-stone/10">
-        <p class="text-sm font-semibold uppercase tracking-wider text-burnt-orange mb-3">Shop Our Collection</p>
-        <h1 id="shop-heading" class="text-5xl font-playfair text-charcoal mb-4">
-            All Products
-        </h1>
-        <p id="shop-intro" class="text-lg text-stone leading-relaxed">
-            </p>
-        <div id="filter-message" class="text-center text-sm font-medium text-stone mt-4">
+    <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
+
+        <header class="max-w-4xl mx-auto text-center mb-12">
+            <p class="text-sm font-semibold uppercase tracking-wider text-burnt-orange mb-3">Shop Our Collection</p>
+            <h1 id="shop-heading" class="text-5xl font-playfair text-charcoal mb-4">
+                All Products
+            </h1>
+            <p id="shop-intro" class="text-lg text-stone leading-relaxed">
+                </p>
+            <div id="filter-message" class="text-center text-sm font-medium text-stone mt-4">
+            </div>
+        </header>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            
+            <aside class="lg:w-1/4 sticky top-24 bg-parchment p-6 rounded-lg shadow-md border border-stone/10 h-min">
+                <h3 class="text-xl font-playfair text-charcoal mb-4 border-b pb-2">Refine Your Scents</h3>
+                
+                <form id="product-filter-form" class="space-y-6">
+                    
+                    <div>
+                        <label for="category-filter" class="block text-sm font-medium text-charcoal mb-2">Product Type</label>
+                        <select id="category-filter" name="category" class="w-full p-2 border border-stone/30 rounded-lg text-charcoal bg-white">
+                            <option value="">All Types</option>
+                            </select>
+                    </div>
+
+                    <div>
+                        <label for="family-filter" class="block text-sm font-medium text-charcoal mb-2">Scent Family</label>
+                        <select id="family-filter" name="family" class="w-full p-2 border border-stone/30 rounded-lg text-charcoal bg-white">
+                            <option value="">All Families</option>
+                            </select>
+                    </div>
+
+                    <button type="submit" class="w-full px-4 py-2 bg-stone text-parchment font-bold rounded-lg hover:bg-charcoal transition duration-300">
+                        Apply Filters
+                    </button>
+                    <button type="button" id="clear-filters-button" class="w-full px-4 py-2 border border-stone/30 text-charcoal font-medium rounded-lg hover:bg-parchment/70 transition duration-300">
+                        Clear Filters
+                    </button>
+
+                </form>
+            </aside>
+
+            <div class="lg:w-3/4">
+                <div id="shop-loader" class="flex justify-center items-center h-48">
+                    <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-burnt-orange"></div>
+                </div>
+
+                <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+                </div>
+            </div>
+
         </div>
-    </header>
-    <div id="shop-loader" class="flex justify-center items-center h-48">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-burnt-orange"></div>
+
     </div>
-
-    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        </div>
-
 </main>
 
 <script type="module">
-    // CRITICAL FIX: Removed conflicting import for globally exposed cart functions
     import { 
         db, 
         collection, 
@@ -36,7 +74,6 @@ title: Shop All Candles & Melts
         getDocs, 
         orderBy 
     } from '/src/firebase-loader.js';
-    // Removed: import { addToCart, updateCartDisplay } from '/src/cart.js'; 
 
     // --- DOM Elements ---
     const shopHeading = document.getElementById('shop-heading');
@@ -44,6 +81,10 @@ title: Shop All Candles & Melts
     const productGrid = document.getElementById('product-grid');
     const shopLoader = document.getElementById('shop-loader');
     const filterMessage = document.getElementById('filter-message');
+    const filterForm = document.getElementById('product-filter-form');
+    const categoryFilterSelect = document.getElementById('category-filter');
+    const familyFilterSelect = document.getElementById('family-filter');
+    const clearFiltersButton = document.getElementById('clear-filters-button');
 
     // --- State ---
     let allProducts = [];
@@ -51,12 +92,15 @@ title: Shop All Candles & Melts
     // --- Utility Functions ---
 
     /**
-     * Extracts the scentFamily filter from the URL query parameters.
-     * @returns {string|null} The scent family to filter by, or null.
+     * Extracts all filters from the URL query parameters.
+     * @returns {Object} The filters (family and category).
      */
-    function getFilterFromUrl() {
+    function getFiltersFromUrl() {
         const params = new URLSearchParams(window.location.search);
-        return params.get('family');
+        return {
+            family: params.get('family'),
+            category: params.get('category')
+        };
     }
 
     /**
@@ -64,35 +108,29 @@ title: Shop All Candles & Melts
      * @param {string} str - The input string (e.g., "fruity-sweet").
      * @returns {string} The formatted string (e.g., "Fruity Sweet").
      */
-    function formatScentFamily(str) {
-        if (!str) return 'All Products';
-        // Handle cases like "earthy-woody" -> "Earthy Woody"
+    function formatText(str) {
+        if (!str) return '';
+        // Handle cases like "wax-melt" or "fruity-sweet"
         return str
-            .split('-')
+            .toLowerCase()
+            .split(/[-\s]+/)
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
     }
 
     /**
      * Renders a single product card HTML.
-     * @param {Object} product - The product data.
-     * @returns {string} The product card HTML string.
      */
     function renderProductCard(product) {
-        // NOTE: price and stock are already cleaned up to be numbers in initializeShop
         const isOutOfStock = product.stock <= 0;
         const price = product.price.toFixed(2); 
         
-        // Stock status elements
         const stockStatusHtml = isOutOfStock
             ? `<p class="text-sm font-semibold text-red-600">SOLD OUT</p>`
             : `<p class="text-sm font-semibold text-charcoal">In Stock</p>`;
             
-        // Button or Link
         const actionButtonHtml = isOutOfStock
-            // Out of Stock: Redirect to detail page (where they can sign up for alerts)
             ? `<a href="/product/?id=${product.id}" class="w-full px-4 py-2 bg-stone/50 text-parchment font-bold rounded-lg text-center cursor-not-allowed">View Details</a>`
-            // In Stock: Add to Cart button with data attributes
             : `<button data-id="${product.id}" 
                       data-name="${product.name}"
                       data-price="${price}"
@@ -109,7 +147,7 @@ title: Shop All Candles & Melts
                 </a>
                 <div class="p-5">
                     <h3 class="text-xl font-playfair text-charcoal mb-1">${product.name}</h3>
-                    <p class="text-sm text-stone mb-3">${formatScentFamily(product.scentFamily)}</p>
+                    <p class="text-sm text-stone mb-3">${formatText(product.scentFamily)} | ${formatText(product.category)}</p>
                     <div class="flex justify-between items-center mb-4">
                         <p class="text-lg font-bold text-burnt-orange">$${price}</p>
                         ${stockStatusHtml}
@@ -120,8 +158,35 @@ title: Shop All Candles & Melts
         `;
     }
 
-    // --- Main Logic ---
-    
+    // --- Filter Setup Logic ---
+
+    /**
+     * Populates the filter dropdowns based on all available product data.
+     */
+    function setupFilters(currentFilters) {
+        const uniqueFamilies = new Set();
+        const uniqueCategories = new Set();
+
+        allProducts.forEach(p => {
+            if (p.scentFamily) uniqueFamilies.add(p.scentFamily.toLowerCase());
+            if (p.category) uniqueCategories.add(p.category.toLowerCase());
+        });
+
+        // Populate Category Filter
+        categoryFilterSelect.innerHTML = '<option value="">All Types</option>';
+        [...uniqueCategories].sort().forEach(cat => {
+            const selected = cat === currentFilters.category ? 'selected' : '';
+            categoryFilterSelect.innerHTML += `<option value="${cat}" ${selected}>${formatText(cat)}</option>`;
+        });
+
+        // Populate Family Filter
+        familyFilterSelect.innerHTML = '<option value="">All Families</option>';
+        [...uniqueFamilies].sort().forEach(family => {
+            const selected = family === currentFilters.family ? 'selected' : '';
+            familyFilterSelect.innerHTML += `<option value="${family}" ${selected}>${formatText(family)}</option>`;
+        });
+    }
+
     /**
      * Attaches click listeners to all new "Add to Cart" buttons.
      */
@@ -129,23 +194,14 @@ title: Shop All Candles & Melts
         document.querySelectorAll('.add-to-cart-button').forEach(button => {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
-                // Get product details from data attributes
                 const { id, name, price, image } = e.currentTarget.dataset;
                 
-                // Construct the product object as expected by cart.js
-                const product = {
-                    id: id,
-                    name: name,
-                    // Pass price as string, let cart.js handle final parsing (though it was parsed here, it's safer to pass the clean string)
-                    price: price, 
-                    imageUrl: image
-                };
+                const product = { id: id, name: name, price: price, imageUrl: image };
                 
-                // CRITICAL FIX: Use global window functions
-                window.addToCart(product, 1); // Add one item
-                window.updateCartDisplay(); // Update the cart count in the header
+                // Use global window functions exposed by cart.js
+                window.addToCart(product, 1); 
+                window.updateCartDisplay(); 
                 
-                // Provide visual feedback
                 e.currentTarget.textContent = 'Added!';
                 setTimeout(() => {
                     e.currentTarget.textContent = 'Add to Cart';
@@ -156,45 +212,44 @@ title: Shop All Candles & Melts
 
     /**
      * Filters the global product list and renders the grid.
-     * @param {string|null} filterFamily - The scent family to filter by.
      */
-    function renderProductGrid(filterFamily) {
+    function renderProductGrid(filters) {
         let filteredProducts = allProducts;
         let displayedCount = 0;
 
-        // Set heading and introductory text based on filter
-        const formattedFamily = formatScentFamily(filterFamily);
-        shopHeading.textContent = formattedFamily;
-        
-        if (filterFamily) {
-            // Filter logic: match scentFamily property exactly
-            filteredProducts = allProducts.filter(p => p.scentFamily && p.scentFamily.toLowerCase() === filterFamily.toLowerCase());
-            shopIntro.textContent = `Browse our collection of products featuring the delightful notes of the ${formattedFamily} family.`;
-        } else {
-            shopIntro.textContent = `Explore our entire collection of hand-poured candles and luxurious wax melts.`;
+        // 1. Apply Filters
+        if (filters.family) {
+            filteredProducts = filteredProducts.filter(p => p.scentFamily && p.scentFamily.toLowerCase() === filters.family.toLowerCase());
+        }
+        if (filters.category) {
+            filteredProducts = filteredProducts.filter(p => p.category && p.category.toLowerCase() === filters.category.toLowerCase());
         }
 
+        // 2. Update Header Text
+        const activeFilterNames = [
+            filters.category ? formatText(filters.category) : null,
+            filters.family ? formatText(filters.family) : null
+        ].filter(n => n).join(' & ');
+        
+        shopHeading.textContent = activeFilterNames || 'All Products';
+        shopIntro.textContent = activeFilterNames 
+            ? `Showing products filtered by: ${activeFilterNames}`
+            : `Explore our entire collection of hand-poured candles and luxurious wax melts.`;
 
         productGrid.innerHTML = '';
         
         if (filteredProducts.length === 0) {
-            // CRITICAL FIX: Ensure the return link is standardized /shop/
-            productGrid.innerHTML = `<p class="text-lg text-stone col-span-full text-center py-10">No products found matching your criteria. <a href="/shop/" class="text-burnt-orange hover:underline">View All Products</a></p>`;
+            productGrid.innerHTML = `<p class="text-lg text-stone col-span-full text-center py-10">No products found matching your criteria. <a href="/shop/" class="text-burnt-orange hover:underline">Clear Filters</a></p>`;
             filterMessage.textContent = `0 products found.`;
             return;
         }
 
-        // Sort: Featured first, then by stock (in-stock first), then by name
+        // 3. Sort & Render
         filteredProducts.sort((a, b) => {
-            // Featured priority
             if (a.featured && !b.featured) return -1;
             if (!a.featured && b.featured) return 1;
-            
-            // Stock priority (higher stock comes first)
             if (a.stock > 0 && b.stock <= 0) return -1;
             if (a.stock <= 0 && b.stock > 0) return 1;
-
-            // Alphabetical fallback
             return a.name.localeCompare(b.name);
         });
 
@@ -203,26 +258,21 @@ title: Shop All Candles & Melts
             displayedCount++;
         });
 
-        // Update total count message
-        filterMessage.textContent = `${displayedCount} ${filterFamily ? formattedFamily : 'Total'} products found.`;
+        filterMessage.textContent = `${displayedCount} ${activeFilterNames || 'Total'} products found.`;
 
         attachCartListeners();
     }
 
+    // --- Initialization & Event Listeners ---
 
-    /**
-     * Initializes the shop page by fetching all products.
-     */
     async function initializeShop() {
         shopLoader.classList.remove('hidden');
         productGrid.innerHTML = '';
         
-        const filterFamily = getFilterFromUrl();
-        shopHeading.textContent = formatScentFamily(filterFamily); // Set initial heading
+        const currentFilters = getFiltersFromUrl();
 
         try {
             const productsRef = collection(db, 'products');
-            // Use query without orderBy for initial fetch, relying on client-side sort
             const q = query(productsRef); 
             const querySnapshot = await getDocs(q);
 
@@ -232,35 +282,50 @@ title: Shop All Candles & Melts
                 return;
             }
 
-            // Map all documents and store them in the global state
             allProducts = querySnapshot.docs.map(doc => {
                 const data = doc.data();
                 return {
                     id: doc.id,
                     ...data,
-                    // CRITICAL FIX: Apply defensive number parsing for robustness
-                    // price is stored as a string in Firestore (e.g., "20.00"), parse it back here
                     price: parseFloat(data.price) || 0.00, 
-                    stock: parseInt(data.stock, 10) || 0, // Ensure stock is an integer
-                    featured: data.featured === true // Ensure boolean type is maintained
+                    stock: parseInt(data.stock, 10) || 0, 
+                    featured: data.featured === true 
                 };
             });
 
-            // Render the grid with or without the URL filter
-            renderProductGrid(filterFamily);
+            setupFilters(currentFilters);
+            renderProductGrid(currentFilters);
 
         } catch (error) {
-            // CRITICAL FIX: The primary cause of failure is often here. Log and update UI
             console.error("CRITICAL ERROR: Error fetching products:", error);
-            // Provide better user feedback on failure
             shopIntro.innerHTML = `<p class="text-red-600 font-bold">Error loading products. Please check the browser console for specific dependency or Firestore errors.</p>`;
         } finally {
             shopLoader.classList.add('hidden');
         }
     }
-
-    // --- Initialization Trigger ---
-    document.addEventListener('DOMContentLoaded', initializeShop);
+    
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeShop();
+        
+        // Handle filter form submission
+        filterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const category = categoryFilterSelect.value;
+            const family = familyFilterSelect.value;
+            
+            // Build new URL
+            const newParams = new URLSearchParams();
+            if (category) newParams.set('category', category);
+            if (family) newParams.set('family', family);
+            
+            // Navigate to new URL to reload with filters
+            window.location.href = `/shop/?${newParams.toString()}`;
+        });
+        
+        // Handle Clear Filters button
+        clearFiltersButton.addEventListener('click', () => {
+            window.location.href = '/shop/';
+        });
+    });
 </script>
-
-**Next file to update: `src/product.html`** (Header, Back Link, Text Separation)

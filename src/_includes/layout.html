@@ -30,19 +30,19 @@
     <script type="module">
         document.addEventListener('DOMContentLoaded', async () => {
             // CRITICAL FIX: Increment cache-busting version string to force browser to load corrected JS modules.
-            const version = '?v=1.1.3';
+            const version = '?v=1.1.4';
             
             // 1. Load Firebase (initializes services)
             await import('/src/firebase-loader.js'); 
             
-            // 2. Load Cart Logic (attaches functions to window) - NOW CACHE BUSTED
+            // 2. Load Cart Logic (attaches functions to window) - CRITICAL DEFINITIONS
             await import(`/src/cart.js${version}`); 
             
-            // 3. Load Main UI Logic - NOW CACHE BUSTED
-            await import(`/src/main.js${version}`); 
-            
-            // 4. Initialize Cart (calls the now-global function exposed by cart.js)
+            // 3. Initialize Cart (calls the now-global function exposed by cart.js) <-- MOVED UP
             window.initializeCart();
+
+            // 4. Load Main UI Logic (uses cart functions, runs after initialization)
+            await import(`/src/main.js${version}`); 
         });
     </script>
     

@@ -222,9 +222,13 @@ title: Southern Sense - Hand-Poured Luxury Candles
         await fetchFeaturedProducts(featuredId);
     }
 
-    // --- Initialization Trigger ---
-    // The main layout controls DOMContentLoaded and Firebase loading. Running immediately.
-    initializeHomepage(); 
+    // --- Initialization Trigger (CRITICAL FIX: Wait for DOMContentLoaded to ensure cart modules are ready) ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // The layout.html loads the module definition asynchronously.
+        // We must wait for the DOM to be ready and rely on the layout's loading order.
+        initializeHomepage();
+    });
+
 ; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
 </script>
 

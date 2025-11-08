@@ -70,6 +70,11 @@ title: Admin Panel
     const contentTabsContainer = document.getElementById('content-tabs-container');
     const siteContentForm = document.getElementById('site-content-form');
     const contentSaveMessage = document.getElementById('content-save-message');
+    
+    // --- Webhook Configuration (Placeholders) ---
+    // !!! CRITICAL: REPLACE THESE PLACEHOLDER URLS WITH YOUR ACTUAL CLOUDFLARE/NETLIFY WEBHOOKS !!!
+    const CACHE_PURGE_WEBHOOK = 'https://PLACEHOLDER-YOUR-CACHE-PURGE-WEBHOOK-URL';
+    const BUILD_TRIGGER_WEBHOOK = 'https://PLACEHOLDER-YOUR-BUILD-TRIGGER-WEBHOOK-URL';
 
 
     // --- Utility Functions (CRITICAL FIX: Robust Date Handling) ---
@@ -120,6 +125,53 @@ title: Admin Panel
                 return 'bg-gray-100 text-gray-800';
         }
     }
+
+    // --- Webhook Functionality (NEW) ---
+
+    /**
+     * Executes a POST request to a webhook URL (for Cache Purge or Build Trigger).
+     * @param {string} webhookUrl - The specific webhook endpoint to trigger.
+     * @param {string} actionName - Name of the action for the alert message.
+     */
+    async function triggerWebhook(webhookUrl, actionName) {
+        if (webhookUrl.includes('PLACEHOLDER')) {
+             alert(`Action Blocked: Please replace the placeholder URL for '${actionName}' in src/admin.html before attempting to use this.`);
+             return;
+        }
+
+        if (!confirm(`Are you sure you want to trigger '${actionName}'? This action affects the live site.`)) {
+            return;
+        }
+
+        // Use data-action attribute to find the correct button
+        const button = document.querySelector(`[data-action="${actionName.replace(/ /g, '-').toLowerCase()}"]`);
+        const originalText = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Executing...';
+
+        try {
+            const response = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({}) // Often required by build/purge webhooks
+            });
+
+            if (response.ok || response.status === 202) { // 202 is Accepted (meaning build started)
+                alert(`SUCCESS: '${actionName}' webhook sent successfully! Changes should be live shortly. (Status: ${response.status})`);
+            } else {
+                alert(`ERROR: '${actionName}' failed! Check the webhook URL and any required API keys. (Status: ${response.status})`);
+            }
+        } catch (error) {
+            console.error(`Webhook error for ${actionName}:`, error);
+            alert(`CRITICAL ERROR: Failed to reach the '${actionName}' webhook URL. Check your network or the URL in src/admin.html.`);
+        } finally {
+            button.disabled = false;
+            button.textContent = originalText;
+        }
+    }
+
 
     // --- Dashboard Data Synchronization ---
 
@@ -1450,7 +1502,7 @@ title: Admin Panel
                                 <p class="text-sm text-charcoal font-medium">1. **Clear Cloudflare Cache (Hard Refresh)**</p>
                                 <div class="flex justify-between items-center bg-white p-3 border rounded">
                                     <p class="text-sm">Forces all users to download the latest files.</p>
-                                    <button onclick="alert('In a live environment, this button would trigger the Cloudflare Purge Cache API.')" class="px-3 py-1 bg-red-600 text-parchment rounded text-sm hover:bg-red-700 transition">
+                                    <button data-action="purge-all" onclick="triggerWebhook(CACHE_PURGE_WEBHOOK, 'PURGE ALL')" class="px-3 py-1 bg-red-600 text-parchment rounded text-sm hover:bg-red-700 transition">
                                         PURGE ALL
                                     </button>
                                 </div>
@@ -1458,7 +1510,7 @@ title: Admin Panel
                                 <p class="text-sm text-charcoal font-medium pt-2">2. **Trigger New Build Deployment**</p>
                                 <div class="flex justify-between items-center bg-white p-3 border rounded">
                                     <p class="text-sm">Initiates a fresh build process (e.g., from a GitHub webhook).</p>
-                                    <button onclick="alert('In a live environment, this button would trigger a build webhook to Cloudflare/Netlify.')" class="px-3 py-1 bg-burnt-orange text-parchment rounded text-sm hover:bg-burnt-orange/80 transition">
+                                    <button data-action="build-now" onclick="triggerWebhook(BUILD_TRIGGER_WEBHOOK, 'BUILD NOW')" class="px-3 py-1 bg-burnt-orange text-parchment rounded text-sm hover:bg-burnt-orange/80 transition">
                                         BUILD NOW
                                     </button>
                                 </div>

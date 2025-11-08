@@ -74,9 +74,9 @@ A comma-separated list of the key fragrance notes. (e.g., Ripe Peach, Black Tea,
 
 strength
 
-string
+number
 
-The perceived strength of the scent. Must be subtle, moderate, or strong.
+(Crucial) The perceived strength of the scent. Must be a number from 1 (subtle) to 5 (strong). This is used to render the star rating. (e.g., 5)
 
 featured
 

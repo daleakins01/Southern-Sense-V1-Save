@@ -142,6 +142,7 @@ title: Product Name
                 stockQuantityDisplay.classList.remove('text-green-600', 'text-burnt-orange');
                 stockQuantityDisplay.classList.add('text-red-600');
                 stockAlertContainer.classList.remove('hidden');
+                quantityInput.max = 0; // FIX 3.2: Set max quantity to 0
                 
             } else if (currentProduct.stock <= 10) {
                 stockQuantityDisplay.textContent = `Only ${currentProduct.stock} left in stock!`;
@@ -149,12 +150,14 @@ title: Product Name
                 stockQuantityDisplay.classList.add('text-burnt-orange');
                 addToCartButton.disabled = false;
                 stockAlertContainer.classList.add('hidden'); // Ensure hidden if stock is present
+                quantityInput.max = currentProduct.stock; // FIX 3.2: Set max quantity
             } else {
                 stockQuantityDisplay.textContent = 'In Stock';
                 stockQuantityDisplay.classList.remove('text-burnt-orange', 'text-red-600');
                 stockQuantityDisplay.classList.add('text-green-600');
                 addToCartButton.disabled = false;
                 stockAlertContainer.classList.add('hidden');
+                quantityInput.max = currentProduct.stock; // FIX 3.2: Set max quantity
             }
 
             // --- Load Reviews (Concurrent Fetch) ---
@@ -232,6 +235,8 @@ title: Product Name
 
         reviewsList.forEach(review => {
             const reviewDate = review.submittedAt ? formatDate(review.submittedAt) : 'N/A';
+            const productName = review.productName || 'Unknown Product';
+            
             reviewsHtml += `
                 <div class="border-b border-stone/10 py-4">
                     <div class="flex items-center justify-between mb-2">
@@ -368,6 +373,19 @@ title: Product Name
         addToCartButton.addEventListener('click', () => {
             if (currentProduct) {
                 const quantity = parseInt(quantityInput.value, 10);
+                
+                // --- FIX 3.3: New validation logic ---
+                if (quantity <= 0) {
+                    alert('Please enter a quantity greater than zero.');
+                    return;
+                }
+                
+                if (quantity > currentProduct.stock) {
+                    alert(`Cannot add ${quantity} items. Only ${currentProduct.stock} left in stock.`);
+                    return;
+                }
+                // --- End New validation logic ---
+                
                 if (quantity > 0) {
                     // CRITICAL FIX: Defensive check to prevent TypeError crash if cart.js failed to load
                     if (window.addToCart && window.updateCartDisplay) {
@@ -466,7 +484,9 @@ title: Product Name
                     </div>
                     
                     <div class="flex items-center space-x-4 mb-4">
-                        <input type="number" id="quantity-input" value="1" min="1" class="w-20 p-3 border border-stone/30 rounded-lg text-center text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
+                        <input type="number" id="quantity-input" value="1" min="1" 
+                               title="Quantity" aria-label="Quantity"
+                               class="w-20 p-3 border border-stone/30 rounded-lg text-center text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
                         <button id="add-to-cart-button" class="flex-grow px-6 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-burnt-orange/80 transition duration-300">
                             Add to Cart
                         </button>

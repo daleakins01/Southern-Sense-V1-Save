@@ -173,18 +173,22 @@ title: Shop All Candles & Melts
         });
 
         // Populate Category Filter
-        categoryFilterSelect.innerHTML = '<option value="">All Types</option>';
-        [...uniqueCategories].sort().forEach(cat => {
-            const selected = cat === currentFilters.category ? 'selected' : '';
-            categoryFilterSelect.innerHTML += `<option value="${cat}" ${selected}>${formatText(cat)}</option>`;
-        });
+        if (categoryFilterSelect) {
+            categoryFilterSelect.innerHTML = '<option value="">All Types</option>';
+            [...uniqueCategories].sort().forEach(cat => {
+                const selected = cat === currentFilters.category ? 'selected' : '';
+                categoryFilterSelect.innerHTML += `<option value="${cat}" ${selected}>${formatText(cat)}</option>`;
+            });
+        }
 
         // Populate Family Filter
-        familyFilterSelect.innerHTML = '<option value="">All Families</option>';
-        [...uniqueFamilies].sort().forEach(family => {
-            const selected = family === currentFilters.family ? 'selected' : '';
-            familyFilterSelect.innerHTML += `<option value="${family}" ${selected}>${formatText(family)}</option>`;
-        });
+        if (familyFilterSelect) {
+            familyFilterSelect.innerHTML = '<option value="">All Families</option>';
+            [...uniqueFamilies].sort().forEach(family => {
+                const selected = family === currentFilters.family ? 'selected' : '';
+                familyFilterSelect.innerHTML += `<option value="${family}" ${selected}>${formatText(family)}</option>`;
+            });
+        }
     }
 
     /**
@@ -199,13 +203,17 @@ title: Shop All Candles & Melts
                 const product = { id: id, name: name, price: price, imageUrl: image };
                 
                 // Use global window functions exposed by cart.js
-                window.addToCart(product, 1); 
-                window.updateCartDisplay(); 
-                
-                e.currentTarget.textContent = 'Added!';
-                setTimeout(() => {
-                    e.currentTarget.textContent = 'Add to Cart';
-                }, 1000);
+                if (window.addToCart && window.updateCartDisplay) { // Defensive check
+                    window.addToCart(product, 1); 
+                    window.updateCartDisplay(); 
+                    
+                    e.currentTarget.textContent = 'Added!';
+                    setTimeout(() => {
+                        e.currentTarget.textContent = 'Add to Cart';
+                    }, 1000);
+                } else {
+                    console.error("Cart functions (addToCart/updateCartDisplay) are not available.");
+                }
             });
         });
     }
@@ -225,22 +233,22 @@ title: Shop All Candles & Melts
             filteredProducts = filteredProducts.filter(p => p.category && p.category.toLowerCase() === filters.category.toLowerCase());
         }
 
-        // 2. Update Header Text
+        // 2. Update Header Text (CRITICAL FIX: Add null checks for safety)
         const activeFilterNames = [
             filters.category ? formatText(filters.category) : null,
             filters.family ? formatText(filters.family) : null
         ].filter(n => n).join(' & ');
         
-        shopHeading.textContent = activeFilterNames || 'All Products';
-        shopIntro.textContent = activeFilterNames 
+        if (shopHeading) shopHeading.textContent = activeFilterNames || 'All Products';
+        if (shopIntro) shopIntro.textContent = activeFilterNames 
             ? `Showing products filtered by: ${activeFilterNames}`
             : `Explore our entire collection of hand-poured candles and luxurious wax melts.`;
 
-        productGrid.innerHTML = '';
+        if (productGrid) productGrid.innerHTML = '';
         
         if (filteredProducts.length === 0) {
-            productGrid.innerHTML = `<p class="text-lg text-stone col-span-full text-center py-10">No products found matching your criteria. <a href="/shop/" class="text-burnt-orange hover:underline">Clear Filters</a></p>`;
-            filterMessage.textContent = `0 products found.`;
+            if (productGrid) productGrid.innerHTML = `<p class="text-lg text-stone col-span-full text-center py-10">No products found matching your criteria. <a href="/shop/" class="text-burnt-orange hover:underline">Clear Filters</a></p>`;
+            if (filterMessage) filterMessage.textContent = `0 products found.`;
             return;
         }
 
@@ -254,11 +262,11 @@ title: Shop All Candles & Melts
         });
 
         filteredProducts.forEach(product => {
-            productGrid.innerHTML += renderProductCard(product);
+            if (productGrid) productGrid.innerHTML += renderProductCard(product);
             displayedCount++;
         });
 
-        filterMessage.textContent = `${displayedCount} ${activeFilterNames || 'Total'} products found.`;
+        if (filterMessage) filterMessage.textContent = `${displayedCount} ${activeFilterNames || 'Total'} products found.`;
 
         attachCartListeners();
     }
@@ -266,8 +274,8 @@ title: Shop All Candles & Melts
     // --- Initialization & Event Listeners ---
 
     async function initializeShop() {
-        shopLoader.classList.remove('hidden');
-        productGrid.innerHTML = '';
+        if (shopLoader) shopLoader.classList.remove('hidden');
+        if (productGrid) productGrid.innerHTML = '';
         
         const currentFilters = getFiltersFromUrl();
 
@@ -277,8 +285,8 @@ title: Shop All Candles & Melts
             const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
-                shopIntro.textContent = "We're currently stocking our shelves. Please check back soon!";
-                shopLoader.classList.add('hidden');
+                if (shopIntro) shopIntro.textContent = "We're currently stocking our shelves. Please check back soon!";
+                if (shopLoader) shopLoader.classList.add('hidden');
                 return;
             }
 
@@ -298,9 +306,9 @@ title: Shop All Candles & Melts
 
         } catch (error) {
             console.error("CRITICAL ERROR: Error fetching products:", error);
-            shopIntro.innerHTML = `<p class="text-red-600 font-bold">Error loading products. Please check the browser console for specific dependency or Firestore errors.</p>`;
+            if (shopIntro) shopIntro.innerHTML = `<p class="text-red-600 font-bold">Error loading products. Please check the browser console for specific dependency or Firestore errors.</p>`;
         } finally {
-            shopLoader.classList.add('hidden');
+            if (shopLoader) shopLoader.classList.add('hidden');
         }
     }
     
@@ -309,24 +317,28 @@ title: Shop All Candles & Melts
         initializeShop();
         
         // Handle filter form submission
-        filterForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const category = categoryFilterSelect.value;
-            const family = familyFilterSelect.value;
-            
-            // Build new URL
-            const newParams = new URLSearchParams();
-            if (category) newParams.set('category', category);
-            if (family) newParams.set('family', family);
-            
-            // Navigate to new URL to reload with filters
-            window.location.href = `/shop/?${newParams.toString()}`;
-        });
+        if (filterForm) {
+            filterForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const category = categoryFilterSelect ? categoryFilterSelect.value : null;
+                const family = familyFilterSelect ? familyFilterSelect.value : null;
+                
+                // Build new URL
+                const newParams = new URLSearchParams();
+                if (category) newParams.set('category', category);
+                if (family) newParams.set('family', family);
+                
+                // Navigate to new URL to reload with filters
+                window.location.href = `/shop/?${newParams.toString()}`;
+            });
+        }
         
         // Handle Clear Filters button
-        clearFiltersButton.addEventListener('click', () => {
-            window.location.href = '/shop/';
-        });
+        if (clearFiltersButton) {
+            clearFiltersButton.addEventListener('click', () => {
+                window.location.href = '/shop/';
+            });
+        }
     });
 ; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
 </script>

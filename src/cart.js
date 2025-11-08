@@ -30,9 +30,19 @@ const CHECKOUT_CONTAINER_ID = 'checkout-container';
 function getCart() {
     try {
         const cartString = localStorage.getItem(CART_STORAGE_KEY);
-        return cartString ? JSON.parse(cartString) : [];
+        const cartData = cartString ? JSON.parse(cartString) : [];
+
+        // CRITICAL FIX: Check if the parsed data is an array (to catch corruption like stored strings or numbers)
+        if (!Array.isArray(cartData)) {
+            console.error("Cart data in localStorage is corrupted (not an array). Auto-resetting cart.");
+            clearCart(); // Clear the bad data immediately
+            return [];
+        }
+        return cartData;
     } catch (e) {
-        console.error("Error retrieving cart from localStorage:", e);
+        console.error("Error retrieving cart from localStorage: Data failed JSON parse. Auto-resetting cart.", e);
+        // Force reset on parse failure
+        clearCart(); 
         return [];
     }
 }
@@ -436,6 +446,7 @@ window.updateCartDisplay = updateCartDisplay;
 window.renderCartDrawer = renderCartDrawer;
 window.initializeCart = initializeCart;
 window.handleCheckout = handleCheckout; // Keep exported for any legacy use/direct call
+window.clearCart = clearCart; // CRITICAL FIX: Expose clearCart for manual reset button
 
 // Add defensive semicolon for stability.
 ;

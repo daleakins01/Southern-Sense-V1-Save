@@ -416,13 +416,13 @@ title: Admin Panel
             const stockColor = product.stock > 10 ? 'text-green-600' : 
                                product.stock > 0 ? 'text-burnt-orange' : 'text-red-600';
             const stockDisplay = isOutOfStock ? 'Out of Stock' : product.stock; 
-            const featuredTag = product.featured ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Featured</span>' : '';
+            const featuredTag = product.featured ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Carousel</span>' : '';
             
             // NEW BUTTON LOGIC: If the product is featured, the button is "Set as Homepage Featured".
             const homepageButton = `
                 <button data-id="${product.id}" data-name="${product.name}" 
                         class="set-as-featured-button px-2 py-1 text-xs bg-burnt-orange text-parchment font-semibold rounded-md hover:bg-amber-700 transition duration-150">
-                    Set as Homepage Featured
+                    Set as Primary Feature
                 </button>
             `;
 
@@ -1489,8 +1489,8 @@ title: Admin Panel
                                         <th class="px-6 py-3">Scent Family</th>
                                         <th class="px-6 py-3">Price</th>
                                         <th class="px-6 py-3">Stock</th>
-                                        <th class="px-6 py-3">Featured</th>
-                                        <th class="px-6 py-3">Homepage Feature</th>
+                                        <th class="px-6 py-3">Carousel Inclusion</th>
+                                        <th class="px-6 py-3">Primary Feature</th>
                                         <th class="px-6 py-3 text-right">Actions</th>
                                     </tr>
                                 </thead>
@@ -1685,7 +1685,7 @@ title: Admin Panel
 
                 <div class="flex items-center pt-2">
                     <input type="checkbox" id="edit-featured" name="featured" class="h-4 w-4 text-burnt-orange border-stone/30 rounded focus:ring-burnt-orange">
-                    <label for="edit-featured" class="ml-2 block text-sm font-medium text-charcoal">Featured on Homepage (Secondary List)</label>
+                    <label for="edit-featured" class="ml-2 block text-sm font-medium text-charcoal">Include in Secondary Featured Carousel</label>
                 </div>
 
                 <div class="pt-4 border-t mt-4 space-y-3">

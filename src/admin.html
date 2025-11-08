@@ -358,7 +358,7 @@ title: Admin Panel
             ${order.items.map(item => `${item.quantity}x ${item.name} ($${parseFloat(item.price).toFixed(2)})`).join('\n')}
             \n--- Shipping ---\n
             ${order.customer?.address || 'N/A'}\n
-            ${order.customer?.city || ''}, ${order.customer?.state || ''} ${order.customer?.zip || ''}
+            ${order.customer?.city || '', ${order.customer?.state || ''} ${order.customer?.zip || ''}
         `;
         alert(details); 
     }
@@ -1074,24 +1074,28 @@ title: Admin Panel
         siteContentForm.setAttribute('data-content-id', docId);
 
         // 2. Iterate through contentData keys to build dynamic fields
-        for (const key in contentData) {
-            const content = contentData[key];
+        // CRITICAL FIX: Use 'var' for loop variables to prevent the SyntaxError (P0 fix)
+        for (var key in contentData) {
+            var content = contentData[key];
             if (typeof content !== 'string' && typeof content !== 'number' && typeof content !== 'boolean') continue;
             
-            // NOTE: The UX fix to hide this is REMOVED to restore stability. 
-            // The redundant field will reappear.
+            // UX FIX: Skip rendering the redundant featuredProductId field.
+            if (docId === 'homepage' && key === 'featuredProductId') {
+                 // Skip this field entirely as it's now controlled by the Products tab button.
+                continue; 
+            }
             
-            const labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); 
+            var labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); 
 
-            const fieldGroup = document.createElement('div');
+            var fieldGroup = document.createElement('div');
             fieldGroup.className = 'mb-4';
             
-            const label = document.createElement('label');
+            var label = document.createElement('label');
             label.className = 'block text-sm font-medium text-charcoal mb-1';
             label.textContent = labelText;
             label.setAttribute('for', `content-field-${key}`);
             
-            let inputElement;
+            var inputElement;
 
             if (key.includes('Content') || key.includes('Intro') || key.includes('Text') || (typeof content === 'string' && content.length > 50) || key.includes('html')) {
                 inputElement = document.createElement('textarea');
@@ -1172,7 +1176,18 @@ title: Admin Panel
                     updateData[key] = false;
                  }
             }
-
+            
+            // Re-fetch the current document state to preserve unsubmitted fields (like featuredProductId)
+            const currentDocSnap = await getDoc(doc(db, 'siteContent', docId));
+            if (currentDocSnap.exists()) {
+                const currentData = currentDocSnap.data();
+                // Preserve keys that were not part of the form (i.e., featuredProductId)
+                Object.keys(currentData).forEach(key => {
+                    if (!updateData.hasOwnProperty(key)) {
+                        updateData[key] = currentData[key];
+                    }
+                });
+            }
 
             const contentRef = doc(db, 'siteContent', docId);
             await setDoc(contentRef, updateData, { merge: true });

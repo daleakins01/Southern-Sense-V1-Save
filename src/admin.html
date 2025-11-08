@@ -358,7 +358,7 @@ title: Admin Panel
             ${order.items.map(item => `${item.quantity}x ${item.name} ($${parseFloat(item.price).toFixed(2)})`).join('\n')}
             \n--- Shipping ---\n
             ${order.customer?.address || 'N/A'}\n
-            ${order.customer?.city || '', ${order.customer?.state || ''} ${order.customer?.zip || ''}
+            ${order.customer?.city || ''}, ${order.customer?.state || ''} ${order.customer?.zip || ''}
         `;
         alert(details); 
     }
@@ -1074,9 +1074,11 @@ title: Admin Panel
         siteContentForm.setAttribute('data-content-id', docId);
 
         // 2. Iterate through contentData keys to build dynamic fields
-        // CRITICAL FIX: Use 'var' for loop variables to prevent the SyntaxError (P0 fix)
-        for (var key in contentData) {
-            var content = contentData[key];
+        // CRITICAL FIX: Hoist declarations outside the loop and use 'var' to prevent the SyntaxError
+        var key, content, labelText, fieldGroup, label, inputElement;
+        
+        for (key in contentData) {
+            content = contentData[key];
             if (typeof content !== 'string' && typeof content !== 'number' && typeof content !== 'boolean') continue;
             
             // UX FIX: Skip rendering the redundant featuredProductId field.
@@ -1085,18 +1087,17 @@ title: Admin Panel
                 continue; 
             }
             
-            var labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); 
+            labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); 
 
-            var fieldGroup = document.createElement('div');
+            fieldGroup = document.createElement('div');
             fieldGroup.className = 'mb-4';
             
-            var label = document.createElement('label');
+            label = document.createElement('label');
             label.className = 'block text-sm font-medium text-charcoal mb-1';
             label.textContent = labelText;
             label.setAttribute('for', `content-field-${key}`);
             
-            var inputElement;
-
+            
             if (key.includes('Content') || key.includes('Intro') || key.includes('Text') || (typeof content === 'string' && content.length > 50) || key.includes('html')) {
                 inputElement = document.createElement('textarea');
                 inputElement.rows = 5;

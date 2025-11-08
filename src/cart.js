@@ -83,7 +83,7 @@ function calculateTotals(cart) {
  * @param {Object} product - The product object to add (must contain id, name, price, imageUrl).
  * @param {number} quantity - The quantity to add.
  */
-export function addToCart(product, quantity = 1) { 
+function addToCart(product, quantity = 1) { 
     if (!product || !product.id) {
         console.error("Cannot add to cart: Invalid product object.");
         return;
@@ -164,7 +164,7 @@ function clearCart() {
 /**
  * Updates the item count in the global header cart icon.
  */
-export function updateCartDisplay() { 
+function updateCartDisplay() { 
     const cart = getCart();
     const itemCount = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
     
@@ -181,7 +181,7 @@ export function updateCartDisplay() {
 /**
  * Renders the contents of the cart page/drawer.
  */
-export function renderCartDrawer() { 
+function renderCartDrawer() { 
     const cart = getCart();
     const totals = calculateTotals(cart);
     const itemsContainer = document.getElementById('cart-items-container');
@@ -413,7 +413,7 @@ async function submitOrderToFirestore(paymentDetails, totals) {
  * Empty placeholder function to absorb calls from cart.html DOMContentLoaded listener.
  * The actual checkout is now handled by the PayPal SDK.
  */
-export function handleCheckout() { 
+function handleCheckout() { 
     console.log("handleCheckout: Handled by PayPal SDK via renderPayPalButton.");
 }
 
@@ -423,11 +423,19 @@ export function handleCheckout() {
 /**
  * Initializes the cart system.
  */
-export function initializeCart() { 
+function initializeCart() { 
     updateCartDisplay();
     // The call to renderCartDrawer is placed in cart.html's DOMContentLoaded listener 
     // to ensure it runs only when the main cart page is loaded.
 }
+
+
+// --- CRITICAL FIX: Expose core functions globally for the main layout and pages to access ---
+window.addToCart = addToCart;
+window.updateCartDisplay = updateCartDisplay;
+window.renderCartDrawer = renderCartDrawer;
+window.initializeCart = initializeCart;
+window.handleCheckout = handleCheckout; // Keep exported for any legacy use/direct call
 
 // Add defensive semicolon for stability.
 ;

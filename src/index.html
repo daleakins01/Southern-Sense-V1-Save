@@ -117,8 +117,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
                 
                 const product = { id, name, price, imageUrl: image };
                 
-                // Relying on global functions loaded by the layout.html dynamic import
-                // These functions are available because they are exported by cart.js
+                // Relying on global functions exposed to window by cart.js
                 window.addToCart(product, 1); 
                 window.updateCartDisplay(); 
                 
@@ -226,6 +225,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
     // --- Initialization Trigger ---
     // The main layout controls DOMContentLoaded and Firebase loading. Running immediately.
     initializeHomepage(); 
+; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
 </script>
 
 <main class="min-h-screen">
@@ -238,7 +238,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
                     Southern Sense
                 </h1>
                 <p id="hero-subtitle" class="text-xl text-parchment max-w-2xl mx-auto mb-8 drop-shadow-lg">
-                    Experience the warmth and charm of the South with our hand-poured, luxury soy-blend candles. Clean, comforting, and crafted for your home.
+                    Experience the warmth and charm of the South with our hand-poured, luxury soy-blend candles, made in the heart of South Carolina.
                 </p>
                 <a href="/shop/" class="px-10 py-4 bg-burnt-orange text-parchment text-lg font-bold rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
                     Shop Our Scents

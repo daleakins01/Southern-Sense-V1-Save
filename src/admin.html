@@ -407,7 +407,7 @@ title: Admin Panel
         }
         updateDashboardSummary(); 
     }
-
+    
     function renderProductsTable() {
         productsTableBody.innerHTML = '';
         
@@ -417,6 +417,14 @@ title: Admin Panel
                                product.stock > 0 ? 'text-burnt-orange' : 'text-red-600';
             const stockDisplay = isOutOfStock ? 'Out of Stock' : product.stock; 
             const featuredTag = product.featured ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Featured</span>' : '';
+            
+            // NEW BUTTON LOGIC: If the product is featured, the button is "Set as Homepage Featured".
+            const homepageButton = `
+                <button data-id="${product.id}" data-name="${product.name}" 
+                        class="set-as-featured-button px-2 py-1 text-xs bg-burnt-orange text-parchment font-semibold rounded-md hover:bg-amber-700 transition duration-150">
+                    Set as Homepage Featured
+                </button>
+            `;
 
             const categoryDisplay = product.category ? product.category.charAt(0).toUpperCase() + product.category.slice(1).replace(/-/g, ' ') : 'N/A';
 
@@ -434,6 +442,9 @@ title: Admin Panel
                 </td>
                 <td class="px-6 py-4 text-sm">
                     ${featuredTag}
+                </td>
+                <td class="px-6 py-4 text-sm text-center">
+                    ${homepageButton}
                 </td>
                 <td class="px-6 py-4 text-right text-sm font-medium space-x-2">
                     <button data-id="${product.id}" class="edit-product text-burnt-orange hover:text-stone transition duration-150">
@@ -460,7 +471,51 @@ title: Admin Panel
                 deleteProduct(productId);
             });
         });
+        
+        // NEW LISTENER: Attach listener for the Homepage Feature button
+        document.querySelectorAll('.set-as-featured-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const productId = e.target.dataset.id;
+                const productName = e.target.dataset.name;
+                setHomepageFeaturedProduct(productId, productName);
+            });
+        });
     }
+    
+    /**
+     * Sets the specified product ID as the featured product in the CMS.
+     * @param {string} productId - The ID of the product to feature.
+     * @param {string} productName - The name of the product.
+     */
+    async function setHomepageFeaturedProduct(productId, productName) {
+        if (!confirm(`Are you sure you want to set "${productName}" as the primary featured product on the Homepage? This overrides any previous selection.`)) {
+            return;
+        }
+
+        try {
+            const homepageRef = doc(db, 'siteContent', 'homepage');
+            await updateDoc(homepageRef, {
+                // This updates the key field used by src/index.html to find the main featured item
+                featuredProductId: productId
+            });
+            
+            // To be thorough and ensure the item appears in the secondary featured list
+            const productRef = doc(db, 'products', productId);
+            await updateDoc(productRef, {
+                featured: true
+            });
+            
+            // Re-fetch products to update the table/dashboard status if needed
+            await fetchAllProducts();
+            
+            alert(`SUCCESS: ${productName} is now the primary featured product on the Homepage!`);
+
+        } catch (error) {
+            console.error("Error setting homepage featured product:", error);
+            alert("Failed to set product as featured. Check console.");
+        }
+    }
+
 
     // Function to handle opening modal for editing an existing product
     async function openProductEditModal(productId) {
@@ -1435,6 +1490,7 @@ title: Admin Panel
                                         <th class="px-6 py-3">Price</th>
                                         <th class="px-6 py-3">Stock</th>
                                         <th class="px-6 py-3">Featured</th>
+                                        <th class="px-6 py-3">Homepage Feature</th>
                                         <th class="px-6 py-3 text-right">Actions</th>
                                     </tr>
                                 </thead>
@@ -1629,7 +1685,7 @@ title: Admin Panel
 
                 <div class="flex items-center pt-2">
                     <input type="checkbox" id="edit-featured" name="featured" class="h-4 w-4 text-burnt-orange border-stone/30 rounded focus:ring-burnt-orange">
-                    <label for="edit-featured" class="ml-2 block text-sm font-medium text-charcoal">Featured on Homepage</label>
+                    <label for="edit-featured" class="ml-2 block text-sm font-medium text-charcoal">Featured on Homepage (Secondary List)</label>
                 </div>
 
                 <div class="pt-4 border-t mt-4 space-y-3">

@@ -465,21 +465,21 @@ title: Admin Panel
     // Function to handle opening modal for editing an existing product
     async function openProductEditModal(productId) {
         const product = currentProducts.find(p => p.id === productId);
-        if (!product) {
-            alert("Product not found!");
-            return;
-        }
-
-        document.getElementById('edit-product-id').value = productId;
-        document.getElementById('edit-product-name').value = product.name;
-        document.getElementById('edit-price').value = product.price.toFixed(2);
-        document.getElementById('edit-stock').value = product.stock;
-        document.getElementById('edit-featured').checked = product.featured;
-        document.getElementById('edit-scent-family').value = product.scentFamily;
-        document.getElementById('edit-category').value = product.category;
         
-        // ENHANCEMENT: Populate image URL for editing
-        document.getElementById('edit-image-url').value = product.imageUrl || ''; 
+        // Populate ALL fields from the product object
+        document.getElementById('edit-product-id').value = productId;
+        document.getElementById('edit-product-name').value = product?.name || '';
+        document.getElementById('edit-short-description').value = product?.shortDescription || '';
+        document.getElementById('edit-long-description').value = product?.longDescription || '';
+        document.getElementById('edit-price').value = product?.price?.toFixed(2) || '';
+        document.getElementById('edit-stock').value = product?.stock || 0;
+        document.getElementById('edit-featured').checked = product?.featured === true;
+        document.getElementById('edit-scent-family').value = product?.scentFamily || '';
+        document.getElementById('edit-category').value = product?.category || 'candle';
+        document.getElementById('edit-scent-notes').value = product?.scentNotes || '';
+        document.getElementById('edit-strength').value = product?.strength || 3;
+        document.getElementById('edit-pairing').value = product?.pairing || '';
+        document.getElementById('edit-image-url').value = product?.imageUrl || ''; 
 
         // Update modal UI for editing
         productEditModal.classList.remove('hidden');
@@ -493,13 +493,16 @@ title: Admin Panel
     function openNewProductModal() {
         document.getElementById('edit-product-id').value = 'NEW_PRODUCT'; 
         document.getElementById('edit-product-name').value = '';
+        document.getElementById('edit-short-description').value = '';
+        document.getElementById('edit-long-description').value = '';
         document.getElementById('edit-price').value = '';
-        document.getElementById('edit-stock').value = '';
+        document.getElementById('edit-stock').value = 0;
         document.getElementById('edit-featured').checked = false;
         document.getElementById('edit-scent-family').value = '';
         document.getElementById('edit-category').value = 'candle';
-        
-        // ENHANCEMENT: Clear image URL input for new product
+        document.getElementById('edit-scent-notes').value = '';
+        document.getElementById('edit-strength').value = 3;
+        document.getElementById('edit-pairing').value = '';
         document.getElementById('edit-image-url').value = '';
 
         productEditModal.classList.remove('hidden');
@@ -519,34 +522,31 @@ title: Admin Panel
         try {
             const formData = new FormData(productEditForm);
             
+            // Collect ALL mandatory fields from the form
             const updateData = {
                 name: formData.get('name'),
+                shortDescription: formData.get('shortDescription'),
+                longDescription: formData.get('longDescription'),
                 price: parseFloat(formData.get('price')).toFixed(2), 
                 stock: parseInt(formData.get('stock'), 10),
                 scentFamily: formData.get('scentFamily'),
                 category: formData.get('category'),
                 featured: formData.get('featured') === 'on',
-                // ENHANCEMENT: Include Image URL from modal input
-                imageUrl: formData.get('imageUrl')
+                imageUrl: formData.get('imageUrl'),
+                scentNotes: formData.get('scentNotes'),
+                strength: parseInt(formData.get('strength'), 10),
+                pairing: formData.get('pairing')
             };
             
             const isNewProduct = productId === 'NEW_PRODUCT';
             let targetRef = isNewProduct ? collection(db, 'products') : doc(db, 'products', productId);
 
-            // Add required minimum fields for a new product creation
             if (isNewProduct) {
-                updateData.longDescription = '<p>A default long description for this new product. Click the Site Content tab to add full product details.</p>';
-                updateData.shortDescription = 'A new fragrance for your home.';
-                // CRITICAL FIX: Use provided URL or fallback to logo.webp
-                updateData.imageUrl = updateData.imageUrl || 'logo.webp'; 
-                updateData.strength = 3; 
-                updateData.pairing = 'A great match for any occasion.';
-            }
-
-            if (isNewProduct) {
+                // For new product, Firebase generates the ID. Add the product.
                 await addDoc(targetRef, updateData);
                 alert(`${updateData.name} created successfully!`);
             } else {
+                // For existing product, update the specific document.
                 await updateDoc(targetRef, updateData);
                 alert(`${updateData.name} updated successfully!`);
             }
@@ -1565,8 +1565,19 @@ title: Admin Panel
                 
                 <div>
                     <label for="edit-image-url" class="block text-sm font-medium text-stone mb-1">Image URL (e.g., strawberry-rose-candle.webp)</label>
-                    <input type="text" id="edit-image-url" name="imageUrl" class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
+                    <input type="text" id="edit-image-url" name="imageUrl" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
                 </div>
+
+                <div>
+                    <label for="edit-short-description" class="block text-sm font-medium text-stone mb-1">Short Description (Shop Page)</label>
+                    <textarea id="edit-short-description" name="shortDescription" rows="2" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal"></textarea>
+                </div>
+                
+                <div>
+                    <label for="edit-long-description" class="block text-sm font-medium text-stone mb-1">Long Description (HTML Allowed)</label>
+                    <textarea id="edit-long-description" name="longDescription" rows="5" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal"></textarea>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label for="edit-price" class="block text-sm font-medium text-stone mb-1">Price ($)</label>
@@ -1591,6 +1602,28 @@ title: Admin Panel
                             <option value="diffuser">Diffuser</option>
                             <option value="gift-set">Gift Set</option>
                         </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="edit-scent-notes" class="block text-sm font-medium text-stone mb-1">Scent Notes (Comma Separated)</label>
+                    <input type="text" id="edit-scent-notes" name="scentNotes" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="edit-strength" class="block text-sm font-medium text-stone mb-1">Scent Strength (1=Subtle, 5=Strong)</label>
+                        <select id="edit-strength" name="strength" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
+                            <option value="1">1 - Subtle</option>
+                            <option value="2">2 - Light</option>
+                            <option value="3">3 - Moderate</option>
+                            <option value="4">4 - Strong</option>
+                            <option value="5">5 - Maximum Throw</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="edit-pairing" class="block text-sm font-medium text-stone mb-1">Perfect Pairing</label>
+                        <input type="text" id="edit-pairing" name="pairing" required class="w-full p-2 border border-stone/30 rounded-lg text-charcoal">
                     </div>
                 </div>
 

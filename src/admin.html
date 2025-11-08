@@ -880,7 +880,7 @@ title: Admin Panel
         }
     }
     
-    // --- Core Admin Logic: Inquiry Tab (NEW) ---
+    // --- Core Admin Logic: Inquiry Tab (Remains the same) ---
 
     async function fetchAllInquiries() {
         inquiriesMessage.textContent = 'Loading customer inquiries...';
@@ -1078,10 +1078,8 @@ title: Admin Panel
             const content = contentData[key];
             if (typeof content !== 'string' && typeof content !== 'number' && typeof content !== 'boolean') continue;
             
-            // UX FIX: Skip rendering the featuredProductId field on the homepage CMS.
-            if (docId === 'homepage' && key === 'featuredProductId') {
-                continue; 
-            }
+            // NOTE: The UX fix to hide this is REMOVED to restore stability. 
+            // The redundant field will reappear.
             
             const labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); 
 

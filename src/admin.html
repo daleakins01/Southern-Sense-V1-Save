@@ -989,7 +989,7 @@ title: Admin Panel
         { id: 'contact', name: 'Contact Page Settings' } // NEW: For Formspree Link
     ];
     
-    async function fetchSiteContent() {
+    function fetchSiteContent() {
         siteContent = {};
         try {
             const contentRef = collection(db, 'siteContent');
@@ -1077,6 +1077,11 @@ title: Admin Panel
         for (const key in contentData) {
             const content = contentData[key];
             if (typeof content !== 'string' && typeof content !== 'number' && typeof content !== 'boolean') continue;
+            
+            // UX FIX: Skip rendering the featuredProductId field on the homepage CMS.
+            if (docId === 'homepage' && key === 'featuredProductId') {
+                continue; 
+            }
             
             const labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); 
 

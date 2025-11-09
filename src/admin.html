@@ -986,7 +986,7 @@ title: Admin Panel
         { id: 'contact', name: 'Contact Page Settings' } // NEW: For Formspree Link
     ];
     
-    function fetchSiteContent() {
+    async function fetchSiteContent() {
         siteContent = {};
         try {
             const contentRef = collection(db, 'siteContent');
@@ -1071,29 +1071,27 @@ title: Admin Panel
         siteContentForm.setAttribute('data-content-id', docId);
 
         // 2. Iterate through contentData keys to build dynamic fields
-        // CRITICAL FIX: Hoist declarations outside the loop and use 'var' to prevent the SyntaxError
-        var key, content, labelText, fieldGroup, label, inputElement;
         
-        for (key in contentData) {
-            content = contentData[key];
+        for (let key in contentData) {
+            let content = contentData[key];
             if (typeof content !== 'string' && typeof content !== 'number' && typeof content !== 'boolean') continue;
             
             // UX FIX: Skip rendering the redundant featuredProductId field.
             if (docId === 'homepage' && key === 'featuredProductId') {
-                 // Skip this field entirely as it's now controlled by the Products tab button.
                 continue; 
             }
             
-            labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); 
+            let labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); 
 
-            fieldGroup = document.createElement('div');
+            let fieldGroup = document.createElement('div');
             fieldGroup.className = 'mb-4';
             
-            label = document.createElement('label');
+            let label = document.createElement('label');
             label.className = 'block text-sm font-medium text-charcoal mb-1';
             label.textContent = labelText;
             label.setAttribute('for', `content-field-${key}`);
             
+            let inputElement;
             
             if (key.includes('Content') || key.includes('Intro') || key.includes('Text') || (typeof content === 'string' && content.length > 50) || key.includes('html')) {
                 inputElement = document.createElement('textarea');
@@ -1169,7 +1167,7 @@ title: Admin Panel
                 }
             }
             
-            for (const key in siteContent[docId]) {
+            for (let key in siteContent[docId]) {
                  if (typeof siteContent[docId][key] === 'boolean' && !updateData.hasOwnProperty(key)) {
                     updateData[key] = false;
                  }
@@ -1322,7 +1320,7 @@ title: Admin Panel
         }
         
         if(addNewProductButton) { // New listener for the Add Product button
-            addNewProductButton.addEventListener('click', openNewProductModal);
+            addNewProductButton.addEventListener('click', openProductEditModal.bind(null, null)); // Bind null for new product
         }
 
         // Authentication State Listener (Security Guard)
@@ -1344,7 +1342,7 @@ title: Admin Panel
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-stone"></div>
     </div>
     
-    <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
+    <div class="max-w-7xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
 
         <div id="admin-content" class="hidden">
             <h1 class="text-4xl font-playfair text-charcoal mb-8 border-b pb-4">Southern Sense Admin Panel</h1>

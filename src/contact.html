@@ -31,6 +31,7 @@ title: Contact Us
      */
     async function loadFormSettings() {
         try {
+            // CRITICAL FIX: Use the 'contact' document ID as defined in Admin Panel CMS map
             const docRef = doc(db, "siteContent", "contact");
             const docSnap = await getDoc(docRef);
 
@@ -120,14 +121,16 @@ title: Contact Us
      */
     function showMessage(message, type) {
         formMessage.textContent = message;
-        formMessage.classList.remove('hidden', 'text-green-600', 'text-red-600', 'text-stone', 'bg-red-50', 'bg-green-50', 'bg-parchment/50');
+        // UX Polish: Standardize classes
+        formMessage.classList.remove('hidden', 'text-green-600', 'text-red-600', 'text-stone', 'bg-red-50', 'bg-green-50', 'bg-parchment/50', 'bg-amber-100');
         
         if (type === 'success') {
             formMessage.classList.add('text-green-600', 'bg-green-50');
         } else if (type === 'error') {
             formMessage.classList.add('text-red-600', 'bg-red-50');
         } else {
-            formMessage.classList.add('text-stone', 'bg-parchment/50');
+            // Use amber for processing/info
+            formMessage.classList.add('text-amber-700', 'bg-amber-100');
         }
         formMessage.classList.remove('hidden');
     }
@@ -157,7 +160,7 @@ title: Contact Us
                 </p>
             </header>
             
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-white p-8 rounded-xl shadow-lg border border-stone/10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-white p-8 rounded-xl shadow-xl border border-stone/10">
 
                 <div class="lg:order-1">
                     <form id="contact-form" class="space-y-6" method="POST">
@@ -186,13 +189,13 @@ title: Contact Us
                         
                         <div id="form-message" class="hidden text-sm font-medium p-3 rounded-lg"></div>
 
-                        <button type="submit" class="w-full px-4 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-burnt-orange/80 transition duration-300">
+                        <button type="submit" class="w-full px-4 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
                             Send Message
                         </button>
                     </form>
                 </div>
 
-                <div class="lg:order-2 space-y-8 p-4 bg-parchment rounded-lg border-l-4 border-stone">
+                <div class="lg:order-2 space-y-8 p-4 bg-parchment rounded-xl shadow-xl border-l-4 border-burnt-orange/50">
                     
                     <h2 class="text-2xl font-playfair text-charcoal mb-4">Direct Contact & Support</h2>
 

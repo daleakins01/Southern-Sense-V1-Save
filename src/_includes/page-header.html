@@ -1,5 +1,5 @@
-<header class="relative w-full h-64 md:h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
-    <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+<header class="relative w-full h-64 md:h-80 bg-cover bg-center" style="background-image: url('{{ headerImage | default: "/src/candles-header.webp" }}');">
+    <div class="absolute inset-0 bg-charcoal/60 flex items-center justify-center">
         <h1 class="font-playfair text-5xl md:text-6xl font-extrabold text-parchment drop-shadow-lg text-center px-4">
             {{ pageTitle }}
         </h1>

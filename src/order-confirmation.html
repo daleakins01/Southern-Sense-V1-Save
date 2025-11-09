@@ -120,15 +120,15 @@ title: Order Confirmed
                 const imageUrl = item.imageUrl?.startsWith('http') ? item.imageUrl : '/src/' + item.imageUrl;
 
                 itemsHtml += `
-                    <div class="flex justify-between py-3 border-b border-stone/10">
-                        <div class="flex items-center space-x-3">
-                            <img src="${imageUrl}" alt="${item.name}" class="w-12 h-12 object-cover rounded-md">
+                    <div class="flex justify-between py-3 border-b border-stone/10 items-center">
+                        <div class="flex items-center space-x-4">
+                            <img src="${imageUrl}" alt="${item.name}" class="w-14 h-14 object-cover rounded-md flex-shrink-0">
                             <div>
                                 <p class="font-medium text-charcoal">${item.name}</p>
                                 <p class="text-sm text-stone">Qty: ${itemQuantity} @ $${itemPrice.toFixed(2)}</p>
                             </div>
                         </div>
-                        <span class="font-medium text-charcoal">$${itemTotal}</span>
+                        <span class="font-bold text-charcoal">$${itemTotal}</span>
                     </div>
                 `;
             });
@@ -191,7 +191,7 @@ title: Order Confirmed
             <p id="error-message" class="text-lg text-stone mb-6">
                 The order ID provided could not be matched with any record.
             </p>
-            <a href="/shop/" class="px-8 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-lg hover:bg-burnt-orange/80 transition duration-300">
+            <a href="/shop/" class="px-8 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
                 Return to Shop
             </a>
         </div>
@@ -211,12 +211,12 @@ title: Order Confirmed
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
-                <div class="lg:col-span-2">
+                <div class="lg:col-span-2 space-y-4">
                     <h2 class="text-3xl font-playfair text-charcoal mb-4 border-b pb-2">What You Ordered</h2>
-                    <div id="itemized-list-container">
+                    <div id="itemized-list-container" class="bg-parchment p-6 rounded-xl shadow-xl border border-stone/10 divide-y divide-stone/10">
                         </div>
 
-                    <div class="mt-6 space-y-2 max-w-xs ml-auto">
+                    <div class="mt-6 space-y-2 max-w-xs ml-auto p-4 bg-parchment rounded-xl shadow-xl border border-stone/10">
                         <div class="flex justify-between text-stone">
                             <span>Subtotal:</span>
                             <span id="subtotal-display" class="font-medium"></span>
@@ -238,18 +238,18 @@ title: Order Confirmed
                     </div>
                 </div>
 
-                <div class="lg:col-span-1 p-6 bg-parchment rounded-lg shadow-md border-l-4 border-stone">
+                <div class="lg:col-span-1 p-6 bg-parchment rounded-xl shadow-xl border-l-4 border-burnt-orange/50 sticky top-6 self-start">
                     <h2 class="text-3xl font-playfair text-charcoal mb-4 border-b pb-2">Shipping To</h2>
                     <p id="shipping-name-display" class="text-lg font-semibold text-charcoal mb-1">
                         Shipping Name
                     </p>
-                    <address id="shipping-address-display" class="text-stone not-italic leading-relaxed">
+                    <address id="shipping-address-display" class="text-stone not-italic leading-relaxed border-b border-stone/10 pb-4">
                         </address>
 
-                    <h3 class="text-2xl font-playfair text-charcoal mt-6 mb-2 pt-4 border-t">Estimated Delivery</h3>
+                    <h3 class="text-2xl font-playfair text-charcoal mt-6 mb-2 pt-4 border-t border-stone/10">Estimated Delivery</h3>
                     <p class="text-stone">5-7 Business Days (Excludes processing time)</p>
                     
-                    <h3 class="text-2xl font-playfair text-charcoal mt-6 mb-2 pt-4 border-t">Date Placed</h3>
+                    <h3 class="text-2xl font-playfair text-charcoal mt-6 mb-2 pt-4 border-t border-stone/10">Date Placed</h3>
                     <p id="order-date-display" class="text-stone"></p>
                 </div>
                 

@@ -3,7 +3,7 @@ layout: layout
 title: Candle Care Guide
 ---
 
-{% include "page-header.html" with pageTitle: title %}
+{% include "page-header.html" with pageTitle: title, headerImage: '/src/candles-header.webp' %}
 
 <main class="container mx-auto p-4 lg:p-8 py-16">
 
@@ -22,25 +22,30 @@ title: Candle Care Guide
         </div>
 
         <div class="grid md:grid-cols-2 gap-8">
-            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3 hover:shadow-xl hover:-translate-y-1 transition duration-300">
                 <h3 id="tip-1-title" class="font-playfair text-2xl font-bold text-burnt-orange">The First Burn</h3>
                 <p id="tip-1-text" class="text-stone">Text loading...</p>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3 hover:shadow-xl hover:-translate-y-1 transition duration-300">
                 <h3 id="tip-2-title" class="font-playfair text-2xl font-bold text-burnt-orange">Wick Trimming</h3>
                 <p id="tip-2-text" class="text-stone">Text loading...</p>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3 hover:shadow-xl hover:-translate-y-1 transition duration-300">
                 <h3 id="tip-3-title" class="font-playfair text-2xl font-bold text-burnt-orange">Optimal Burn Time</h3>
                 <p id="tip-3-text" class="text-stone">Text loading...</p>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3">
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone/10 space-y-3 hover:shadow-xl hover:-translate-y-1 transition duration-300">
                 <h3 id="tip-4-title" class="font-playfair text-2xl font-bold text-burnt-orange">Safety First</h3>
                 <p id="tip-4-text" class="text-stone">Text loading...</p>
             </div>
+        </div>
+        
+        <div class="bg-parchment p-8 rounded-xl shadow-2xl border border-stone/10 text-center mt-12">
+            <h3 class="font-playfair text-3xl font-bold text-red-600 mb-4">Crucial Safety Warnings</h3>
+            <p class="text-lg text-charcoal max-w-3xl mx-auto">Never leave a burning candle unattended. Keep away from drafts, children, and pets. Always place on a heat-resistant surface.</p>
         </div>
 
     </section>
@@ -108,7 +113,7 @@ title: Candle Care Guide
                     tip1Text.textContent = data.tip1Text || "Always trim the cotton wick to 1/4 inch before each burn.";
                     tip2Title.textContent = data.tip2Heading || "The First Burn";
                     tip2Text.textContent = data.tip2Text || "Allow the first burn to create a full melt pool.";
-                    tip3Title.textContent = data.tip3Heading || "Mind the Time";
+                    tip3Title.textContent = data.tip3Heading || "Optimal Burn Time";
                     tip3Text.textContent = data.tip3Text || "Burn for a maximum of 4 hours at a time.";
                     
                     // The HTML also has a safety section, so use that data if available

@@ -3,7 +3,7 @@ layout: layout
 title: Refill Program
 ---
 
-{% include "page-header.html" with pageTitle: title %}
+{% include "page-header.html" with pageTitle: title, headerImage: '/src/finest-wax.webp' %}
 
 <main class="container mx-auto p-4 lg:p-8 py-16">
 
@@ -19,33 +19,33 @@ title: Refill Program
         <section class="mb-16">
             <h2 id="how-it-works-title" class="font-playfair text-4xl font-bold text-charcoal text-center mb-10">How It Works</h2>
             <div class="max-w-4xl mx-auto grid md:grid-cols-5 gap-8">
-                <div class="col-span-1 text-center space-y-2">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3">1</div>
+                <div class="col-span-1 text-center space-y-2 p-3 rounded-lg bg-parchment shadow-md border border-stone/10">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">1</div>
                     <p id="refill-step-1" class="text-stone">Loading step 1...</p>
                 </div>
                 <div class="hidden md:flex items-center justify-center text-burnt-orange text-2xl font-bold">
                     &rarr;
                 </div>
-                <div class="col-span-1 text-center space-y-2">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3">2</div>
+                <div class="col-span-1 text-center space-y-2 p-3 rounded-lg bg-parchment shadow-md border border-stone/10">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">2</div>
                     <p id="refill-step-2" class="text-stone">Loading step 2...</p>
                 </div>
                 <div class="hidden md:flex items-center justify-center text-burnt-orange text-2xl font-bold">
                     &rarr;
                 </div>
-                <div class="col-span-1 text-center space-y-2">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3">3</div>
+                <div class="col-span-1 text-center space-y-2 p-3 rounded-lg bg-parchment shadow-md border border-stone/10">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">3</div>
                     <p id="refill-step-3" class="text-stone">Loading step 3...</p>
                 </div>
                  </div>
 
             <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8 mt-12">
-                <div class="text-center space-y-2 border-t pt-6 border-stone/10">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3">4</div>
+                <div class="text-center space-y-2 border-t pt-6 border-stone/10 p-3 rounded-lg bg-parchment shadow-md">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">4</div>
                     <p id="refill-step-4" class="text-stone">Loading step 4...</p>
                 </div>
-                <div class="text-center space-y-2 border-t pt-6 border-stone/10">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3">5</div>
+                <div class="text-center space-y-2 border-t pt-6 border-stone/10 p-3 rounded-lg bg-parchment shadow-md">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">5</div>
                     <p id="refill-step-5" class="text-stone">Loading step 5...</p>
                 </div>
             </div>
@@ -130,9 +130,3 @@ title: Refill Program
         } catch (error) {
             console.error("Error fetching Refill Program content:", error);
             document.getElementById('refill-content').innerHTML = `<p class="text-red-600 text-center">Error loading content: ${error.message}</p>`;
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', loadRefillContent);
-; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
-</script>

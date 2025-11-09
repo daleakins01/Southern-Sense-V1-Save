@@ -93,38 +93,32 @@ title: Find Your Perfect Scent
     const resultDescription = document.getElementById('result-description');
     const resultLink = document.getElementById('result-link');
     
-    // Maps quiz answers to weighted scent family preferences (using existing structure)
-    // NOTE: This logic relies on a defined set of scentFamily IDs used in the products collection:
-    // "woodsy-earthy", "floral-fresh", "fruity-sweet", "gourmand-spicy"
+    // CRITICAL FIX: Standardize internal family IDs to match core categories: gourmand-sweet, floral-fresh, woody-warm.
     const scentWeights = {
-        'calm': { 'woodsy-earthy': 2, 'floral-fresh': 1, 'gourmand-spicy': 1 }, 
-        'uplifted': { 'floral-fresh': 3, 'fruity-sweet': 2, 'fresh-clean': 1 }, 
-        'warm': { 'gourmand-spicy': 3, 'fruity-sweet': 2, 'woodsy-earthy': 1 }, 
-        'nature': { 'woodsy-earthy': 3, 'fresh-clean': 2, 'green': 1 },
-        'bakery': { 'fruity-sweet': 4, 'gourmand-spicy': 2, 'vanilla': 1 }, 
-        'patio': { 'floral-fresh': 3, 'fruity-sweet': 2, 'aquatic': 1 },
-        'citrus': { 'floral-fresh': 4, 'fruity-sweet': 2, 'fresh-clean': 1 }, 
-        'wood': { 'woodsy-earthy': 4, 'gourmand-spicy': 2, 'leather': 1 },
-        'spice': { 'gourmand-spicy': 4, 'fruity-sweet': 2, 'warm-amber': 1 }
+        'calm': { 'woody-warm': 2, 'floral-fresh': 1, 'gourmand-sweet': 1 }, 
+        'uplifted': { 'floral-fresh': 3, 'gourmand-sweet': 1, 'woody-warm': 1 }, 
+        'warm': { 'gourmand-sweet': 3, 'woody-warm': 1, 'floral-fresh': 1 }, 
+        'nature': { 'woody-warm': 3, 'floral-fresh': 2, 'gourmand-sweet': 1 },
+        'bakery': { 'gourmand-sweet': 4, 'floral-fresh': 1, 'woody-warm': 1 }, 
+        'patio': { 'floral-fresh': 3, 'gourmand-sweet': 2, 'woody-warm': 1 },
+        'citrus': { 'floral-fresh': 4, 'gourmand-sweet': 1, 'woody-warm': 1 }, 
+        'wood': { 'woody-warm': 4, 'gourmand-sweet': 2, 'floral-fresh': 1 },
+        'spice': { 'gourmand-sweet': 4, 'woody-warm': 2, 'floral-fresh': 1 }
     };
 
-    // Mapping for final display text based on determined family ID
+    // CRITICAL FIX: Update display map keys and descriptions for brand alignment.
     const familyDisplayMap = {
-        'woodsy-earthy': {
-            name: 'Woodsy & Earthy',
-            description: 'You prefer rich, grounding scents that evoke deep forests, cozy evenings, and the comfort of nature. These scents are perfect for relaxation and focus.'
+        'woody-warm': {
+            name: 'Woody & Warm',
+            description: 'You prefer rich, sophisticated scents that evoke a cozy library, deep forests, or a warm cashmere sweater. These grounding aromas are perfect for relaxation, elegance, and comfort.'
         },
-        'fruity-sweet': {
-            name: 'Fruity & Sweet',
-            description: 'Your ideal match is a cheerful, welcoming scent that recalls ripe fruits, baked goods, and bubbly drinks. These scents create a joyful, inviting atmosphere.'
+        'gourmand-sweet': {
+            name: 'Gourmand & Sweet',
+            description: 'Your ideal match is a comforting, indulgent aroma that recalls delicious baked goods, sweet desserts, and happy memories. These inviting scents create a warm, welcoming, and decadent atmosphere.'
         },
         'floral-fresh': {
             name: 'Floral & Fresh',
-            description: 'You are drawn to light, clean, and elegant fragrances. These scents—think ocean air, fresh linen, or delicate florals—are perfect for a clean, sophisticated, and revitalizing space.'
-        },
-        'gourmand-spicy': {
-            name: 'Gourmand & Spicy',
-            description: 'Your taste is for warm, indulgent aromas that fill the home with the cozy essence of baking and holiday spices. These rich scents are wonderful for entertaining and comfort.'
+            description: 'You are drawn to light, clean, and elegant fragrances. These scents—think sun-drenched porches, crisp ocean air, and delicate magnolia blossoms—are perfect for revitalizing your space with a touch of sophistication.'
         }
     };
     
@@ -262,6 +256,11 @@ title: Find Your Perfect Scent
             name: 'All Scents', 
             description: 'We had trouble calculating your perfect match. Please explore our full collection!'
         };
+        
+        // CRITICAL DEBUG STEP: Add console logging for confirmation
+        console.log("Quiz Result Tally:", answerTally);
+        console.log("Quiz Top Scent ID:", topScentId);
+        console.log("Quiz Result URL:", `/shop/?family=${topScentId}`);
         
         // CRITICAL FIX: The link targets the standardized /shop/ URL
         resultLink.href = `/shop/?family=${topScentId}`; 

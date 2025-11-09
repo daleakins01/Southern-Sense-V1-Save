@@ -16,10 +16,14 @@ title: Scent Glossary
 
         <section id="glossary-section" class="max-w-4xl mx-auto hidden">
             
-            <div id="glossary-content" class="prose max-w-none text-stone font-roboto space-y-8">
-                <p>Content loading error: Default text displayed.</p>
-            </div>
+            <div id="intro-and-pyramid" class="prose max-w-none text-stone font-roboto space-y-8 mb-12 border-b pb-8">
+                </div>
             
+            <h2 class="font-playfair text-3xl font-bold text-charcoal mb-6 border-b pb-2">Common Terms in Our Collection</h2>
+            
+            <div id="glossary-terms-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                </div>
+
             <div class="mt-12 text-center">
                 <h3 class="font-playfair text-3xl font-bold text-charcoal mb-4">Still need help finding a scent?</h3>
                 <a href="/scent-quiz/" class="inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl hover:bg-amber-700 transition duration-150">
@@ -37,8 +41,66 @@ title: Scent Glossary
     // --- DOM Elements ---
     const loadingState = document.getElementById('loading-state');
     const glossarySection = document.getElementById('glossary-section');
-    const glossaryHeaderTitle = document.getElementById('glossary-header-title');
-    const glossaryContent = document.getElementById('glossary-content');
+    const introAndPyramidContainer = document.getElementById('intro-and-pyramid');
+    const glossaryTermsContainer = document.getElementById('glossary-terms-container');
+
+
+    /**
+     * Helper to parse the plain text glossary content into structured HTML.
+     * This relies on the specific formatting of the data in the Firestore document.
+     */
+    function parseAndRenderGlossary(rawText) {
+        // Split the text into the two main sections: Intro/Pyramid and Common Terms
+        const parts = rawText.split('\n\nCommon Terms in Our Collection\n\n');
+        const introSection = parts[0] || '';
+        const termsSection = parts[1] || '';
+
+        // --- 1. Render Introduction and Note Pyramid ---
+        let introHtml = '';
+        
+        // Convert double line breaks into paragraphs or line breaks for readability
+        const paragraphs = introSection.split('\n\n');
+        
+        paragraphs.forEach(p => {
+            const trimmedP = p.trim();
+            if (trimmedP.includes(':')) {
+                // Handle the Top/Middle/Base Notes as a definition list for structure
+                if (trimmedP.includes('Top Notes:') || trimmedP.includes('Middle Notes:') || trimmedP.includes('Base Notes:')) {
+                    const [term, definition] = trimmedP.split(':', 2);
+                    introHtml += `<dl class="mt-3"><dt class="font-semibold text-burnt-orange">${term.trim()}:</dt><dd class="text-stone text-sm ml-4">${definition.trim()}</dd></dl>`;
+                } else if (trimmedP.includes('Understanding Fragrance Notes')) {
+                    introHtml += `<h3 class="text-2xl font-playfair text-charcoal mb-4">${trimmedP}</h3>`;
+                } else if (trimmedP.includes('A Guide to Our Scent Notes')) {
+                    introHtml += `<h2 class="text-4xl font-playfair text-charcoal mb-4">${trimmedP}</h2><p class="text-lg text-stone">Navigating the world of fragrance can be tricky! Here is a simple guide to the terms we use to describe our scents.</p>`;
+                }
+            } else if (trimmedP) {
+                introHtml += `<p class="text-lg text-stone">${trimmedP}</p>`;
+            }
+        });
+        
+        introAndPyramidContainer.innerHTML = introHtml;
+
+        // --- 2. Render Glossary Terms as Cards ---
+        let termsHtml = '';
+        
+        // Split the terms section by double line break to get individual term definitions
+        const termDefinitions = termsSection.split('\n\n').filter(t => t.includes(':'));
+
+        termDefinitions.forEach(td => {
+            const [term, definition] = td.split(':', 2);
+            if (term && definition) {
+                termsHtml += `
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-burnt-orange/50 hover:shadow-xl transition duration-300">
+                        <h3 class="font-bold text-xl font-playfair text-burnt-orange mb-2">${term.trim()}</h3>
+                        <p class="text-sm text-charcoal">${definition.trim()}</p>
+                    </div>
+                `;
+            }
+        });
+        
+        glossaryTermsContainer.innerHTML = termsHtml;
+    }
+
 
     /**
      * Loads dynamic content for the Scent Glossary page from Firestore.
@@ -59,12 +121,13 @@ title: Scent Glossary
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 
-                // 1. Header Title (Assumed field based on other pages)
-                // glossaryHeaderTitle.textContent = data.glossaryHeaderTitle || "Scent Glossary"; // Removed, set by Eleventy
-                
-                // 2. Glossary Content (Assumed to be rich HTML/Markdown converted content)
-                glossaryContent.innerHTML = data.glossaryContent || "<p>Glossary content not set in Firestore. Please update the admin panel.</p>";
-                
+                // CRITICAL FIX: Instead of raw injection, parse the content into the new structure
+                if (data.glossaryContent) {
+                    parseAndRenderGlossary(data.glossaryContent);
+                } else {
+                    introAndPyramidContainer.innerHTML = `<p class="text-red-600">Glossary content is empty. Please update the CMS.</p>`;
+                }
+
                 // Success: Hide loading, show content
                 loadingState.classList.add('hidden');
                 glossarySection.classList.remove('hidden');

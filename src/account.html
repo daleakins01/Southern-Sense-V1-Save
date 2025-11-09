@@ -35,6 +35,9 @@ title: My Account
     const logoutButton = document.getElementById('logout-button');
     const totalOrdersCount = document.getElementById('total-orders-count');
     const lastOrderDateDisplay = document.getElementById('last-order-date');
+    // NEW: Edit profile button
+    const editProfileButton = document.getElementById('edit-profile-button');
+
 
     // --- Utility Functions ---
 
@@ -213,13 +216,8 @@ title: My Account
 
     // --- Initialization & Event Listeners ---
     document.addEventListener('DOMContentLoaded', () => {
-        // CRITICAL FIX: Removed initializeAccountPage() wrapper, 
-        // as the auth listener should be started immediately on module load.
-        // The core logic below achieves the same goal safely. 
-        // The initializeAccountPage function definition remains but is not manually called within DOMContentLoaded.
         
         // --- Execute the core initialization (Auth State Listener) immediately on module load ---
-        // This pattern is safer for single-page application style initialization.
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
@@ -246,6 +244,16 @@ title: My Account
                     console.error("Logout failed:", error);
                     alert("Logout failed. Please try again.");
                 });
+            });
+        }
+        
+        // FIX 2: Add functional placeholder listener for Edit Profile button
+        const editProfileButton = document.getElementById('edit-profile-button');
+        if (editProfileButton) {
+            editProfileButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                alert("The Edit Profile feature is currently under development. Thank you for your patience!");
+                console.log("Edit Profile feature placeholder triggered.");
             });
         }
     });
@@ -283,7 +291,7 @@ title: My Account
                             Admin Panel
                         </a>
                         
-                        <button class="w-full px-4 py-3 text-charcoal border border-stone/30 rounded-lg shadow-md hover:bg-stone/10 transition duration-300">
+                        <button id="edit-profile-button" class="w-full px-4 py-3 text-charcoal border border-stone/30 rounded-lg shadow-md hover:bg-stone/10 transition duration-300">
                             Edit Profile & Address
                         </button>
 

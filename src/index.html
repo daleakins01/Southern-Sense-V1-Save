@@ -44,7 +44,8 @@ title: Southern Sense - Hand-Poured Luxury Candles
                 const data = docSnap.data();
                 
                 // 1. Hero Section
-                if (heroTitleEl) heroTitleEl.textContent = data.heroTitle || "Southern Sense";
+                // CRITICAL FIX: Ensure the hero title uses the requested text if the CMS field is empty.
+                if (heroTitleEl) heroTitleEl.textContent = data.heroTitle || "Handcrafted, Local, Luxury";
                 if (heroSubtitleEl) heroSubtitleEl.textContent = data.heroSubtitle || "Experience the warmth and charm of the South...";
                 
                 // 2. Our Difference Section (CRITICAL FIX: Use homepage fields directly if present)
@@ -55,6 +56,8 @@ title: Southern Sense - Hand-Poured Luxury Candles
                 featuredId = data.featuredProductId || null;
             } else {
                 console.warn("Homepage CMS document not found. Using defaults.");
+                // Fallback for JS defaults if document does not exist
+                if (heroTitleEl) heroTitleEl.textContent = "Handcrafted, Local, Luxury";
             }
         } catch (error) {
             console.error("Error fetching homepage CMS content:", error);
@@ -88,7 +91,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
             stockHtml = '<p class="text-sm font-semibold text-red-600">SOLD OUT</p>';
             buttonText = 'View Details';
             buttonClasses = 'bg-stone/50 hover:bg-stone/60 cursor-not-allowed';
-            buttonDisabled = 'disabled';
+            buttonDisabled = ''; // Keep button enabled for View Details action
             buttonClickAction = `onclick="window.location.href='/product/?id=${product.id}'"`;
         } else {
             stockHtml = '<p class="text-sm font-semibold text-green-600">In Stock</p>';
@@ -130,23 +133,27 @@ title: Southern Sense - Hand-Poured Luxury Candles
      */
     function attachCartListeners() {
         document.querySelectorAll('.add-to-cart-button:not([disabled])').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                const { id, name, price, image } = e.currentTarget.dataset;
-                
-                const product = { id, name, price, imageUrl: image };
-                
-                // Relying on global functions exposed to window by cart.js
-                if (window.addToCart && window.updateCartDisplay) {
-                    window.addToCart(product, 1); 
-                    window.updateCartDisplay(); 
+            // CRITICAL FIX: Only attach the addToCart logic if the item is *not* out of stock.
+            // Out of stock buttons will use the onclick="window.location.href" to view details.
+            if (!button.textContent.includes('View Details')) {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const { id, name, price, image } = e.currentTarget.dataset;
                     
-                    e.currentTarget.textContent = 'Added!';
-                    setTimeout(() => {
-                        e.currentTarget.textContent = 'Add to Cart';
-                    }, 1000);
-                }
-            });
+                    const product = { id, name, price, imageUrl: image };
+                    
+                    // Relying on global functions exposed to window by cart.js
+                    if (window.addToCart && window.updateCartDisplay) {
+                        window.addToCart(product, 1); 
+                        window.updateCartDisplay(); 
+                        
+                        e.currentTarget.textContent = 'Added!';
+                        setTimeout(() => {
+                            e.currentTarget.textContent = 'Add to Cart';
+                        }, 1000);
+                    }
+                });
+            }
         });
     }
 
@@ -179,48 +186,44 @@ title: Southern Sense - Hand-Poured Luxury Candles
             // 1. Attempt to fetch the specific featured product (Fix to resolve CMS data mismatch issue)
             if (featuredId) {
                 const docSnap = await getDoc(doc(productsRef, featuredId));
-                // CRITICAL FIX: Ensure stock check is performed before pushing to render list
-                if (docSnap.exists() && mapProduct(docSnap).stock > 0) {
-                    productsToRender.push(mapProduct(docSnap));
+                // CRITICAL FIX: Include CMS-featured product regardless of stock
+                if (docSnap.exists()) {
+                    const productData = mapProduct(docSnap);
+                    productsToRender.push(productData);
                 }
             }
 
-            // 2. Fallback or fill remaining spots (get up to 4 other stocked, featured items)
-            // If the featured item loaded, this query starts at a count of 1.
+            // 2. Fallback: Fill remaining spots with other products where featured is true (regardless of stock)
             if (productsToRender.length < 4) {
                 // CRITICAL FIX: Simplified query to avoid the composite index requirement (FirebaseError)
                 const q = query(productsRef, 
                                 where('featured', '==', true), 
-                                limit(10) // Fetch up to 10 featured items to ensure we get enough in-stock items
+                                limit(10) // Fetch up to 10 featured items to ensure we get enough items
                             );
                 const querySnapshot = await getDocs(q);
                 
                 querySnapshot.docs.forEach(doc => {
                     const productData = mapProduct(doc);
-                    // Client-side filtering: check stock, avoid duplicates, and limit the total count
-                    if (productData.stock > 0 && 
-                        !productsToRender.some(p => p.id === productData.id) && 
+                    // Client-side filtering: REMOVE STOCK CHECK to ensure products display. Avoid duplicates, and limit the total count
+                    if (!productsToRender.some(p => p.id === productData.id) && 
                         productsToRender.length < 4) {
                         productsToRender.push(productData);
                     }
                 });
             }
             
-            // 3. Final Fallback: If less than 4, grab any other stocked item to fill the grid (for UX completeness)
+            // 3. Final Fallback: If still empty (e.g., Firestore fetch error or no featured data), show an explicit error.
             if (productsToRender.length === 0) {
-                 const fallbackQ = query(productsRef, where('stock', '>', 0), limit(4));
-                 const fallbackSnapshot = await getDocs(fallbackQ);
-                 productsToRender = fallbackSnapshot.docs.map(mapProduct);
-                 if (productsToRender.length > 0) {
-                     featuredProductTitleEl.textContent = 'Popular Scents';
-                 }
-            }
-            
-            // Render the products
-            if (productsToRender.length === 0) {
-                featuredProductsGrid.innerHTML = '<p class="text-lg text-stone col-span-full text-center py-10">No products available at this time. Please check back later.</p>';
+                featuredProductsGrid.innerHTML = '<p class="text-lg text-stone col-span-full text-center py-10">We are currently stocking our shelves. Please check back later!</p>';
             } else {
-                // Render the first 4 available products
+                // Render the first 4 available products, prioritizing stocked items
+                productsToRender.sort((a, b) => {
+                    // Sort criteria: stocked items first, then by name
+                    if (a.stock > 0 && b.stock <= 0) return -1;
+                    if (a.stock <= 0 && b.stock > 0) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+                
                 productsToRender.slice(0, 4).forEach(data => {
                     featuredProductsGrid.innerHTML += renderProductCard(data);
                 });
@@ -230,7 +233,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
         } catch (error) {
             // CRITICAL FIX: Report the specific error but continue. The FirebaseError is fixed by code change.
             console.error("Error fetching featured products:", error);
-            featuredProductsGrid.innerHTML = `<p class="text-red-600 col-span-full text-center py-10">Failed to load products. Please check the browser console for specific dependency or Firestore errors.</p>`;
+            featuredProductsGrid.innerHTML = `<p class="text-red-600 col-span-full text-center py-10">Failed to load featured products. Please check the browser console for specific dependency or Firestore errors.</p>`;
         } finally {
             featuredLoader.classList.add('hidden');
         }
@@ -266,8 +269,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
     <div class="relative w-full h-80 bg-cover bg-center" style="background-image: url('/src/candles-header.webp');">
         <div class="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
             <div class="container mx-auto px-4 text-center">
-                <p class="font-southern text-5xl text-burnt-orange mb-4 drop-shadow-lg">Welcome Home</p>
-                <h1 id="hero-title" class="text-7xl md:text-8xl font-playfair text-parchment font-bold mb-6 drop-shadow-lg">
+                <h1 id="hero-title" class="text-5xl md:text-6xl font-southern text-burnt-orange font-bold mb-6 drop-shadow-lg">
                     Southern Sense
                 </h1>
                 <p id="hero-subtitle" class="text-xl text-parchment max-w-2xl mx-auto mb-8 drop-shadow-lg">

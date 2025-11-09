@@ -8,87 +8,103 @@ title: Refill Program
 <main class="container mx-auto p-4 lg:p-8 py-16">
 
     <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
+        
+        <div id="loading-state" class="text-center p-12 bg-parchment rounded-xl shadow-lg border border-stone/10">
+            <p class="font-playfair text-2xl text-stone">Loading program overview...</p>
+            <div class="mt-4 animate-spin rounded-full h-8 w-8 border-b-2 border-burnt-orange mx-auto"></div>
+        </div>
 
-        <section class="max-w-4xl mx-auto mb-16">
-            <h2 class="font-playfair text-4xl font-bold text-charcoal text-center mb-6">Sustainable Scents</h2>
-            <div id="refill-content" class="prose max-w-none text-stone font-roboto text-lg text-center mx-auto">
-                <p>Loading program overview...</p>
-            </div>
-        </section>
-
-        <section class="mb-16">
-            <h2 id="how-it-works-title" class="font-playfair text-4xl font-bold text-charcoal text-center mb-10">How It Works</h2>
-            <div class="max-w-4xl mx-auto grid md:grid-cols-5 gap-8">
-                <div class="col-span-1 text-center space-y-2 p-3 rounded-lg bg-parchment shadow-md border border-stone/10">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">1</div>
-                    <p id="refill-step-1" class="text-stone">Loading step 1...</p>
-                </div>
-                <div class="hidden md:flex items-center justify-center text-burnt-orange text-2xl font-bold">
-                    &rarr;
-                </div>
-                <div class="col-span-1 text-center space-y-2 p-3 rounded-lg bg-parchment shadow-md border border-stone/10">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">2</div>
-                    <p id="refill-step-2" class="text-stone">Loading step 2...</p>
-                </div>
-                <div class="hidden md:flex items-center justify-center text-burnt-orange text-2xl font-bold">
-                    &rarr;
-                </div>
-                <div class="col-span-1 text-center space-y-2 p-3 rounded-lg bg-parchment shadow-md border border-stone/10">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">3</div>
-                    <p id="refill-step-3" class="text-stone">Loading step 3...</p>
-                </div>
-                 </div>
-
-            <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8 mt-12">
-                <div class="text-center space-y-2 border-t pt-6 border-stone/10 p-3 rounded-lg bg-parchment shadow-md">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">4</div>
-                    <p id="refill-step-4" class="text-stone">Loading step 4...</p>
-                </div>
-                <div class="text-center space-y-2 border-t pt-6 border-stone/10 p-3 rounded-lg bg-parchment shadow-md">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">5</div>
-                    <p id="refill-step-5" class="text-stone">Loading step 5...</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="max-w-5xl mx-auto bg-parchment p-8 rounded-xl shadow-2xl border border-stone/10">
-            <h2 id="pricing-title" class="font-playfair text-4xl font-bold text-charcoal text-center mb-8">Refill Pricing Structure</h2>
-            <div class="grid md:grid-cols-3 gap-8 text-center">
-                
-                <div class="p-4 border-r md:border-r-0 md:border-b-0 border-stone/20">
-                    <h3 class="text-2xl font-playfair font-bold text-burnt-orange mb-2">1 Refill</h3>
-                    <p id="refill-price-1" class="text-stone text-lg">Loading price 1...</p>
-                </div>
-
-                <div class="p-4 border-r md:border-r-0 md:border-b-0 border-stone/20">
-                    <h3 class="text-2xl font-playfair font-bold text-burnt-orange mb-2">2 Refills</h3>
-                    <p id="refill-price-2" class="text-stone text-lg">Loading price 2...</p>
-                </div>
-
-                <div class="p-4">
-                    <h3 class="text-2xl font-playfair font-bold text-burnt-orange mb-2">3+ Refills</h3>
-                    <p id="refill-price-3" class="text-stone text-lg">Loading price 3...</p>
-                </div>
-            </div>
+        <div id="refill-section" class="hidden">
             
-            <h3 id="policies-title" class="font-playfair text-3xl font-bold text-charcoal text-center mt-12 mb-6">Important Policies</h3>
-            <ul class="list-disc list-inside space-y-3 max-w-2xl mx-auto text-stone">
-                <li id="refill-policy-1">Loading policy 1...</li>
-                <li id="refill-policy-2">Loading policy 2...</li>
-            </ul>
-        </section>
+            <section class="max-w-4xl mx-auto mb-16">
+                <h2 class="font-playfair text-4xl font-bold text-charcoal text-center mb-6">Sustainable Scents</h2>
+                <div id="refill-content" class="prose max-w-none text-stone font-roboto text-lg text-center mx-auto">
+                    <p>Loading program overview...</p>
+                </div>
+            </section>
 
+            <section class="mb-16">
+                <h2 id="how-it-works-title" class="font-playfair text-4xl font-bold text-charcoal text-center mb-10">How It Works</h2>
+                <div class="max-w-4xl mx-auto grid md:grid-cols-5 gap-8">
+                    <div class="col-span-1 text-center space-y-2 p-3 rounded-lg bg-parchment shadow-md border border-stone/10">
+                        <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">1</div>
+                        <p id="refill-step-1" class="text-stone">Loading step 1...</p>
+                    </div>
+                    <div class="hidden md:flex items-center justify-center text-burnt-orange text-2xl font-bold">
+                        &rarr;
+                    </div>
+                    <div class="col-span-1 text-center space-y-2 p-3 rounded-lg bg-parchment shadow-md border border-stone/10">
+                        <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">2</div>
+                        <p id="refill-step-2" class="text-stone">Loading step 2...</p>
+                    </div>
+                    <div class="hidden md:flex items-center justify-center text-burnt-orange text-2xl font-bold">
+                        &rarr;
+                    </div>
+                    <div class="col-span-1 text-center space-y-2 p-3 rounded-lg bg-parchment shadow-md border border-stone/10">
+                        <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">3</div>
+                        <p id="refill-step-3" class="text-stone">Loading step 3...</p>
+                    </div>
+                    </div>
+
+                <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8 mt-12">
+                    <div class="text-center space-y-2 border-t pt-6 border-stone/10 p-3 rounded-lg bg-parchment shadow-md">
+                        <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">4</div>
+                        <p id="refill-step-4" class="text-stone">Loading step 4...</p>
+                    </div>
+                    <div class="text-center space-y-2 border-t pt-6 border-stone/10 p-3 rounded-lg bg-parchment shadow-md">
+                        <div class="w-12 h-12 flex items-center justify-center rounded-full bg-burnt-orange text-parchment font-bold text-xl mx-auto mb-3 shadow-lg">5</div>
+                        <p id="refill-step-5" class="text-stone">Loading step 5...</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="max-w-5xl mx-auto bg-parchment p-8 rounded-xl shadow-2xl border border-stone/10">
+                <h2 id="pricing-title" class="font-playfair text-4xl font-bold text-charcoal text-center mb-8">Refill Pricing Structure</h2>
+                <div class="grid md:grid-cols-3 gap-8 text-center">
+                    
+                    <div class="p-4 border-r md:border-r-0 md:border-b-0 border-stone/20">
+                        <h3 class="text-2xl font-playfair font-bold text-burnt-orange mb-2">1 Refill</h3>
+                        <p id="refill-price-1" class="text-stone text-lg">Loading price 1...</p>
+                    </div>
+
+                    <div class="p-4 border-r md:border-r-0 md:border-b-0 border-stone/20">
+                        <h3 class="text-2xl font-playfair font-bold text-burnt-orange mb-2">2 Refills</h3>
+                        <p id="refill-price-2" class="text-stone text-lg">Loading price 2...</p>
+                    </div>
+
+                    <div class="p-4">
+                        <h3 class="text-2xl font-playfair font-bold text-burnt-orange mb-2">3+ Refills</h3>
+                        <p id="refill-price-3" class="text-stone text-lg">Loading price 3...</p>
+                    </div>
+                </div>
+                
+                <h3 id="policies-title" class="font-playfair text-3xl font-bold text-charcoal text-center mt-12 mb-6">Important Policies</h3>
+                <ul class="list-disc list-inside space-y-3 max-w-2xl mx-auto text-stone">
+                    <li id="refill-policy-1">Loading policy 1...</li>
+                    <li id="refill-policy-2">Loading policy 2...</li>
+                </ul>
+            </section>
+        </div>
     </div> </main>
 
 <script type="module">
     // FIX: Corrected import path to include /src/ directory
     import { db, doc, getDoc } from '/src/firebase-loader.js'; 
 
+    // NEW: Add DOM elements for loading state and content section
+    const loadingState = document.getElementById('loading-state');
+    const refillSection = document.getElementById('refill-section');
+    
     /**
      * Loads dynamic content for the Refill Program page from Firestore.
      */
     async function loadRefillContent() {
         console.log("Refill Program Page: Loading content from Firestore...");
+        
+        // Show loading state and hide content section initially
+        loadingState.classList.remove('hidden');
+        refillSection.classList.add('hidden');
+        
         try {
             // Document reference for the 'refill-program' page content
             // CRITICAL FIX: The CMS document name is 'refillProgram', not 'refill-program' based on other CMS files.
@@ -98,10 +114,7 @@ title: Refill Program
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 
-                // 1. Header Title
-                // document.getElementById('header-title').textContent = data.refillHeaderTitle || "Refill Program"; // Removed, set by Eleventy
-                
-                // 2. Overview Content (HTML)
+                // 1. Overview Content (HTML)
                 document.getElementById('refill-content').innerHTML = data.refillIntro || "<p class='text-center'>Program overview not set in Firestore.</p>";
                 
                 // 3. How It Works Steps
@@ -122,11 +135,22 @@ title: Refill Program
                 document.getElementById('policies-title').textContent = data.refillPoliciesTitle || "Policies";
                 document.getElementById('refill-policy-1').textContent = data.refillPolicy1Text || "Policy 1 not found.";
                 document.getElementById('refill-policy-2').textContent = data.refillPolicy2Text || "Policy 2 not found.";
+                
+                // Success: Hide loading, show content
+                loadingState.classList.add('hidden');
+                refillSection.classList.remove('hidden');
 
             } else {
                 console.warn("Refill Program Page: Document 'siteContent/refillProgram' does not exist.");
-                document.getElementById('refill-content').innerHTML = `<p class="text-red-600 text-center">Error: Could not load Refill Program configuration.</p>`;
+                loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Error: Could not load Refill Program configuration. Document 'siteContent/refillProgram' not found.</p>`;
+                // Keep content section hidden if content isn't loaded
             }
         } catch (error) {
             console.error("Error fetching Refill Program content:", error);
-            document.getElementById('refill-content').innerHTML = `<p class="text-red-600 text-center">Error loading content: ${error.message}</p>`;
+            loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Error loading content: ${error.message}</p>`;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadRefillContent);
+; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
+</script>

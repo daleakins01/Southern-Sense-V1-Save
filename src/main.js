@@ -64,6 +64,19 @@ if (accountLink) {
     });
 }
 
+// CRITICAL FIX: Aggressively restore the correct page title after 3rd party scripts run.
+// This is done by querying the value of the original HTML title tag, which is set by Eleventy.
+const initialTitle = document.title;
+if (initialTitle) {
+    setTimeout(() => {
+        // Only reset if the title has been corrupted by an external script (e.g., set to 'true')
+        if (document.title !== initialTitle) {
+            document.title = initialTitle;
+            console.warn("Title corruption detected and fixed. Original title restored:", initialTitle);
+        }
+    }, 500); // 500ms delay to ensure external scripts have completed execution
+}
+
 
 // FIX: Removed the global call to initializeScentQuiz() to prevent dependency conflicts 
 // and is now intended to be contained within src/scent-quiz.html's inline script.

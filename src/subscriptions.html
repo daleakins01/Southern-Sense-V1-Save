@@ -29,7 +29,8 @@ title: Subscription Boxes
                     <h3 id="option-1-title" class="font-playfair text-2xl font-bold text-burnt-orange">The Classic Box</h3>
                     <p id="option-1-price" class="font-playfair text-3xl font-extrabold text-charcoal">$XX/Month</p>
                     <p id="option-1-desc" class="text-stone">Description loading...</p>
-                    <a href="/cart/" class="inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl hover:bg-amber-700 transition duration-150 mt-4">
+                    <a href="#" id="option-1-button" class="select-plan-button inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl hover:bg-amber-700 transition duration-150 mt-4" 
+                        data-id="sub-bi-monthly" data-name="Bi-Monthly Subscription" data-price="24.99">
                         Select Plan
                     </a>
                 </div>
@@ -38,7 +39,8 @@ title: Subscription Boxes
                     <h3 id="option-2-title" class="font-playfair text-2xl font-bold text-burnt-orange">The Luxe Box</h3>
                     <p id="option-2-price" class="font-playfair text-3xl font-extrabold text-charcoal">$XX/Month</p>
                     <p id="option-2-desc" class="text-stone">Description loading...</p>
-                    <a href="/cart/" class="inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl hover:bg-amber-700 transition duration-150 mt-4">
+                    <a href="#" id="option-2-button" class="select-plan-button inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl hover:bg-amber-700 transition duration-150 mt-4" 
+                        data-id="sub-monthly" data-name="Monthly Subscription" data-price="29.99">
                         Select Plan
                     </a>
                 </div>
@@ -47,7 +49,8 @@ title: Subscription Boxes
                     <h3 id="option-3-title" class="font-playfair text-2xl font-bold text-burnt-orange">The Melt Box</h3>
                     <p id="option-3-price" class="font-playfair text-3xl font-extrabold text-charcoal">$XX/Month</p>
                     <p id="option-3-desc" class="text-stone">Description loading...</p>
-                    <a href="/cart/" class="inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl hover:bg-amber-700 transition duration-150 mt-4">
+                    <a href="#" id="option-3-button" class="select-plan-button inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl hover:bg-amber-700 transition duration-150 mt-4" 
+                        data-id="sub-quarterly" data-name="Quarterly Subscription" data-price="34.99">
                         Select Plan
                     </a>
                 </div>
@@ -76,16 +79,54 @@ title: Subscription Boxes
     const option1Title = document.getElementById('option-1-title');
     const option1Price = document.getElementById('option-1-price');
     const option1Desc = document.getElementById('option-1-desc');
+    const option1Button = document.getElementById('option-1-button'); 
     
     // Option 2 Elements
     const option2Title = document.getElementById('option-2-title');
     const option2Price = document.getElementById('option-2-price');
     const option2Desc = document.getElementById('option-2-desc');
+    const option2Button = document.getElementById('option-2-button'); 
     
     // Option 3 Elements
     const option3Title = document.getElementById('option-3-title');
     const option3Price = document.getElementById('option-3-price');
     const option3Desc = document.getElementById('option-3-desc');
+    const option3Button = document.getElementById('option-3-button'); 
+
+
+    // FIX 1: Add logic to attach click handlers after loading content
+    function setupSubscriptionCartListeners() {
+        document.querySelectorAll('.select-plan-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // CRITICAL FIX: Ensure global cart functions are loaded before calling
+                if (window.addToCart && window.updateCartDisplay) {
+                    const { id, name, price } = e.currentTarget.dataset;
+                    
+                    // Create a virtual product object for the subscription plan
+                    const product = { 
+                        id: id, 
+                        name: name, 
+                        price: price, 
+                        imageUrl: 'logo.webp', // Use brand logo as default image 
+                        isSubscription: true // Optional marker
+                    };
+                    
+                    window.addToCart(product, 1); 
+                    window.updateCartDisplay(); 
+                    
+                    e.currentTarget.textContent = 'Added to Cart!';
+                    setTimeout(() => {
+                        e.currentTarget.textContent = 'Select Plan';
+                    }, 1500);
+                } else {
+                    console.error("Cart functions not available.");
+                    alert("Cart not ready. Please try again or refresh.");
+                }
+            });
+        });
+    }
 
 
     /**
@@ -129,6 +170,9 @@ title: Subscription Boxes
                 // Success: Hide loading, show content
                 loadingState.classList.add('hidden');
                 subscriptionsSection.classList.remove('hidden');
+                
+                // FIX 1.1: After successful content load, set up cart listeners
+                setupSubscriptionCartListeners();
 
             } else {
                 // FIX: Better error handling for missing document
@@ -138,6 +182,9 @@ title: Subscription Boxes
                 
                 // Still show the general section layout with default texts
                 subscriptionsSection.classList.remove('hidden'); 
+                
+                // Try setting up listeners anyway (will use hardcoded button data)
+                setupSubscriptionCartListeners();
             }
         } catch (error) {
             console.error("Error fetching Subscription content:", error);
@@ -145,7 +192,17 @@ title: Subscription Boxes
         }
     }
 
-    document.addEventListener('DOMContentLoaded', loadSubscriptionsContent);
+    // FIX 1.2: Use polling logic to wait for global cart functions (from layout.html) before setting up listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        function waitForCartAndLoad() {
+            if (window.addToCart && window.updateCartDisplay) {
+                loadSubscriptionsContent();
+            } else {
+                setTimeout(waitForCartAndLoad, 50);
+            }
+        }
+        waitForCartAndLoad();
+    });
 
 ; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
 </script>

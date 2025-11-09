@@ -5,6 +5,14 @@ module.exports = function(eleventyConfig) {
     // /src/main.js, /src/cart.js, and /src/logo.webp by ensuring they exist in the output.
     eleventyConfig.addPassthroughCopy({ "src/": "src/" }); 
     
+    // The explicit passthrough copies below were redundant and potentially conflict with the 
+    // "src/: src/" pattern. They are removed for clarity and stability.
+
+    // eleventyConfig.addPassthroughCopy("src/firebase-loader.js");
+    // eleventyConfig.addPassthroughCopy("src/cart.js");
+    // eleventyConfig.addPassthroughCopy("src/main.js");
+    // eleventyConfig.addPassthroughCopy("src/auth.js");
+
     // 2. Custom Configuration
     return {
         // Look for template files inside the `src` folder

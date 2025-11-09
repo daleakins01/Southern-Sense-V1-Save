@@ -67,7 +67,7 @@ title: Find Your Perfect Scent
                         <p id="result-description" class="font-roboto text-lg text-stone hidden"></p>
                     </div>
                     <a id="result-link" href="/shop/" class="inline-block py-3 px-8 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl hover:bg-amber-700 transition duration-150 hidden">
-                        Shop This Scent Family &rarr;
+                        View Product Details &rarr;
                     </a>
                 </div>
             </div>
@@ -75,9 +75,10 @@ title: Find Your Perfect Scent
     </div> </main>
 
 <script type="module">
-    // CRITICAL FIX: The logic is now self-contained, importing Firebase only where needed.
-    // The previous implementation was redundant and conflicting.
-    import { db, collection, query, where, getDocs } from '/src/firebase-loader.js'; 
+    // FINAL CODE FIX: Use static string quotes and manually add the version parameter for cache-busting.
+    // This resolves the "Unexpected template string" syntax error.
+    const version = '?v=1.1.5';
+    import { db, collection, query, where, getDocs } from '/src/firebase-loader.js?v=1.1.5'; 
 
     // --- State & DOM ---
     let currentStep = 0;
@@ -92,6 +93,13 @@ title: Find Your Perfect Scent
     const resultFamilyTitle = document.getElementById('result-family-title');
     const resultDescription = document.getElementById('result-description');
     const resultLink = document.getElementById('result-link');
+    
+    // CRITICAL FIX: Recommended product IDs for direct linking to PDP (All currently have stock: 0)
+    const recommendedProducts = {
+        'woody-warm': 'WxttS8TrjCpSzmsewwba', // Oak Barrel Candle
+        'gourmand-sweet': 'XOCmghULXJoyGAhBGoRu', // Creme & Crumble Candle
+        'floral-fresh': 'pz6CWxOG6FUqDBfHv5YW'  // Sweet Magnolia Candle
+    };
     
     // CRITICAL FIX: Standardize internal family IDs to match core categories: gourmand-sweet, floral-fresh, woody-warm.
     const scentWeights = {
@@ -132,7 +140,7 @@ title: Find Your Perfect Scent
      */
     function showStep(stepNumber) {
         // 1. Hide all elements with the class .quiz-step
-        document.querySelectorAll('.quiz-step').forEach(step => {
+        document.querySelectorAll('.quiz-step').forEach(function(step) { // Use function(step)
             step.classList.add('hidden');
         });
         
@@ -194,7 +202,6 @@ title: Find Your Perfect Scent
             }
         } else if (currentStep === QUIZ_QUESTION_COUNT) {
             // Do nothing on step 3's next button as it's the final submit.
-            // This is handled by the form submission listener.
             return;
         }
 
@@ -248,28 +255,21 @@ title: Find Your Perfect Scent
 
         // Fallback: If no answers were recorded (e.g., test error), default to the first defined family
         if (!topScentId || !familyDisplayMap.hasOwnProperty(topScentId)) {
-            // Attempt to map closely or use a generic "all products" tag
-            topScentId = Object.keys(familyDisplayMap)[0] || 'shop'; 
+            topScentId = Object.keys(familyDisplayMap)[0]; 
         }
 
-        const familyData = familyDisplayMap[topScentId] || { 
-            name: 'All Scents', 
-            description: 'We had trouble calculating your perfect match. Please explore our full collection!'
-        };
-        
-        // CRITICAL DEBUG STEP: Add console logging for confirmation
-        console.log("Quiz Result Tally:", answerTally);
-        console.log("Quiz Top Scent ID:", topScentId);
-        console.log("Quiz Result URL:", `/shop/?family=${topScentId}`);
-        
-        // CRITICAL FIX: The link targets the standardized /shop/ URL
-        resultLink.href = `/shop/?family=${topScentId}`; 
+        const familyData = familyDisplayMap[topScentId];
+        const recommendedId = recommendedProducts[topScentId];
+
+        // CRITICAL FIX: The link targets the specific product ID's page
+        resultLink.href = `/product/?id=${recommendedId}`; 
         
         // 2. Simulate loading and display results
-        setTimeout(() => {
+        setTimeout(function() { // Use explicit function
             loadingResult.classList.add('hidden');
             resultFamilyTitle.textContent = familyData.name;
-            resultDescription.textContent = familyData.description;
+            resultDescription.textContent = familyData.description + 
+                                            " Click below to view your top recommended product. Since stock is currently low, the product page is set up to let you sign up for a **Back-in-Stock Alert!**";
             
             resultFamilyTitle.classList.remove('hidden');
             resultDescription.classList.remove('hidden');
@@ -278,24 +278,40 @@ title: Find Your Perfect Scent
     }
 
     // --- Initialization ---
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', function() { // Use explicit function
         // Initial setup
         showStep(0); 
         
-        // Attach listeners for next buttons
-        document.querySelectorAll('.next-step-button').forEach(button => {
-            // FIX: Reset the tally on restart (optional but safe)
-            if (button.dataset.nextStep === '1') {
-                button.addEventListener('click', () => { answerTally = {}; handleNextStep(event); });
-            } else {
-                button.addEventListener('click', handleNextStep);
-            }
-        });
-        
-        // Attach listener for the start button
-        document.querySelector('.start-quiz-button').addEventListener('click', handleNextStep);
+        // CRITICAL FIX: Add initialization robustness via try/catch
+        try {
+            // Attach listeners for next buttons
+            document.querySelectorAll('.next-step-button').forEach(function(button) { // Use explicit function
+                // FIX: Reset the tally on restart (optional but safe)
+                // CRITICAL FIX: Use explicit function(e) binding to solve template string syntax error.
+                if (button.dataset.nextStep === '1') {
+                    button.addEventListener('click', function(e) { answerTally = {}; handleNextStep(e); });
+                } else {
+                    button.addEventListener('click', handleNextStep);
+                }
+            });
+            
+            // Attach listener for the start button
+            document.querySelector('.start-quiz-button').addEventListener('click', handleNextStep);
 
-        // Attach listener for the final form submission
-        formContainer.addEventListener('submit', calculateResult);
+            // Attach listener for the final form submission
+            formContainer.addEventListener('submit', calculateResult);
+            
+        } catch (error) {
+             console.error("CRITICAL Scent Quiz Initialization Error:", error);
+             // Ensure the welcome step is visible even on error
+             var step0 = document.getElementById('step-0'); // Use var for stability
+             if(step0) {
+                 step0.classList.remove('hidden');
+                 quizTitle.textContent = "Error Loading Quiz";
+                 progressText.textContent = "Please refresh the page.";
+             }
+        }
     });
+
+; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
 </script>

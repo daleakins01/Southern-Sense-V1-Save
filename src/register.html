@@ -9,49 +9,45 @@ title: Customer Registration
 
 <main class="container mx-auto px-4 py-12 min-h-screen flex items-start justify-center">
     
-    <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10 w-full max-w-xl">
+    <div class="w-full max-w-md mx-auto bg-parchment p-8 lg:p-10 rounded-xl shadow-2xl border border-stone/10">
 
-        <div class="w-full max-w-md mx-auto">
-            <h1 class="text-4xl font-playfair text-charcoal mb-6 text-center">Create Account</h1>
+        <h1 class="text-4xl font-playfair text-charcoal mb-6 text-center">Create Account</h1>
             
-            <form id="register-form" class="space-y-6">
+        <form id="register-form" class="space-y-6">
                 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="firstName" class="block text-sm font-medium text-stone mb-1">First Name</label>
-                        <input type="text" id="firstName" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
-                    </div>
-                    <div>
-                        <label for="lastName" class="block text-sm font-medium text-stone mb-1">Last Name</label>
-                        <input type="text" id="lastName" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
-                    </div>
-                </div>
-
+            <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label for="email" class="block text-sm font-medium text-stone mb-1">Email Address</label>
-                    <input type="email" id="email" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
+                    <label for="firstName" class="block text-sm font-medium text-stone mb-1">First Name</label>
+                    <input type="text" id="firstName" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
                 </div>
-
                 <div>
-                    <label for="password" class="block text-sm font-medium text-stone mb-1">Password</label>
-                    <input type="password" id="password" required minlength="6" class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
-                    <p class="mt-2 text-xs text-stone">Password must be at least 6 characters long.</p>
+                    <label for="lastName" class="block text-sm font-medium text-stone mb-1">Last Name</label>
+                    <input type="text" id="lastName" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
                 </div>
-                
-                <div id="register-status" class="hidden font-roboto text-sm p-3 rounded-lg"></div>
+            </div>
 
-                <button type="submit" class="w-full px-4 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-md hover:bg-burnt-orange/80 transition duration-300">
-                    Create Account
-                </button>
-                
-                <div class="text-center pt-4 border-t">
-                    <p class="text-sm text-stone">Already have an account?</p>
-                    <a href="/login/" class="text-burnt-orange font-semibold hover:underline transition">Login Here</a>
-                </div>
-                
-            </form>
-        </div>
-        
-    </div> </main>
+            <div>
+                <label for="email" class="block text-sm font-medium text-stone mb-1">Email Address</label>
+                <input type="email" id="email" required class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
+            </div>
 
-**Next file to update: `src/admin-login.html`** (Final form page to check for this syntax error)
+            <div>
+                <label for="password" class="block text-sm font-medium text-stone mb-1">Password</label>
+                <input type="password" id="password" required minlength="6" class="w-full p-3 border border-stone/30 rounded-lg text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
+                <p class="mt-2 text-xs text-stone">Password must be at least 6 characters long.</p>
+            </div>
+                
+            <div id="register-status" class="hidden font-roboto text-sm p-3 rounded-lg"></div>
+
+            <button type="submit" class="w-full px-4 py-4 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
+                Create Account
+            </button>
+                
+            <div class="text-center pt-4 border-t">
+                <p class="text-sm text-stone">Already have an account?</p>
+                <a href="/login/" class="text-burnt-orange font-semibold hover:underline transition">Login Here</a>
+            </div>
+                
+        </form>
+    </div> 
+</main>

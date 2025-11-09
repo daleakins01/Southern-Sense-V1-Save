@@ -964,10 +964,6 @@ video {
   max-width: 72rem;
 }
 
-.max-w-7xl{
-  max-width: 80rem;
-}
-
 .max-w-lg{
   max-width: 32rem;
 }
@@ -2197,6 +2193,11 @@ video {
 
   .lg\:p-8{
     padding: 2rem;
+  }
+
+  .lg\:px-8{
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 }
 

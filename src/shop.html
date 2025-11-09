@@ -220,7 +220,8 @@ title: Shop All Candles & Melts
                 const product = { id: id, name: name, price: price, imageUrl: image };
                 
                 // Use global window functions exposed by cart.js
-                if (window.addToCart && window.updateCartDisplay) { // Defensive check
+                // Defensive check is necessary due to async module loading in layout.html
+                if (window.addToCart && window.updateCartDisplay) { 
                     window.addToCart(product, 1); 
                     window.updateCartDisplay(); 
                     
@@ -287,6 +288,30 @@ title: Shop All Candles & Melts
 
         attachCartListeners();
     }
+    
+    /**
+     * Renamed filter submit handler for clean binding.
+     */
+    function handleFilterSubmit(e) {
+        e.preventDefault();
+        const category = categoryFilterSelect ? categoryFilterSelect.value : null;
+        const family = familyFilterSelect ? familyFilterSelect.value : null;
+        
+        // Build new URL
+        const newParams = new URLSearchParams();
+        if (category) newParams.set('category', category);
+        if (family) newParams.set('family', family);
+        
+        // Navigate to new URL to reload with filters
+        window.location.href = `/shop/?${newParams.toString()}`;
+    }
+
+    /**
+     * Renamed clear filters handler for clean binding.
+     */
+    function handleClearFilters() {
+        window.location.href = '/shop/';
+    }
 
     // --- Initialization & Event Listeners ---
 
@@ -326,36 +351,35 @@ title: Shop All Candles & Melts
             if (shopIntro) shopIntro.innerHTML = `<p class="text-red-600 font-bold">Error loading products. Please check the browser console for specific dependency or Firestore errors.</p>`;
         } finally {
             if (shopLoader) shopLoader.classList.add('hidden');
+            // CRITICAL FIX: Ensure cart badge updates immediately after shop loads
+            if (window.updateCartDisplay) {
+                window.updateCartDisplay();
+            }
         }
     }
     
-    // Event Listeners
+    // CRITICAL FIX: Use polling inside DOMContentLoaded to wait for global cart functions
     document.addEventListener('DOMContentLoaded', () => {
-        initializeShop();
-        
-        // Handle filter form submission
-        if (filterForm) {
-            filterForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const category = categoryFilterSelect ? categoryFilterSelect.value : null;
-                const family = familyFilterSelect ? familyFilterSelect.value : null;
+        function waitForCartAndRun() {
+            if (window.addToCart && window.updateCartDisplay) {
+                // Cart functions are ready. Now initialize the shop and attach listeners.
+                initializeShop();
                 
-                // Build new URL
-                const newParams = new URLSearchParams();
-                if (category) newParams.set('category', category);
-                if (family) newParams.set('family', family);
-                
-                // Navigate to new URL to reload with filters
-                window.location.href = `/shop/?${newParams.toString()}`;
-            });
+                // Attach form listeners AFTER initialization
+                if (filterForm) {
+                    filterForm.addEventListener('submit', handleFilterSubmit);
+                }
+                if (clearFiltersButton) {
+                    clearFiltersButton.addEventListener('click', handleClearFilters);
+                }
+            } else {
+                // Poll every 50ms until the functions are defined globally by layout.html
+                setTimeout(waitForCartAndRun, 50);
+            }
         }
-        
-        // Handle Clear Filters button
-        if (clearFiltersButton) {
-            clearFiltersButton.addEventListener('click', () => {
-                window.location.href = '/shop/';
-            });
-        }
+        waitForCartAndRun();
     });
+
+
 ; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
 </script>

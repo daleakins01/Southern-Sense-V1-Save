@@ -231,13 +231,16 @@ function renderCartDrawer() {
         const itemTotal = (item.price * item.quantity).toFixed(2);
 
         itemsHtml += `
-            <div class="flex items-center py-4">
-                <img src="${imageUrl}" alt="${item.name}" class="w-14 h-14 object-cover rounded-md flex-shrink-0 mr-4">
-                <div class="flex-grow">
-                    <p class="font-medium text-charcoal">${item.name}</p>
-                    <p class="text-sm text-stone">$${item.price.toFixed(2)} ea</p>
+            <div class="flex flex-col sm:flex-row sm:items-center py-4">
+                <div class="flex items-start w-full sm:w-auto mb-2 sm:mb-0">
+                    <img src="${imageUrl}" alt="${item.name}" class="w-14 h-14 object-cover rounded-md flex-shrink-0 mr-4">
+                    <div class="flex-grow">
+                        <p class="font-medium text-charcoal">${item.name}</p>
+                        <p class="text-sm text-stone">$${item.price.toFixed(2)} ea</p>
+                    </div>
                 </div>
-                <div class="flex items-center space-x-4">
+                
+                <div class="flex items-center space-x-4 w-full sm:w-auto sm:ml-auto justify-end">
                     <input type="number" data-id="${item.id}" value="${item.quantity}" min="1" 
                            class="w-16 p-2 border border-stone/30 rounded-lg text-center text-charcoal quantity-input focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
                     <span class="font-bold text-charcoal w-16 text-right">$${itemTotal}</span>

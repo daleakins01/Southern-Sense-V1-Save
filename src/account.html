@@ -261,6 +261,8 @@ title: My Account
 ; // DEFENSIVE SEMICOLON: Added to absorb potential file truncation errors.
 </script>
 
+{% include "page-header.html" with pageTitle: title, shortTitle: "My Account" %}
+
 <main class="container mx-auto px-4 py-12 min-h-screen">
     
     <div id="account-loader" class="flex justify-center items-center h-96">
@@ -295,7 +297,7 @@ title: My Account
                             Edit Profile & Address
                         </button>
 
-                        <button id="logout-button" class="w-full px-4 py-3 text-red-600 border border-red-300 rounded-lg shadow-md hover:bg-red-50 transition duration-300">
+                        <button id="logout-button" class="w-full px-4 py-3 text-red-600 border border-red-300 rounded-lg shadow-md hover:bg-red-50/50 transition duration-300">
                             Log Out
                         </button>
                     </div>

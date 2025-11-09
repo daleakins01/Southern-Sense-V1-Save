@@ -3,7 +3,7 @@ layout: layout
 title: Find Your Perfect Scent
 ---
 
-{% include "page-header.html" with pageTitle: title, headerImage: '/src/melts-header.webp' %}
+{% include "page-header.html" with pageTitle: title, headerImage: '/src/melts-header.webp', shortTitle: "Find Your Signature Scent" %}
 
 <main class="container mx-auto p-4 lg:p-8 py-16">
     <div class="max-w-6xl mx-auto bg-white p-8 lg:p-12 rounded-xl shadow-2xl border border-stone/10">
@@ -139,9 +139,11 @@ title: Find Your Perfect Scent
      * @param {number} stepNumber - The step index (0-4).
      */
     function showStep(stepNumber) {
-        // 1. Hide all elements with the class .quiz-step
-        document.querySelectorAll('.quiz-step').forEach(function(step) { // Use function(step)
-            step.classList.add('hidden');
+        // 1. Hide ALL steps EXCEPT the target step
+        document.querySelectorAll('.quiz-step').forEach(function(step) {
+            if (step.id !== `step-${stepNumber}`) {
+                step.classList.add('hidden');
+            }
         });
         
         // 2. Handle result step separately (Step 4)

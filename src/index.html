@@ -77,28 +77,47 @@ title: Southern Sense - Hand-Poured Luxury Candles
         const price = product.price.toFixed(2); 
         const scentFamily = product.scentFamily ? product.scentFamily.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'Scent';
 
-        // Button or Link
-        const actionButtonHtml = isOutOfStock
-            ? `<a href="/product/?id=${product.id}" class="w-full block text-center px-4 py-2 border border-stone/30 text-stone rounded-lg cursor-not-allowed">View Details</a>`
-            : `<button data-id="${product.id}" 
-                      data-name="${product.name}"
-                      data-price="${price}"
-                      data-image="${product.imageUrl}"
-                      class="add-to-cart-button w-full px-4 py-2 bg-burnt-orange text-parchment font-bold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
-                Add to Cart
-              </button>`;
+        // Determine stock display and button text
+        let stockHtml = '';
+        let buttonText = 'Add to Cart';
+        let buttonClasses = 'bg-burnt-orange hover:bg-burnt-orange/80';
+        let buttonDisabled = '';
+        let buttonClickAction = '';
+
+        if (isOutOfStock) {
+            stockHtml = '<p class="text-sm font-semibold text-red-600">SOLD OUT</p>';
+            buttonText = 'View Details';
+            buttonClasses = 'bg-stone/50 hover:bg-stone/60 cursor-not-allowed';
+            buttonDisabled = 'disabled';
+            buttonClickAction = `onclick="window.location.href='/product/?id=${product.id}'"`;
+        } else {
+            stockHtml = '<p class="text-sm font-semibold text-green-600">In Stock</p>';
+            buttonClickAction = ``; // Handled by standard 'add-to-cart-button' class listener
+        }
+
+        const actionButtonHtml = `
+            <button ${buttonDisabled}
+                    data-id="${product.id}" 
+                    data-name="${product.name}"
+                    data-price="${price}"
+                    data-image="${product.imageUrl}"
+                    class="add-to-cart-button w-full px-4 py-3 text-parchment font-bold rounded-lg shadow-md transition duration-300 ${buttonClasses}"
+                    ${buttonClickAction}>
+                ${buttonText}
+            </button>
+        `;
         
         return `
-            <div class="product-card bg-white rounded-lg shadow-xl overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
+            <div class="product-card bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
                 <a href="/product/?id=${product.id}" class="block">
                     <img src="/src/${product.imageUrl || 'logo.webp'}" alt="${product.name}" class="w-full h-72 object-cover">
                 </a>
                 <div class="p-5">
                     <p class="text-sm font-medium text-stone mb-1">${scentFamily}</p>
                     <h3 class="text-xl font-playfair text-charcoal mb-3 truncate">${product.name}</h3>
-                    <div class="flex justify-between items-center mb-4">
-                        <p class="text-lg font-bold text-burnt-orange">$${price}</p>
-                        ${isOutOfStock ? '<p class="text-sm font-semibold text-red-600">SOLD OUT</p>' : ''}
+                    <div class="flex justify-between items-center mb-4 border-b pb-4">
+                        <p class="text-xl font-bold text-burnt-orange">$${price}</p>
+                        ${stockHtml}
                     </div>
                     ${actionButtonHtml}
                 </div>
@@ -110,7 +129,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
      * Attaches click listeners to all new "Add to Cart" buttons.
      */
     function attachCartListeners() {
-        document.querySelectorAll('.add-to-cart-button').forEach(button => {
+        document.querySelectorAll('.add-to-cart-button:not([disabled])').forEach(button => {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
                 const { id, name, price, image } = e.currentTarget.dataset;
@@ -118,13 +137,15 @@ title: Southern Sense - Hand-Poured Luxury Candles
                 const product = { id, name, price, imageUrl: image };
                 
                 // Relying on global functions exposed to window by cart.js
-                window.addToCart(product, 1); 
-                window.updateCartDisplay(); 
-                
-                e.currentTarget.textContent = 'Added!';
-                setTimeout(() => {
-                    e.currentTarget.textContent = 'Add to Cart';
-                }, 1000);
+                if (window.addToCart && window.updateCartDisplay) {
+                    window.addToCart(product, 1); 
+                    window.updateCartDisplay(); 
+                    
+                    e.currentTarget.textContent = 'Added!';
+                    setTimeout(() => {
+                        e.currentTarget.textContent = 'Add to Cart';
+                    }, 1000);
+                }
             });
         });
     }
@@ -199,6 +220,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
             if (productsToRender.length === 0) {
                 featuredProductsGrid.innerHTML = '<p class="text-lg text-stone col-span-full text-center py-10">No products available at this time. Please check back later.</p>';
             } else {
+                // Render the first 4 available products
                 productsToRender.slice(0, 4).forEach(data => {
                     featuredProductsGrid.innerHTML += renderProductCard(data);
                 });
@@ -275,17 +297,17 @@ title: Southern Sense - Hand-Poured Luxury Candles
             <h2 class="text-5xl font-southern text-burnt-orange text-center mb-12">The Southern Sense Promise</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
-                <div class="p-6 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300">
+                <div class="p-6 bg-white rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300 border border-stone/10">
                     <img src="/src/finest-wax.webp" alt="Finest Wax" class="w-20 h-20 mx-auto mb-4">
                     <h3 class="text-2xl font-playfair text-charcoal mb-2">Finest Wax Blends</h3>
                     <p id="diff-wax-text" class="text-stone">We use a premium coconut-apricot wax blend that ensures a clean, slow, and even burn every time.</p>
                 </div>
-                <div class="p-6 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300">
+                <div class="p-6 bg-white rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300 border border-stone/10">
                     <img src="/src/clean-oils.webp" alt="Clean Oils" class="w-20 h-20 mx-auto mb-4">
                     <h3 class="text-2xl font-playfair text-charcoal mb-2">Clean Fragrance Oils</h3>
                     <p id="diff-oils-text" class="text-stone">Our oils are 100% phthalate-free and safe, providing a rich scent throw without harmful chemicals.</p>
                 </div>
-                <div class="p-6 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300">
+                <div class="p-6 bg-white rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300 border border-stone/10">
                     <img src="/src/hand-poured-quality.webp" alt="Hand Poured Quality" class="w-20 h-20 mx-auto mb-4">
                     <h3 class="text-2xl font-playfair text-charcoal mb-2">Hand-Poured Quality</h3>
                     <p class="text-stone">Each candle is hand-poured in small batches in the South, guaranteeing attention to detail and superior quality.</p>

@@ -364,7 +364,7 @@ title: Admin Panel
     }
 
 
-    // --- Core Admin Logic: Products Tab (CRUD Enhanced) ---
+    // --- Core Admin Logic: Products Tab (CRUD Enhanced & Modal Refactoring) ---
 
     async function fetchAllProducts() {
         productsMessage.textContent = 'Loading product catalog...';
@@ -517,54 +517,49 @@ title: Admin Panel
     }
 
 
-    // Function to handle opening modal for editing an existing product
-    async function openProductEditModal(productId) {
-        const product = currentProducts.find(p => p.id === productId);
+    // CRITICAL FIX: Refactored openNewProductModal and openProductEditModal into one cohesive modal handler.
+    /**
+     * Handles populating and showing the modal for product creation/editing.
+     * @param {string} [productId] - The ID of the product to edit, or null/undefined for new product.
+     */
+    function openProductEditModal(productId) {
+        const isNew = !productId;
+        const product = isNew ? {} : currentProducts.find(p => p.id === productId);
+
+        // --- Set Title and Button Text ---
+        document.querySelector('#product-edit-modal h3').textContent = isNew ? 'Add New Product' : 'Edit Product Details';
+        document.getElementById('product-save-button').textContent = isNew ? 'Create Product' : 'Save Changes';
+        document.getElementById('product-delete-btn-modal').classList.toggle('hidden', isNew);
         
-        // Populate ALL fields from the product object
-        document.getElementById('edit-product-id').value = productId;
+        // --- Populate Form Fields ---
+        document.getElementById('edit-product-id').value = isNew ? 'NEW_PRODUCT' : productId;
         document.getElementById('edit-product-name').value = product?.name || '';
         document.getElementById('edit-short-description').value = product?.shortDescription || '';
         document.getElementById('edit-long-description').value = product?.longDescription || '';
         document.getElementById('edit-price').value = product?.price?.toFixed(2) || '';
         document.getElementById('edit-stock').value = product?.stock || 0;
         document.getElementById('edit-featured').checked = product?.featured === true;
-        document.getElementById('edit-scent-family').value = product?.scentFamily || '';
-        document.getElementById('edit-category').value = product?.category || 'candle';
         document.getElementById('edit-scent-notes').value = product?.scentNotes || '';
         document.getElementById('edit-strength').value = product?.strength || 3;
         document.getElementById('edit-pairing').value = product?.pairing || '';
         document.getElementById('edit-image-url').value = product?.imageUrl || ''; 
 
-        // Update modal UI for editing
-        productEditModal.classList.remove('hidden');
-        document.querySelector('#product-edit-modal h3').textContent = 'Edit Product Details';
-        document.getElementById('product-save-button').textContent = 'Save Changes';
-        document.getElementById('product-delete-btn-modal').classList.remove('hidden');
+        // Set Category and Scent Family (must handle undefined values)
+        const categorySelect = document.getElementById('edit-category');
+        if (categorySelect) categorySelect.value = product?.category || 'candle';
 
+        const scentFamilyInput = document.getElementById('edit-scent-family');
+        if (scentFamilyInput) scentFamilyInput.value = product?.scentFamily || '';
+
+        // Show Modal
+        productEditModal.classList.remove('hidden');
     }
     
-    // Function to handle opening modal for creating a new product
+    // Function to handle opening modal for creating a new product (now a wrapper for the consolidated function)
     function openNewProductModal() {
-        document.getElementById('edit-product-id').value = 'NEW_PRODUCT'; 
-        document.getElementById('edit-product-name').value = '';
-        document.getElementById('edit-short-description').value = '';
-        document.getElementById('edit-long-description').value = '';
-        document.getElementById('edit-price').value = '';
-        document.getElementById('edit-stock').value = 0;
-        document.getElementById('edit-featured').checked = false;
-        document.getElementById('edit-scent-family').value = '';
-        document.getElementById('edit-category').value = 'candle';
-        document.getElementById('edit-scent-notes').value = '';
-        document.getElementById('edit-strength').value = 3;
-        document.getElementById('edit-pairing').value = '';
-        document.getElementById('edit-image-url').value = '';
-
-        productEditModal.classList.remove('hidden');
-        document.querySelector('#product-edit-modal h3').textContent = 'Add New Product';
-        document.getElementById('product-save-button').textContent = 'Create Product';
-        document.getElementById('product-delete-btn-modal').classList.add('hidden');
+        openProductEditModal(null);
     }
+    // END CRITICAL FIX
 
     async function handleProductUpdate(e) {
         e.preventDefault();
@@ -582,11 +577,13 @@ title: Admin Panel
                 name: formData.get('name'),
                 shortDescription: formData.get('shortDescription'),
                 longDescription: formData.get('longDescription'),
+                // CRITICAL FIX: Ensure price is stored as string with 2 decimal places for consistency
                 price: parseFloat(formData.get('price')).toFixed(2), 
                 stock: parseInt(formData.get('stock'), 10),
                 scentFamily: formData.get('scentFamily'),
                 category: formData.get('category'),
-                featured: formData.get('featured') === 'on',
+                // Checkbox needs manual handling for unchecked state (false)
+                featured: formData.get('featured') === 'on', 
                 imageUrl: formData.get('imageUrl'),
                 scentNotes: formData.get('scentNotes'),
                 strength: parseInt(formData.get('strength'), 10),
@@ -1231,7 +1228,10 @@ title: Admin Panel
         document.querySelector(`.tab-button[data-tab="${targetId}"]`).classList.remove('text-charcoal', 'hover:bg-parchment/70');
 
         // Execute function on tab switch
-        if (targetId === 'tab-orders') {
+        if (targetId === 'tab-dashboard') {
+            // Dashboard is already loaded by initializeAdmin, just ensure refresh happens
+            updateDashboardSummary(); 
+        } else if (targetId === 'tab-orders') {
             fetchAllOrders();
         } else if (targetId === 'tab-products') {
             fetchAllProducts();
@@ -1269,6 +1269,7 @@ title: Admin Panel
             return;
         }
         
+        // Initial data fetch for dashboard metrics only
         await Promise.all([
             fetchAllOrders(),
             fetchAllProducts(),
@@ -1397,69 +1398,69 @@ title: Admin Panel
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             
-                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-medium text-charcoal">Total Orders</h3>
-                                <p id="total-orders-count" class="text-4xl font-bold text-burnt-orange mt-2">--</p>
-                                <p class="text-sm text-stone mt-1">Orders recorded to date.</p>
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner border border-stone/10">
+                                <h3 class="text-base font-medium text-charcoal">Total Orders</h3>
+                                <p id="total-orders-count" class="text-3xl font-bold text-burnt-orange mt-2">--</p>
+                                <p class="text-xs text-stone mt-1">Orders recorded to date.</p>
                             </div>
                             
-                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-medium text-charcoal">Total Revenue</h3>
-                                <p id="total-revenue-summary" class="text-4xl font-bold text-green-600 mt-2">--</p>
-                                <p class="text-sm text-stone mt-1">Total lifetime sales.</p>
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner border border-stone/10">
+                                <h3 class="text-base font-medium text-charcoal">Total Revenue</h3>
+                                <p id="total-revenue-summary" class="text-3xl font-bold text-green-600 mt-2">--</p>
+                                <p class="text-xs text-stone mt-1">Total lifetime sales.</p>
                             </div>
                             
-                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-medium text-charcoal">Avg. Order Value</h3>
-                                <p id="aov-summary" class="text-4xl font-bold text-burnt-orange mt-2">--</p>
-                                <p class="text-sm text-stone mt-1">Sales average per transaction.</p>
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner border border-stone/10">
+                                <h3 class="text-base font-medium text-charcoal">Avg. Order Value</h3>
+                                <p id="aov-summary" class="text-3xl font-bold text-burnt-orange mt-2">--</p>
+                                <p class="text-xs text-stone mt-1">Sales average per transaction.</p>
                             </div>
                             
-                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-medium text-charcoal">MTD Revenue (30 Days)</h3>
-                                <p id="mtd-revenue-summary" class="text-4xl font-bold text-green-600 mt-2">--</p>
-                                <p class="text-sm text-stone mt-1">Revenue from the last 30 days.</p>
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner border border-stone/10">
+                                <h3 class="text-base font-medium text-charcoal">MTD Revenue (30 Days)</h3>
+                                <p id="mtd-revenue-summary" class="text-3xl font-bold text-green-600 mt-2">--</p>
+                                <p class="text-xs text-stone mt-1">Revenue from the last 30 days.</p>
                             </div>
                             
-                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-medium text-charcoal">Active Users (30 Days)</h3>
-                                <p id="active-users-summary" class="text-4xl font-bold text-charcoal mt-2">--</p>
-                                <p class="text-sm text-stone mt-1">Conceptual KPI: Recent Engaged Users.</p>
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner border border-stone/10">
+                                <h3 class="text-base font-medium text-charcoal">Active Users (30 Days)</h3>
+                                <p id="active-users-summary" class="text-3xl font-bold text-charcoal mt-2">--</p>
+                                <p class="text-xs text-stone mt-1">Conceptual KPI: Recent Engaged Users.</p>
                             </div>
                             
-                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-medium text-charcoal">Pending Reviews</h3>
-                                <p id="pending-reviews-count" class="text-4xl font-bold text-stone mt-2">--</p>
-                                <a data-tab="tab-reviews" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Approve Reviews &rarr;</a>
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner border border-stone/10">
+                                <h3 class="text-base font-medium text-charcoal">Pending Reviews</h3>
+                                <p id="pending-reviews-count" class="text-3xl font-bold text-stone mt-2">--</p>
+                                <a data-tab="tab-reviews" class="tab-button text-xs text-burnt-orange hover:underline mt-1 block cursor-pointer">Approve Reviews &rarr;</a>
                             </div>
                             
-                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-medium text-charcoal">Low Stock Items (&le; 10)</h3>
-                                <p id="low-stock-count-summary" class="text-4xl font-bold text-stone mt-2">--</p>
-                                <a data-tab="tab-products" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Manage Inventory &rarr;</a>
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner border border-stone/10">
+                                <h3 class="text-base font-medium text-charcoal">Low Stock Items (&le; 10)</h3>
+                                <p id="low-stock-count-summary" class="text-3xl font-bold text-stone mt-2">--</p>
+                                <a data-tab="tab-products" class="tab-button text-xs text-burnt-orange hover:underline mt-1 block cursor-pointer">Manage Inventory &rarr;</a>
                             </div>
                             
-                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-medium text-charcoal">Out of Stock Items</h3>
-                                <p id="out-of-stock-count-summary" class="text-4xl font-bold text-stone mt-2">--</p>
-                                <a data-tab="tab-products" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Restock Now &rarr;</a>
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner border border-stone/10">
+                                <h3 class="text-base font-medium text-charcoal">Out of Stock Items</h3>
+                                <p id="out-of-stock-count-summary" class="text-3xl font-bold text-stone mt-2">--</p>
+                                <a data-tab="tab-products" class="tab-button text-xs text-burnt-orange hover:underline mt-1 block cursor-pointer">Restock Now &rarr;</a>
                             </div>
                             
-                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-medium text-charcoal">Active Stock Alerts</h3>
-                                <p id="total-stock-alerts-count" class="text-4xl font-bold text-stone mt-2">--</p>
-                                <a data-tab="tab-stock-alerts" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">View Alerts &rarr;</a>
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner border border-stone/10">
+                                <h3 class="text-base font-medium text-charcoal">Active Stock Alerts</h3>
+                                <p id="total-stock-alerts-count" class="text-3xl font-bold text-stone mt-2">--</p>
+                                <a data-tab="tab-stock-alerts" class="tab-button text-xs text-burnt-orange hover:underline mt-1 block cursor-pointer">View Alerts &rarr;</a>
                             </div>
 
-                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-medium text-charcoal">New Inquiries</h3>
-                                <p id="pending-inquiries-summary" class="text-4xl font-bold text-stone mt-2">--</p>
-                                <a data-tab="tab-inquiries" class="tab-button text-sm text-burnt-orange hover:underline mt-1 block cursor-pointer">Review Messages &rarr;</a>
+                            <div class="p-4 bg-parchment/50 rounded-lg shadow-inner border border-stone/10">
+                                <h3 class="text-base font-medium text-charcoal">New Inquiries</h3>
+                                <p id="pending-inquiries-summary" class="text-3xl font-bold text-stone mt-2">--</p>
+                                <a data-tab="tab-inquiries" class="tab-button text-xs text-burnt-orange hover:underline mt-1 block cursor-pointer">Review Messages &rarr;</a>
                             </div>
 
                         </div>
 
-                        <div class="mt-8 p-6 bg-parchment rounded-lg border-l-4 border-burnt-orange">
+                        <div class="mt-8 p-6 bg-parchment rounded-lg border-l-4 border-burnt-orange shadow-md">
                             <h3 class="text-xl font-playfair text-charcoal mb-3">System Health Summary:</h3>
                             <p class="text-stone">E-commerce flow **STABLE** (Authenticated checkout fixed). All Admin operational tabs are **ACTIVE**.</p>
                             <p class="text-sm text-stone mt-2 font-semibold">Admin Panel features are **COMPLETE**.</p>

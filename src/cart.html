@@ -19,7 +19,7 @@ title: Your Shopping Cart
                     </button>
                 </div>
                 
-                <div id="cart-items-container" class="bg-parchment p-6 rounded-xl shadow-lg border border-stone/10 space-y-4">
+                <div id="cart-items-container" class="bg-parchment p-6 rounded-xl shadow-lg border border-stone/10 divide-y divide-stone/20">
                     </div>
                 
                 <p id="cart-status-message" class="text-center font-roboto text-lg text-stone py-10 hidden">Your cart is currently empty.</p>
@@ -30,26 +30,26 @@ title: Your Shopping Cart
                     <h2 class="font-playfair text-3xl font-bold text-charcoal mb-4">Order Summary</h2>
                     
                     <div class="space-y-3 border-b border-stone/20 pb-4">
-                        <div class="flex justify-between font-roboto text-sm text-stone">
+                        <div class="flex justify-between font-roboto text-base text-stone">
                             <span>Subtotal:</span>
                             <span>$<span id="cart-subtotal">0.00</span></span>
                         </div>
-                        <div class="flex justify-between font-roboto text-sm text-stone">
+                        <div class="flex justify-between font-roboto text-base text-stone">
                             <span>Shipping:</span>
                             <span>Calculated at Checkout</span>
                         </div>
-                        <div class="flex justify-between font-roboto text-sm text-stone">
+                        <div class="flex justify-between font-roboto text-base text-stone">
                             <span>Taxes:</span>
                             <span>Calculated at Checkout</span>
                         </div>
                     </div>
 
-                    <div class="flex justify-between font-playfair text-xl font-bold text-charcoal pt-2">
+                    <div class="flex justify-between font-playfair text-2xl font-bold text-charcoal pt-2">
                         <span>Total:</span>
                         <span>$<span id="cart-total">0.00</span></span>
                     </div>
 
-                    <button id="checkout-button" type="button" class="w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg shadow-md hover:bg-opacity-90 transition duration-150" disabled>
+                    <button id="checkout-button" type="button" class="w-full h-16 py-4 bg-burnt-orange text-parchment font-playfair text-xl font-bold rounded-lg shadow-md hover:bg-opacity-90 transition duration-150" disabled>
                         Proceed to Checkout
                     </button>
                     

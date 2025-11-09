@@ -132,6 +132,9 @@ function addToCart(product, quantity = 1) {
 function updateItemQuantity(productId, newQuantity) {
     let cart = getCart();
     
+    // Ensure quantity is an integer
+    newQuantity = parseInt(newQuantity, 10);
+
     if (newQuantity <= 0) {
         // Remove item if quantity is zero or less
         cart = cart.filter(item => item.id !== productId);
@@ -210,12 +213,11 @@ function renderCartDrawer() {
         message.classList.remove('hidden');
         if (checkoutButton) {
             checkoutButton.disabled = true;
-            checkoutButton.innerHTML = 'Proceed to Checkout'; // Reset text
+            checkoutButton.textContent = 'Proceed to Checkout'; // Reset text
+            // Clear PayPal button container if cart is empty
+            checkoutButton.innerHTML = 'Proceed to Checkout'; 
+            checkoutButton.classList.add('bg-burnt-orange'); // Re-add default class
         }
-        
-        // Clear PayPal button container if cart is empty
-        if (checkoutButton) checkoutButton.innerHTML = '';
-
         return;
     }
 
@@ -229,16 +231,17 @@ function renderCartDrawer() {
         const itemTotal = (item.price * item.quantity).toFixed(2);
 
         itemsHtml += `
-            <div class="flex items-center border-b border-stone/20 py-4">
-                <img src="${imageUrl}" alt="${item.name}" class="w-16 h-16 object-cover rounded-md flex-shrink-0 mr-4">
+            <div class="flex items-center py-4">
+                <img src="${imageUrl}" alt="${item.name}" class="w-14 h-14 object-cover rounded-md flex-shrink-0 mr-4">
                 <div class="flex-grow">
                     <p class="font-medium text-charcoal">${item.name}</p>
                     <p class="text-sm text-stone">$${item.price.toFixed(2)} ea</p>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <input type="number" data-id="${item.id}" value="${item.quantity}" min="1" class="w-16 p-2 border border-stone/30 rounded-lg text-center text-charcoal quantity-input">
+                    <input type="number" data-id="${item.id}" value="${item.quantity}" min="1" 
+                           class="w-16 p-2 border border-stone/30 rounded-lg text-center text-charcoal quantity-input focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
                     <span class="font-bold text-charcoal w-16 text-right">$${itemTotal}</span>
-                    <button data-id="${item.id}" class="text-red-600 hover:text-red-700 remove-item-button">
+                    <button data-id="${item.id}" class="text-stone hover:text-red-600 remove-item-button transition">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
@@ -268,9 +271,9 @@ function renderCartDrawer() {
     if (totals.total > 0 && typeof paypal !== 'undefined') {
         renderPayPalButton(totals);
     } else if (checkoutButton) {
-        // Fallback message if PayPal SDK fails to load
+        // Fallback to static button if PayPal SDK fails to load
         checkoutButton.disabled = false;
-        checkoutButton.textContent = 'PayPal Payment Failed to Load'; 
+        checkoutButton.textContent = 'Proceed to Checkout'; 
     }
 }
 
@@ -297,9 +300,9 @@ function renderPayPalButton(totals) {
     
     // Clear the static button content and remove styling for PayPal SDK to take over
     checkoutButtonContainer.innerHTML = '';
-    // Clear static button styles that might interfere with PayPal iframe
+    // Remove static button styles that might interfere with PayPal iframe and ADD w-full
     checkoutButtonContainer.classList.remove('bg-burnt-orange', 'text-parchment', 'font-playfair', 'text-lg', 'font-bold', 'rounded-lg', 'shadow-md', 'hover:bg-opacity-90', 'transition', 'duration-150');
-    checkoutButtonContainer.classList.add('w-full', 'h-24'); // Add height for button frame
+    checkoutButtonContainer.classList.add('w-full', 'h-24'); // Add height for button frame and ensure full width
 
     paypal.Buttons({
         // Set up the transaction details (required by PayPal)

@@ -28,7 +28,8 @@ if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         registerStatus.textContent = 'Processing registration...';
-        registerStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-yellow-100 text-yellow-700 block';
+        // UX Polish: Standardize info class
+        registerStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-amber-100 text-amber-700 block';
 
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -58,11 +59,15 @@ if (registerForm) {
 
         } catch (error) {
             let message = error.message;
-            if (message.includes('auth/email-already-in-use')) {
+            // CRITICAL FIX: Use error.code for more reliable checking
+            if (error.code === 'auth/email-already-in-use') {
                 message = 'The email address is already in use by another account.';
-            } else if (message.includes('auth/weak-password')) {
+            } else if (error.code === 'auth/weak-password') {
                 message = 'Password should be at least 6 characters.';
+            } else if (error.code === 'auth/invalid-email') {
+                message = 'The email address format is invalid.';
             } else {
+                // Generic error handling, removing the 'Firebase:' prefix
                 message = `Registration failed: ${error.message.replace('Firebase: ', '')}`;
             }
 
@@ -83,7 +88,8 @@ if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         loginStatus.textContent = 'Attempting sign in...';
-        loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-yellow-100 text-yellow-700 block';
+        // UX Polish: Standardize info class
+        loginStatus.className = 'font-roboto text-sm p-3 rounded-lg bg-amber-100 text-amber-700 block';
 
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -101,9 +107,13 @@ if (loginForm) {
 
         } catch (error) {
             let message = error.message;
-            if (message.includes('auth/invalid-credential') || message.includes('auth/wrong-password' || message.includes('auth/user-not-found'))) {
+            // CRITICAL FIX: Use error.code for more reliable checking
+            if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
                 message = 'Invalid email or password.';
+            } else if (error.code === 'auth/too-many-requests') {
+                 message = 'Access temporarily blocked due to too many failed login attempts.';
             } else {
+                // Generic error handling, removing the 'Firebase:' prefix
                 message = `Sign in failed: ${error.message.replace('Firebase: ', '')}`;
             }
 

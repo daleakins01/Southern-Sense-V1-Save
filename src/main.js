@@ -68,13 +68,27 @@ if (accountLink) {
 // This is done by querying the value of the original HTML title tag, which is set by Eleventy.
 const initialTitle = document.title;
 if (initialTitle) {
-    setTimeout(() => {
-        // Only reset if the title has been corrupted by an external script (e.g., set to 'true')
+    let attempts = 0;
+    const maxAttempts = 5;
+    const interval = 20; // Check every 20ms
+
+    const fixTitleInterval = setInterval(() => {
+        // If the title is corrupted (shows 'true', 'false', or is not the initial valid title)
         if (document.title !== initialTitle) {
             document.title = initialTitle;
-            console.warn("Title corruption detected and fixed. Original title restored:", initialTitle);
+            console.log(`Title corruption fixed on attempt ${attempts + 1}.`);
         }
-    }, 500); // 500ms delay to ensure external scripts have completed execution
+        
+        attempts++;
+        
+        // Stop checking after max attempts or if a stable version has loaded
+        if (attempts >= maxAttempts) {
+            clearInterval(fixTitleInterval);
+            if (document.title === 'true' || document.title === 'false') {
+                 console.error("Critical: Failed to fix title after maximum attempts. Content is likely cached.");
+            }
+        }
+    }, interval);
 }
 
 

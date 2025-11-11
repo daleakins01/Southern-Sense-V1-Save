@@ -70,27 +70,31 @@ const originalTitleMeta = document.getElementById('original-title');
 const authoritativeTitle = originalTitleMeta ? originalTitleMeta.content : document.title;
 
 if (authoritativeTitle) {
-    let attempts = 0;
-    const maxAttempts = 5;
-    const interval = 20; // Check every 20ms
+    // FIX: Defer title check to run after all other initial scripts (like PayPal) have executed,
+    // and increase attempts to win the race condition consistently.
+    setTimeout(() => {
+        let attempts = 0;
+        const maxAttempts = 10; // Increased retry attempts
+        const interval = 50; // Increased retry interval to 50ms
 
-    const fixTitleInterval = setInterval(() => {
-        // If the title is corrupted (shows 'true', 'false', or is not the authoritative title)
-        if (document.title !== authoritativeTitle) {
-            document.title = authoritativeTitle;
-            console.log(`Title corruption fixed on attempt ${attempts + 1}.`);
-        }
-        
-        attempts++;
-        
-        // Stop checking after max attempts or if a stable version has loaded
-        if (attempts >= maxAttempts) {
-            clearInterval(fixTitleInterval);
+        const fixTitleInterval = setInterval(() => {
+            // If the title is corrupted (shows 'true', 'false', or is not the authoritative title)
             if (document.title !== authoritativeTitle) {
-                 console.error("Critical: Failed to fix title after maximum attempts. Content is likely cached.");
+                document.title = authoritativeTitle;
+                console.log(`Title corruption fixed on attempt ${attempts + 1}.`);
             }
-        }
-    }, interval);
+            
+            attempts++;
+            
+            // Stop checking after max attempts or if a stable version has loaded
+            if (attempts >= maxAttempts) {
+                clearInterval(fixTitleInterval);
+                if (document.title !== authoritativeTitle) {
+                    console.error("Critical: Failed to fix title after maximum attempts. Content is likely cached.");
+                }
+            }
+        }, interval);
+    }, 500); // Wait 500ms before starting the fix loop
 }
 
 

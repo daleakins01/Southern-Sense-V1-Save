@@ -76,9 +76,9 @@ title: Find Your Perfect Scent
 
 <script type="module">
     // FINAL CODE FIX: Use static string quotes and manually add the version parameter for cache-busting.
-    // This resolves the "Unexpected template string" syntax error.
-    const version = '?v=1.1.5';
-    import { db, collection, query, where, getDocs } from '/src/firebase-loader.js?v=1.1.5'; 
+    // FIX: Updated version to 1.1.9 to force reload of firebase-loader.js
+    const version = '?v=1.1.9';
+    import { db, collection, query, where, getDocs } from '/src/firebase-loader.js?v=1.1.9'; 
 
     // --- State & DOM ---
     let currentStep = 0;

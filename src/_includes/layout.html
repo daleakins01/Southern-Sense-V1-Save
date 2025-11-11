@@ -34,13 +34,13 @@
 
     <script type="module">
         // CRITICAL FIX: Increment cache-busting version string to force browser to load corrected JS modules.
-        // Incremented to v=1.1.8
-        const version = '?v=1.1.8';
+        // Incremented to v=1.1.9
+        const version = '?v=1.1.9';
         
         // --- 1. Cart/Firebase Setup ---
         document.addEventListener('DOMContentLoaded', async () => {
-            // Load Firebase (initializes services)
-            await import('/src/firebase-loader.js'); 
+            // Load Firebase (initializes services) - NOW USES CACHE-BUSTING
+            await import(`/src/firebase-loader.js${version}`); 
             
             // Load Cart Logic (attaches functions to window) - CRITICAL DEFINITIONS
             await import(`/src/cart.js${version}`); 

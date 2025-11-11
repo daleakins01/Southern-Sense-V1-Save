@@ -46,7 +46,7 @@ title: Southern Sense - Hand-Poured Luxury Candles
                 // 1. Hero Section
                 // CRITICAL FIX: Ensure the hero title uses the requested text if the CMS field is empty.
                 if (heroTitleEl) heroTitleEl.textContent = data.heroTitle || "Handcrafted, Local, Luxury";
-                if (heroSubtitleEl) heroSubtitleEl.textContent = data.heroSubtitle || "Experience the warmth and charm of the South...";
+                if (heroSubtitleEl) heroSubtitleEl.textContent = data.heroSubtitle || "Experience the warmth and charm of the South with our hand-poured, luxury soy-blend candles, made in the heart of South Carolina.";
                 
                 // 2. Our Difference Section (CRITICAL FIX: Use homepage fields directly if present)
                 if (diffWaxTextEl) diffWaxTextEl.textContent = data.diffWax || "We use a premium coconut-apricot wax blend that ensures a clean, slow, and even burn every time.";
@@ -56,11 +56,11 @@ title: Southern Sense - Hand-Poured Luxury Candles
                 featuredId = data.featuredProductId || null;
             } else {
                 console.warn("Homepage CMS document not found. Using defaults.");
-                // Fallback for JS defaults if document does not exist
-                if (heroTitleEl) heroTitleEl.textContent = "Handcrafted, Local, Luxury";
+                // Fallback: Use HTML's initial content if Firestore fails to prevent blank text
             }
         } catch (error) {
             console.error("Error fetching homepage CMS content:", error);
+            // Fallback: Use HTML's initial content if network request fails
         }
         return featuredId;
     }
@@ -307,17 +307,17 @@ title: Southern Sense - Hand-Poured Luxury Candles
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
                 <div class="p-6 bg-white rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300 border border-stone/10">
-                    <img src="/src/finest-wax.webp" alt="Finest Wax" class="w-20 h-20 mx-auto mb-4">
+                    <img src="/src/finest-wax.webp" alt="Hands pouring candle wax" class="w-20 h-20 mx-auto mb-4">
                     <h3 class="text-2xl font-playfair text-charcoal mb-2">Finest Wax Blends</h3>
                     <p id="diff-wax-text" class="text-stone">We use a premium coconut-apricot wax blend that ensures a clean, slow, and even burn every time.</p>
                 </div>
                 <div class="p-6 bg-white rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300 border border-stone/10">
-                    <img src="/src/clean-oils.webp" alt="Clean Oils" class="w-20 h-20 mx-auto mb-4">
+                    <img src="/src/clean-oils.webp" alt="Bottles of clean fragrance oils" class="w-20 h-20 mx-auto mb-4">
                     <h3 class="text-2xl font-playfair text-charcoal mb-2">Clean Fragrance Oils</h3>
                     <p id="diff-oils-text" class="text-stone">Our oils are 100% phthalate-free and safe, providing a rich scent throw without harmful chemicals.</p>
                 </div>
                 <div class="p-6 bg-white rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300 border border-stone/10">
-                    <img src="/src/hand-poured-quality.webp" alt="Hand Poured Quality" class="w-20 h-20 mx-auto mb-4">
+                    <img src="/src/hand-poured-quality.webp" alt="Close-up of three black candle tins" class="w-20 h-20 mx-auto mb-4">
                     <h3 class="text-2xl font-playfair text-charcoal mb-2">Hand-Poured Quality</h3>
                     <p class="text-stone">Each candle is hand-poured in small batches in the South, guaranteeing attention to detail and superior quality.</p>
                 </div>

@@ -64,21 +64,18 @@ if (accountLink) {
     });
 }
 
-// CRITICAL FIX: Aggressively restore the correct page title after 3rd party scripts run.
-// Reading from the meta tag bypasses the browser's corruption of document.title.
+// CRITICAL FIX: The aggressive title fix block was MOVED to src/_includes/layout.html to ensure it executes regardless of import failures.
+/*
 const originalTitleMeta = document.getElementById('original-title');
 const authoritativeTitle = originalTitleMeta ? originalTitleMeta.content : document.title;
 
 if (authoritativeTitle) {
-    // FIX: Defer title check to run after all other initial scripts (like PayPal) have executed,
-    // and increase attempts to win the race condition consistently.
     setTimeout(() => {
         let attempts = 0;
-        const maxAttempts = 10; // Increased retry attempts
-        const interval = 50; // Increased retry interval to 50ms
+        const maxAttempts = 10;
+        const interval = 50;
 
         const fixTitleInterval = setInterval(() => {
-            // If the title is corrupted (shows 'true', 'false', or is not the authoritative title)
             if (document.title !== authoritativeTitle) {
                 document.title = authoritativeTitle;
                 console.log(`Title corruption fixed on attempt ${attempts + 1}.`);
@@ -86,7 +83,6 @@ if (authoritativeTitle) {
             
             attempts++;
             
-            // Stop checking after max attempts or if a stable version has loaded
             if (attempts >= maxAttempts) {
                 clearInterval(fixTitleInterval);
                 if (document.title !== authoritativeTitle) {
@@ -94,9 +90,9 @@ if (authoritativeTitle) {
                 }
             }
         }, interval);
-    }, 500); // Wait 500ms before starting the fix loop
+    }, 500);
 }
-
+*/
 
 // FIX: Removed the global call to initializeScentQuiz() to prevent dependency conflicts 
 // and is now intended to be contained within src/scent-quiz.html's inline script.

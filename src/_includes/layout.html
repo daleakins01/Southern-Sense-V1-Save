@@ -33,27 +33,26 @@
     <script src="https://www.paypal.com/sdk/js?client-id=AbJgVDAbLbZDDb-H85jNDCZl2iJmDJCEy9jtPgyS6fqnB5XjRwUs08BCh3GzuAzKSWIJh3cadFUajqmL&currency=USD"></script>
 
     <script type="module">
-        // CRITICAL FIX: Increment cache-busting version string to force browser to load corrected JS modules.
-        // Incremented to v=1.1.9
-        const version = '?v=1.1.9';
+        // INCREMENTED TO v=1.1.10 FOR AGGRESSIVE INTERNAL CACHE-BUSTING
+        const version = '?v=1.1.10'; 
         
-        // --- 1. Cart/Firebase Setup ---
+        // --- 1. Core Module Setup (Uses internal cache-busting) ---
         document.addEventListener('DOMContentLoaded', async () => {
-            // Load Firebase (initializes services) - NOW USES CACHE-BUSTING
+            // Load Firebase (initializes services)
             await import(`/src/firebase-loader.js${version}`); 
             
-            // Load Cart Logic (attaches functions to window) - CRITICAL DEFINITIONS
+            // Load Cart Logic (attaches functions to window)
             await import(`/src/cart.js${version}`); 
             
-            // Initialize Cart (calls the now-global function exposed by cart.js) <-- MOVED UP
+            // Initialize Cart (calls the now-global function exposed by cart.js)
             window.initializeCart();
 
             // 4. Load Main UI Logic (uses cart functions, runs after initialization)
             await import(`/src/main.js${version}`); 
             
-            // --- 2. Back to Top Button Logic (NEW) ---
+            // --- 2. Back to Top Button Logic ---
             const backToTopButton = document.getElementById('back-to-top-button');
-            const scrollThreshold = 300; // Show button after scrolling 300px
+            const scrollThreshold = 300; 
             
             if (backToTopButton) {
                 // Event listener to show/hide the button
@@ -62,7 +61,6 @@
                         backToTopButton.classList.remove('opacity-0', 'invisible');
                         backToTopButton.classList.add('opacity-100', 'visible');
                     } else {
-                        // FIX: Corrected typo from 'backTo topButton' to 'backToTopButton'
                         backToTopButton.classList.remove('opacity-100', 'visible');
                         backToTopButton.classList.add('opacity-0', 'invisible');
                     }

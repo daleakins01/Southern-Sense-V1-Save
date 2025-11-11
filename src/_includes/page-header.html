@@ -1,8 +1,8 @@
 <header class="relative w-full h-64 md:h-80 bg-cover bg-center" style="background-image: url('{{ headerImage | default: "/src/candles-header.webp" }}');">
     <div class="absolute inset-0 bg-charcoal/60 flex items-center justify-center">
-        <div class="container mx-auto px-4 text-center space-y-4">
+        <div class="container mx-auto px-4 text-center">
             {% if shortTitle %}
-            <p class="font-southern text-4xl font-bold text-burnt-orange drop-shadow-lg leading-none">
+            <p class="font-southern text-4xl font-bold text-burnt-orange drop-shadow-lg mb-4">
                 {{ shortTitle }}
             </p>
             {% endif %}

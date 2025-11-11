@@ -149,23 +149,23 @@ title: Subscription Boxes
                 
                 // 1. Header and Overview
                 // subHeaderTitle.textContent = data.subHeaderTitle || "Scent Subscriptions"; // Removed, set by Eleventy
-                subOverviewContent.innerHTML = data.subOverviewContent || "<p>Subscription overview not set.</p>";
+                if (subOverviewContent) subOverviewContent.innerHTML = data.subOverviewContent || "<p>Subscription overview not set.</p>";
                 
-                // 2. Subscription Options
-                option1Title.textContent = data.option1Title || "The Classic Box";
-                option1Price.textContent = data.option1Price || "$24.99/Month";
-                option1Desc.textContent = data.option1Desc || "Details loading...";
+                // 2. Subscription Options - CRITICAL FIX: Add null checks to prevent TypeError
+                if (option1Title) option1Title.textContent = data.option1Title || "The Classic Box";
+                if (option1Price) option1Price.textContent = data.option1Price || "$24.99/Month";
+                if (option1Desc) option1Desc.textContent = data.option1Desc || "Details loading...";
                 
-                option2Title.textContent = data.option2Title || "The Luxe Box";
-                option2Price.textContent = data.option2Price || "$39.99/Month";
-                option2Desc.textContent = data.option2Desc || "Details loading...";
+                if (option2Title) option2Title.textContent = data.option2Title || "The Luxe Box";
+                if (option2Price) option2Price.textContent = data.option2Price || "$39.99/Month";
+                if (option2Desc) option2Desc.textContent = data.option2Desc || "Details loading...";
                 
-                option3Title.textContent = data.option3Title || "The Melt Box";
-                option3Price.textContent = data.option3Price || "$14.99/Month";
-                option3Desc.textContent = data.option3Desc || "Details loading...";
+                if (option3Title) option3Title.textContent = data.option3Title || "The Melt Box";
+                if (option3Price) option3Price.textContent = data.option3Price || "$14.99/Month";
+                if (option3Desc) option3Desc.textContent = data.option3Desc || "Details loading...";
 
                 // 3. FAQs Section (Assumed rich HTML)
-                subFaqsContent.innerHTML = data.subFaqsContent || "<p class='text-center text-stone'>FAQs content not set.</p>";
+                if (subFaqsContent) subFaqsContent.innerHTML = data.subFaqsContent || "<p class='text-center text-stone'>FAQs content not set.</p>";
                 
                 // Success: Hide loading, show content
                 loadingState.classList.add('hidden');

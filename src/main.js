@@ -65,17 +65,19 @@ if (accountLink) {
 }
 
 // CRITICAL FIX: Aggressively restore the correct page title after 3rd party scripts run.
-// This is done by querying the value of the original HTML title tag, which is set by Eleventy.
-const initialTitle = document.title;
-if (initialTitle) {
+// Reading from the meta tag bypasses the browser's corruption of document.title.
+const originalTitleMeta = document.getElementById('original-title');
+const authoritativeTitle = originalTitleMeta ? originalTitleMeta.content : document.title;
+
+if (authoritativeTitle) {
     let attempts = 0;
     const maxAttempts = 5;
     const interval = 20; // Check every 20ms
 
     const fixTitleInterval = setInterval(() => {
-        // If the title is corrupted (shows 'true', 'false', or is not the initial valid title)
-        if (document.title !== initialTitle) {
-            document.title = initialTitle;
+        // If the title is corrupted (shows 'true', 'false', or is not the authoritative title)
+        if (document.title !== authoritativeTitle) {
+            document.title = authoritativeTitle;
             console.log(`Title corruption fixed on attempt ${attempts + 1}.`);
         }
         
@@ -84,7 +86,7 @@ if (initialTitle) {
         // Stop checking after max attempts or if a stable version has loaded
         if (attempts >= maxAttempts) {
             clearInterval(fixTitleInterval);
-            if (document.title === 'true' || document.title === 'false') {
+            if (document.title !== authoritativeTitle) {
                  console.error("Critical: Failed to fix title after maximum attempts. Content is likely cached.");
             }
         }

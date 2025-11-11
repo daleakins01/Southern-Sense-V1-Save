@@ -17,6 +17,8 @@
     <link rel="icon" href="/src/logo.webp" type="image/webp">
     
     <meta name="description" content="{{ description or site.description }}">
+
+    <meta id="original-title" content="{{ title or site.name }}">
 </head>
 <body class="bg-parchment min-h-screen flex flex-col font-roboto text-charcoal" style="background-image: url('/src/background-parchment.webp'); background-repeat: no-repeat; background-attachment: fixed; background-size: cover; background-position: center center;">
     
@@ -32,7 +34,8 @@
 
     <script type="module">
         // CRITICAL FIX: Increment cache-busting version string to force browser to load corrected JS modules.
-        const version = '?v=1.1.5';
+        // Incremented to v=1.1.8
+        const version = '?v=1.1.8';
         
         // --- 1. Cart/Firebase Setup ---
         document.addEventListener('DOMContentLoaded', async () => {

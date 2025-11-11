@@ -1,4 +1,8 @@
-<header class="relative w-full h-64 md:h-80 bg-cover bg-center" style="background-image: url('{{ headerImage | default: "/src/candles-header.webp" }}');">
+<header 
+    class="relative w-full h-64 md:h-80 bg-cover bg-center" 
+    style="background-image: url('{{ headerImage | default: "/src/candles-header.webp" }}');"
+    role="img"
+    aria-label="{{ pageTitle }} banner image: a cozy, high-quality, Southern-styled environment.">
     <div class="absolute inset-0 bg-charcoal/60 flex items-center justify-center">
         <div class="container mx-auto px-4 text-center">
             {% if shortTitle %}

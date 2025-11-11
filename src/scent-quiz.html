@@ -26,9 +26,9 @@ title: Find Your Perfect Scent
                     <div id="step-1" class="quiz-step hidden">
                         <h3 class="font-playfair text-2xl font-bold text-charcoal mb-4">1. How do you want to feel right now?</h3>
                         <div class="space-y-3">
-                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" name="q1" value="calm" class="mr-3 accent-burnt-orange" required> Cozy & Calm (E.g., Sunday morning)</label>
-                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" name="q1" value="uplifted" class="mr-3 accent-burnt-orange"> Refreshed & Uplifted (E.g., Spring break)</label>
-                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" name="q1" value="warm" class="mr-3 accent-burnt-orange"> Warm & Inviting (E.g., Dinner party)</label>
+                            <label for="q1-calm" class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" id="q1-calm" name="q1" value="calm" class="mr-3 accent-burnt-orange" required> Cozy & Calm (E.g., Sunday morning)</label>
+                            <label for="q1-uplifted" class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" id="q1-uplifted" name="q1" value="uplifted" class="mr-3 accent-burnt-orange"> Refreshed & Uplifted (E.g., Spring break)</label>
+                            <label for="q1-warm" class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" id="q1-warm" name="q1" value="warm" class="mr-3 accent-burnt-orange"> Warm & Inviting (E.g., Dinner party)</label>
                         </div>
                         <button type="button" data-next-step="2" class="mt-6 w-full py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl transition duration-150 next-step-button">Next &rarr;</button>
                     </div>
@@ -36,9 +36,9 @@ title: Find Your Perfect Scent
                     <div id="step-2" class="quiz-step hidden">
                         <h3 class="font-playfair text-2xl font-bold text-charcoal mb-4">2. Which environment do you prefer?</h3>
                         <div class="space-y-3">
-                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" name="q2" value="nature" class="mr-3 accent-burnt-orange" required> A deep forest after the rain</label>
-                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" name="q2" value="bakery" class="mr-3 accent-burnt-orange"> A gourmet bakery full of fresh pastry</label>
-                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" name="q2" value="patio" class="mr-3 accent-burnt-orange"> A sun-drenched coastal patio</label>
+                            <label for="q2-nature" class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" id="q2-nature" name="q2" value="nature" class="mr-3 accent-burnt-orange" required> A deep forest after the rain</label>
+                            <label for="q2-bakery" class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" id="q2-bakery" name="q2" value="bakery" class="mr-3 accent-burnt-orange"> A gourmet bakery full of fresh pastry</label>
+                            <label for="q2-patio" class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" id="q2-patio" name="q2" value="patio" class="mr-3 accent-burnt-orange"> A sun-drenched coastal patio</label>
                         </div>
                         <button type="button" data-next-step="3" class="mt-6 w-full py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl transition duration-150 next-step-button">Next &rarr;</button>
                     </div>
@@ -46,9 +46,9 @@ title: Find Your Perfect Scent
                     <div id="step-3" class="quiz-step hidden">
                         <h3 class="font-playfair text-2xl font-bold text-charcoal mb-4">3. What's your ideal dessert?</h3>
                         <div class="space-y-3">
-                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" name="q3" value="citrus" class="mr-3 accent-burnt-orange" required> Bright, fresh lemon meringue pie</label>
-                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" name="q3" value="wood" class="mr-3 accent-burnt-orange"> A rich, dark chocolate truffle</label>
-                            <label class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" name="q3" value="spice" class="mr-3 accent-burnt-orange"> Gingerbread cookies with cinnamon frosting</label>
+                            <label for="q3-citrus" class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" id="q3-citrus" name="q3" value="citrus" class="mr-3 accent-burnt-orange" required> Bright, fresh lemon meringue pie</label>
+                            <label for="q3-wood" class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" id="q3-wood" name="q3" value="wood" class="mr-3 accent-burnt-orange"> A rich, dark chocolate truffle</label>
+                            <label for="q3-spice" class="block p-3 border border-stone/30 rounded-lg hover:bg-white cursor-pointer transition duration-150"><input type="radio" id="q3-spice" name="q3" value="spice" class="mr-3 accent-burnt-orange"> Gingerbread cookies with cinnamon frosting</label>
                         </div>
                         <button type="submit" id="submit-quiz-button" class="mt-6 w-full py-3 bg-burnt-orange text-parchment font-playfair text-lg font-bold rounded-lg shadow-xl transition duration-150">
                             Show My Scent

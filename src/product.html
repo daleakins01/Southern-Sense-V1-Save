@@ -87,6 +87,62 @@ title: Product Name
     }
 
     /**
+     * Injects the Product Schema (JSON-LD) into the page head for SEO Rich Snippets (P1 Fix).
+     */
+    function injectProductSchema() {
+        if (!currentProduct) return;
+        
+        // Calculate rating details
+        const totalReviews = reviewsList.filter(r => r.approved === true).length;
+        const totalRating = reviewsList.reduce((sum, review) => sum + (review.rating || 0), 0);
+        const averageRating = totalReviews > 0 ? totalRating / totalReviews : 0;
+        
+        const availability = currentProduct.stock > 0 
+                            ? 'https://schema.org/InStock' 
+                            : 'https://schema.org/OutOfStock';
+                            
+        // CRITICAL FIX: Ensure the image URL is the absolute URL
+        const imageUrl = currentProduct.imageUrl?.startsWith('http') 
+                        ? currentProduct.imageUrl 
+                        : `${window.location.origin}/src/${currentProduct.imageUrl}`;
+        
+        const productSchema = {
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            "name": currentProduct.name,
+            "image": imageUrl,
+            "description": currentProduct.shortDescription,
+            "sku": currentProduct.id,
+            "brand": {
+                "@type": "Brand",
+                "name": "Southern Sense"
+            },
+            "offers": {
+                "@type": "Offer",
+                "url": window.location.href,
+                "priceCurrency": "USD",
+                "price": currentProduct.price.toFixed(2),
+                "itemCondition": "https://schema.org/NewCondition",
+                "availability": availability
+            }
+        };
+        
+        if (totalReviews > 0) {
+            productSchema.aggregateRating = {
+                "@type": "AggregateRating",
+                "ratingValue": averageRating.toFixed(1),
+                "reviewCount": totalReviews
+            };
+        }
+        
+        // Create script tag and inject into the head
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.textContent = JSON.stringify(productSchema);
+        document.head.appendChild(script);
+    }
+
+    /**
      * Fetches a single product from Firestore based on the URL parameter.
      */
     async function fetchProduct() {
@@ -126,6 +182,7 @@ title: Product Name
             productImageUrl.src = product.imageUrl.startsWith('http') 
                                   ? product.imageUrl 
                                   : `/src/${product.imageUrl}`;
+            // FIX: Set the alt attribute for WCAG 1.1.1 compliance
             productImageUrl.alt = product.name;
 
             // Details
@@ -175,6 +232,9 @@ title: Product Name
 
             // --- Load Reviews (Concurrent Fetch) ---
             await fetchReviews(productId);
+            
+            // CRITICAL FIX (P1 SEO): Inject Schema after all data is ready
+            injectProductSchema(); 
             
             productLoader.classList.add('hidden');
             productContent.classList.remove('hidden');
@@ -441,7 +501,7 @@ title: Product Name
             <p id="product-error-message" class="text-lg text-stone mb-6">
                 The product you are looking for could not be found.
             </p>
-            <a href="/shop/" class="px-8 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-lg hover:bg-burnt-orange/80 transition duration-300">
+            <a href="/shop/" class="px-8 py-3 bg-burnt-orange text-parchment font-bold rounded-lg shadow-xl hover:bg-burnt-orange/80 transition duration-300">
                 Return to Shop
             </a>
         </div>
@@ -504,6 +564,7 @@ title: Product Name
                         </dl>
                     </div>
                     <div class="flex items-center space-x-4 mb-4">
+                        <label for="quantity-input" class="sr-only">Quantity</label>
                         <input type="number" id="quantity-input" value="1" min="1" 
                                title="Quantity" aria-label="Quantity"
                                class="w-20 p-3 border border-stone/30 rounded-lg text-center text-charcoal focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange">
@@ -517,6 +578,7 @@ title: Product Name
                     <div id="stock-alert-container" class="hidden mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                         <p class="font-semibold text-red-600 mb-3">This product is currently out of stock.</p>
                         <form id="stock-alert-form" class="flex space-x-2">
+                            <label for="alert-email-input" class="sr-only">Email Address for Stock Alert</label>
                             <input type="email" id="alert-email-input" placeholder="Your Email Address" required class="flex-grow p-2 border border-stone/30 rounded-lg text-charcoal">
                             <button type="submit" class="px-4 py-2 bg-burnt-orange text-parchment font-semibold rounded-lg hover:bg-burnt-orange/80 transition duration-300">
                                 Notify Me When Available

@@ -156,7 +156,7 @@ title: Shop All Candles & Melts
             stockStatusHtml = `<p class="text-sm font-semibold text-red-600">SOLD OUT</p>`;
             buttonText = 'View Details';
             buttonClasses = 'bg-stone/50 hover:bg-stone/60 cursor-not-allowed';
-            buttonDisabled = '';
+            // CRITICAL FIX: Ensure out-of-stock buttons navigate to the PDP
             buttonClickAction = `onclick="window.location.href='/product/?id=${product.id}'"`; 
         } else {
             stockStatusHtml = `<p class="text-sm font-semibold text-green-600">In Stock</p>`;
@@ -177,7 +177,7 @@ title: Shop All Candles & Melts
         
         return `
             <div class="product-card bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
-                <a href="/product/?id=${product.id}" class="block relative">
+                <a href="/product/?id=${product.id}" class="block relative" aria-label="View product details for ${product.name}">
                     <img src="${imageUrl}" alt="${product.name}" class="w-full h-72 object-cover">
                     ${product.featured ? '<span class="absolute top-3 left-3 px-3 py-1 text-xs bg-burnt-orange text-parchment rounded-full font-bold shadow-md">FEATURED</span>' : ''}
                 </a>
@@ -232,25 +232,29 @@ title: Shop All Candles & Melts
     }
 
     function attachCartListeners() {
+        // Only attach listeners to buttons that are NOT out of stock and rely on JS for action
         document.querySelectorAll('.add-to-cart-button:not([disabled])').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                const { id, name, price, image } = e.currentTarget.dataset;
-                
-                const product = { id: id, name: name, price: price, imageUrl: image };
-                
-                if (window.addToCart && window.updateCartDisplay) { 
-                    window.addToCart(product, 1); 
-                    window.updateCartDisplay(); 
+            // Check if the button has an onclick attribute (i.e., it's a "View Details" button)
+            if (!button.hasAttribute('onclick')) {
+                 button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const { id, name, price, image } = e.currentTarget.dataset;
                     
-                    e.currentTarget.textContent = 'Added!';
-                    setTimeout(() => {
-                        e.currentTarget.textContent = 'Add to Cart';
-                    }, 1000);
-                } else {
-                    console.error("Cart functions (addToCart/updateCartDisplay) are not available.");
-                }
-            });
+                    const product = { id: id, name: name, price: price, imageUrl: image };
+                    
+                    if (window.addToCart && window.updateCartDisplay) { 
+                        window.addToCart(product, 1); 
+                        window.updateCartDisplay(); 
+                        
+                        e.currentTarget.textContent = 'Added!';
+                        setTimeout(() => {
+                            e.currentTarget.textContent = 'Add to Cart';
+                        }, 1000);
+                    } else {
+                        console.error("Cart functions (addToCart/updateCartDisplay) are not available.");
+                    }
+                });
+            }
         });
     }
     

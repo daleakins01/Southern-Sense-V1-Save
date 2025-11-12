@@ -106,6 +106,7 @@ title: Product Name
                         ? currentProduct.imageUrl 
                         : `${window.location.origin}/src/${currentProduct.imageUrl}`;
         
+        // P1 FIX: Set brand explicitly as Organization for semantic clarity
         const productSchema = {
             "@context": "https://schema.org/",
             "@type": "Product",
@@ -114,7 +115,7 @@ title: Product Name
             "description": currentProduct.shortDescription,
             "sku": currentProduct.id,
             "brand": {
-                "@type": "Brand",
+                "@type": "Organization", 
                 "name": "Southern Sense"
             },
             "offers": {

@@ -19,6 +19,34 @@
     <meta name="description" content="{{ description or site.name }}">
 
     <meta id="original-title" content="{{ title or site.name }}">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "Southern Sense",
+          "url": "https://southernsense.org/",
+          "logo": "https://southernsense.org/src/logo.webp",
+          "description": "Hand-poured candles, wax melts, and luxury home fragrances. Southern Sense is an e-commerce brand based in South Carolina.",
+          "sameAs": [
+            "https://www.facebook.com/profile.php?id=61581857193998",
+            "https://www.tiktok.com/@southernsense0"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "url": "https://southernsense.org/",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://southernsense.org/shop/?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
 </head>
 <body class="bg-parchment min-h-screen flex flex-col font-roboto text-charcoal" style="background-image: url('/src/background-parchment.webp'); background-repeat: no-repeat; background-attachment: fixed; background-size: cover; background-position: center center;">
     

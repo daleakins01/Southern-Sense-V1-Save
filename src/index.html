@@ -75,7 +75,6 @@ title: Southern Sense - Hand-Poured Luxury Candles
      */
     function renderProductCard(product) {
         const isOutOfStock = product.stock <= 0;
-        // CRITICAL FIX: Ensure price is fetched as float, then formatted back to string for display/data-attribute consistency
         // Note: product.price should already be a float from mapProduct, so we only format here.
         const price = product.price.toFixed(2); 
         const scentFamily = product.scentFamily ? product.scentFamily.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'Scent';
@@ -110,10 +109,11 @@ title: Southern Sense - Hand-Poured Luxury Candles
             </button>
         `;
         
+        // CRITICAL FIX (P1): Added alt tag to the dynamically generated image
         return `
             <div class="product-card bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
                 <a href="/product/?id=${product.id}" class="block">
-                    <img src="/src/${product.imageUrl || 'logo.webp'}" alt="${product.name}" class="w-full h-72 object-cover">
+                    <img src="/src/${product.imageUrl || 'logo.webp'}" alt="${product.name} luxury candle or wax melt." class="w-full h-72 object-cover">
                 </a>
                 <div class="p-5">
                     <p class="text-sm font-medium text-stone mb-1">${scentFamily}</p>
@@ -307,17 +307,17 @@ title: Southern Sense - Hand-Poured Luxury Candles
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
                 <div class="p-6 bg-white rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300 border border-stone/10">
-                    <img src="/src/finest-wax.webp" alt="Hands pouring candle wax" class="w-20 h-20 mx-auto mb-4">
+                    <img src="/src/finest-wax.webp" alt="Close-up of un-melted coconut apricot wax blocks in a container." class="w-20 h-20 mx-auto mb-4">
                     <h3 class="text-2xl font-playfair text-charcoal mb-2">Finest Wax Blends</h3>
                     <p id="diff-wax-text" class="text-stone">We use a premium coconut-apricot wax blend that ensures a clean, slow, and even burn every time.</p>
                 </div>
                 <div class="p-6 bg-white rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300 border border-stone/10">
-                    <img src="/src/clean-oils.webp" alt="Bottles of clean fragrance oils" class="w-20 h-20 mx-auto mb-4">
+                    <img src="/src/clean-oils.webp" alt="A collection of small brown bottles containing fragrance oils, sitting by a fireplace." class="w-20 h-20 mx-auto mb-4">
                     <h3 class="text-2xl font-playfair text-charcoal mb-2">Clean Fragrance Oils</h3>
                     <p id="diff-oils-text" class="text-stone">Our oils are 100% phthalate-free and safe, providing a rich scent throw without harmful chemicals.</p>
                 </div>
                 <div class="p-6 bg-white rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300 border border-stone/10">
-                    <img src="/src/hand-poured-quality.webp" alt="Close-up of three black candle tins" class="w-20 h-20 mx-auto mb-4">
+                    <img src="/src/hand-poured-quality.webp" alt="A pair of hands carefully pouring melted wax from a metal pitcher into three black candle tins." class="w-20 h-20 mx-auto mb-4">
                     <h3 class="text-2xl font-playfair text-charcoal mb-2">Hand-Poured Quality</h3>
                     <p class="text-stone">Each candle is hand-poured in small batches in the South, guaranteeing attention to detail and superior quality.</p>
                 </div>

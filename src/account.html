@@ -136,7 +136,7 @@ title: My Account
                 orders.push(order);
             });
 
-            // CRITICAL FIX: Ensure safe sorting using optional chaining and default date for robust client-side sort
+            // CRITICAL FIX (P1): Ensure safe sorting using optional chaining and default date for robust client-side sort
             orders.sort((a, b) => (b.createdAt?.toDate() || new Date(0)) - (a.createdAt?.toDate() || new Date(0)));
             
             totalOrdersCount.textContent = orders.length;

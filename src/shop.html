@@ -175,10 +175,11 @@ title: Shop All Candles & Melts
             </button>
         `;
         
+        // P2 ACCESSIBILITY FIX: Added descriptive alt text to the product image
         return `
             <div class="product-card bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
                 <a href="/product/?id=${product.id}" class="block relative" aria-label="View product details for ${product.name}">
-                    <img src="${imageUrl}" alt="${product.name}" class="w-full h-72 object-cover">
+                    <img src="${imageUrl}" alt="${product.name} luxury candle or wax melt." class="w-full h-72 object-cover">
                     ${product.featured ? '<span class="absolute top-3 left-3 px-3 py-1 text-xs bg-burnt-orange text-parchment rounded-full font-bold shadow-md">FEATURED</span>' : ''}
                 </a>
                 <div class="p-5">

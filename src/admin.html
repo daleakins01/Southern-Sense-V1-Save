@@ -18,8 +18,8 @@ title: Admin Panel
         deleteDoc, 
         signOut,
         serverTimestamp,
-        addDoc, // CRITICAL FIX: Add addDoc for product creation
-        setDoc // CRITICAL FIX: Add setDoc for CMS updates
+        addDoc, 
+        setDoc 
     } from '/src/firebase-loader.js';
     
     // --- State and Handlers ---
@@ -50,7 +50,7 @@ title: Admin Panel
     const productEditModal = document.getElementById('product-edit-modal');
     const closeModalButton = document.getElementById('close-modal-button');
     const productEditForm = document.getElementById('product-edit-form');
-    const addNewProductButton = document.getElementById('add-new-product-button'); // New Button
+    const addNewProductButton = document.getElementById('add-new-product-button'); 
 
     // Reviews Tab Elements
     const reviewsContainer = document.getElementById('reviews-container');
@@ -827,7 +827,7 @@ title: Admin Panel
                             <p class="text-lg font-playfair text-charcoal font-semibold">${alert.productName}</p>
                             <p class="text-sm text-stone">Requested on: ${formattedDate}</p>
                         </div>
-                        <a href="mailto:${alert.email}" class="px-3 py-1 bg-stone text-parchment rounded-full text-sm font-semibold hover:bg-stone/80 transition">
+                        <a href="mailto:${alert.email}?subject=RE: ${alert.productName} Stock Alert" class="px-3 py-1 bg-stone text-parchment rounded-full text-sm font-semibold hover:bg-stone/80 transition">
                             Email Customer
                         </a>
                     </div>
@@ -973,7 +973,7 @@ title: Admin Panel
 
     // --- Core Admin Logic: Site Content Tab (CMS) ---
     
-    // CRITICAL CMS MAPPING: Enhanced with 'contact' for Formspree link management.
+    // CRITICAL CMS MAPPING: Finalized list of all header/footer links (17 total pages)
     const SITE_CONTENT_DOCS = [
         { id: 'homepage', name: 'Homepage Content' },
         { id: 'about', name: 'About Us Page' },
@@ -981,9 +981,17 @@ title: Admin Panel
         { id: 'refillProgram', name: 'Refill Program Page' }, 
         { id: 'gifting', name: 'Gifting Page' }, 
         { id: 'subscriptions', name: 'Subscriptions Page' }, 
+        { id: 'scent-quiz', name: 'Scent Quiz Page' }, 
         { id: 'scent-guide', name: 'Scent Guide Page' }, 
         { id: 'scent-glossary', name: 'Scent Glossary Page' }, 
-        { id: 'contact', name: 'Contact Page Settings' } // NEW: For Formspree Link
+        { id: 'contact', name: 'Contact Page Settings' },
+        { id: 'login', name: 'Login Page Hero' },
+        { id: 'register', name: 'Register Page Hero' },
+        { id: 'account', name: 'Account Page Hero' },
+        { id: 'shop', name: 'Shop Page Hero' },
+        { id: 'privacy-policy', name: 'Privacy Policy Page' }, 
+        { id: 'terms', name: 'Terms & Conditions Page' }, 
+        { id: '404', name: '404 Page Hero' }
     ];
     
     async function fetchSiteContent() {
@@ -994,27 +1002,46 @@ title: Admin Panel
             const querySnapshot = await getDocs(q);
             
             querySnapshot.forEach(doc => {
-                siteContent[doc.id] = doc.data();
+                const data = doc.data();
+                siteContent[doc.id] = data;
             });
             
             SITE_CONTENT_DOCS.forEach(docInfo => {
                 if (!siteContent.hasOwnProperty(docInfo.id)) {
                     // Initialize placeholder data for missing documents
                     if (docInfo.id === 'contact') {
-                         siteContent[docInfo.id] = { formspreeId: 'https://formspree.io/f/mqayygzv', contactEmail: 'support@southernsense.org' };
+                         siteContent[docInfo.id] = { formspreeId: 'https://formspree.io/f/mqayygzv', contactEmail: 'support@southernsense.org', heroTitle: 'Contact Us', heroImage: 'candles-header.webp' };
                     } else if (docInfo.id === 'scent-glossary') {
-                        siteContent[docInfo.id] = { glossaryContent: "Example: The word is 'Amber' and it is a warm, musky base note." };
+                         // Initializing all requested missing fields for this document
+                        siteContent[docInfo.id] = { glossaryContent: "Example: The word is 'Amber' and it is a warm, musky base note.", heroTitle: 'Scent Glossary', heroImage: 'candles-header.webp' };
                     } else if (docInfo.id === 'scent-guide') {
-                        // CRITICAL FIX: Ensure all expected fields for src/scent-guide.html exist in the CMS fallback
                          siteContent[docInfo.id] = { 
                             guideOverviewContent: "<p>Define your three main scent families here.</p>", 
-                            family1Title: "Woodsy/Earthy", 
-                            family1Desc: "Details about woody scents...", // ADDED
-                            family2Title: "Floral/Fresh", 
-                            family2Desc: "Details about fresh scents...", // ADDED
-                            family3Title: "Gourmand/Spicy",
-                            family3Desc: "Details about gourmand scents..." // ADDED
+                            family1Title: "Gourmand & Sweet", 
+                            family1Desc: "Details about gourmand scents...",
+                            family2Title: "Fresh & Floral", 
+                            family2Desc: "Details about fresh scents...", 
+                            family3Title: "Woody & Warm", 
+                            family3Desc: "Details about woody scents...",
+                            heroTitle: 'Scent Guide', 
+                            heroImage: 'candles-header.webp'
                         };
+                    } else if (docInfo.id === 'privacy-policy' || docInfo.id === 'terms') {
+                         // CRITICAL FIX: Ensure Privacy/Terms start with basic content fields and hero fields
+                         siteContent[docInfo.id] = { heroTitle: docInfo.name + ' Title', heroImage: 'candles-header.webp', pageContent: '<p>Initial content area.</p>' };
+                    } else if (docInfo.id === 'candleCare') {
+                         siteContent[docInfo.id] = { heroTitle: 'Candle Care', heroImage: 'candles-header.webp', careTips: '<h2>Candle Care Tips</h2><p>Initial content.</p>' };
+                    } else if (docInfo.id === 'refillProgram') {
+                         // Initializing all requested missing fields for this document
+                         siteContent[docInfo.id] = { heroTitle: 'Refill Program', heroImage: 'candles-header.webp', programDetails: '<p>Initial content.</p>' };
+                    } else if (docInfo.id === 'gifting') {
+                         // Initializing all requested missing fields for this document
+                         siteContent[docInfo.id] = { heroTitle: 'Gifting Options', heroImage: 'candles-header.webp', giftingIntro: '<p>Initial content.</p>' };
+                    } else if (docInfo.id === 'subscriptions') {
+                         // Initializing all requested missing fields for this document
+                         siteContent[docInfo.id] = { heroTitle: 'Subscriptions', heroImage: 'candles-header.webp', subOptions: '...options content...' };
+                    } else if (docInfo.id === 'scent-quiz' || docInfo.id === 'login' || docInfo.id === 'register' || docInfo.id === 'account' || docInfo.id === 'shop' || docInfo.id === '404') {
+                        siteContent[docInfo.id] = { heroTitle: docInfo.name + ' Title', heroImage: 'candles-header.webp' };
                     } else {
                         siteContent[docInfo.id] = { [`${docInfo.name.replace(/[^A-Z0-9]/ig, '')}InitialContent`]: "This document was missing. Please fill and save to create it." };
                     }
@@ -1081,6 +1108,9 @@ title: Admin Panel
                 continue; 
             }
             
+            // CRITICAL UX ENFORCEMENT: Suppress secondary titles and the hero image field
+            if (key === 'heroSubtitle' || key === 'heroImage') continue;
+
             let labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); 
 
             let fieldGroup = document.createElement('div');
@@ -1088,6 +1118,12 @@ title: Admin Panel
             
             let label = document.createElement('label');
             label.className = 'block text-sm font-medium text-charcoal mb-1';
+            
+            // NEW: Add specific UX hint for the hero text fields
+            if (key === 'heroTitle') {
+                labelText = 'Hero Title (Primary Heading)';
+            }
+
             label.textContent = labelText;
             label.setAttribute('for', `content-field-${key}`);
             
@@ -1155,6 +1191,7 @@ title: Admin Panel
             const formData = new FormData(siteContentForm);
             const updateData = {};
             
+            // 1. Prepare incoming data from form
             for (const [key, value] of formData.entries()) {
                 const originalValue = siteContent[docId].hasOwnProperty(key) ? siteContent[docId][key] : null;
 
@@ -1167,27 +1204,35 @@ title: Admin Panel
                 }
             }
             
-            for (let key in siteContent[docId]) {
-                 if (typeof siteContent[docId][key] === 'boolean' && !updateData.hasOwnProperty(key)) {
-                    updateData[key] = false;
-                 }
+            // 2. CRITICAL FIX: Start with a safe copy of the existing full data.
+            let finalMergedData = { ...siteContent[docId] };
+            
+            // 3. CRITICAL FIX: Merge the incoming form data explicitly.
+            for (const key in updateData) {
+                finalMergedData[key] = updateData[key];
             }
             
-            // Re-fetch the current document state to preserve unsubmitted fields (like featuredProductId)
-            const currentDocSnap = await getDoc(doc(db, 'siteContent', docId));
-            if (currentDocSnap.exists()) {
-                const currentData = currentDocSnap.data();
-                // Preserve keys that were not part of the form (i.e., featuredProductId)
-                Object.keys(currentData).forEach(key => {
-                    if (!updateData.hasOwnProperty(key)) {
-                        updateData[key] = currentData[key];
-                    }
-                });
+            // 4. CRITICAL FIX: Explicitly set suppressed/deprecated fields to a safe, empty state if they exist in the original data.
+            if (finalMergedData.hasOwnProperty('heroSubtitle')) {
+                finalMergedData.heroSubtitle = ''; 
+            }
+            if (finalMergedData.hasOwnProperty('heroImage')) {
+                // If heroImage exists in the DB, we set it to a safe default if not managed.
+                finalMergedData.heroImage = 'candles-header.webp'; 
+            }
+            
+            // CRITICAL FIX: Ensure boolean fields default to false if not checked
+            for (let key in siteContent[docId]) {
+                 if (typeof siteContent[docId][key] === 'boolean' && !updateData.hasOwnProperty(key)) {
+                    finalMergedData[key] = false;
+                 }
             }
 
             const contentRef = doc(db, 'siteContent', docId);
-            await setDoc(contentRef, updateData, { merge: true });
+            // CRITICAL FIX: Use setDoc with the final merged object to avoid data loss.
+            await setDoc(contentRef, finalMergedData, { merge: true });
 
+            // 5. Update local cache and success message
             const updatedSnap = await getDoc(contentRef);
             if (updatedSnap.exists()) {
                 siteContent[docId] = updatedSnap.data();
@@ -1315,12 +1360,12 @@ title: Admin Panel
             productEditForm.addEventListener('submit', handleProductUpdate);
         }
         
-        if(siteContentForm) {
-            siteContentForm.addEventListener('submit', handleSiteContentUpdate);
-        }
-        
         if(addNewProductButton) { // New listener for the Add Product button
             addNewProductButton.addEventListener('click', openProductEditModal.bind(null, null)); // Bind null for new product
+        }
+        
+        if(siteContentForm) {
+            siteContentForm.addEventListener('submit', handleSiteContentUpdate);
         }
 
         // Authentication State Listener (Security Guard)
@@ -1619,8 +1664,6 @@ title: Admin Panel
             </div>
         </div>
         
-    </div> 
-    
     <div id="product-edit-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-charcoal bg-opacity-75 flex items-center justify-center">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg mx-4 p-6 relative">
             

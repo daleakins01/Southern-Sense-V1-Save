@@ -61,8 +61,8 @@
     <script src="https://www.paypal.com/sdk/js?client-id=AbJgVDAbLbZDDb-H85jNDCZl2iJmDJCEy9jtPgyS6fqnB5XjRwUs08BCh3GzuAzKSWIJh3cadFUajqmL&currency=USD"></script>
 
     <script type="module">
-        // INCREMENTED TO v=1.1.11 FOR AGGRESSIVE INTERNAL CACHE-BUSTING
-        const version = '?v=1.1.11'; 
+        // INCREMENTED TO v=1.1.12 FOR AGGRESSIVE INTERNAL CACHE-BUSTING
+        const version = '?v=1.1.12'; 
         
         // --- 1. Core Module Setup (Uses internal cache-busting) ---
         document.addEventListener('DOMContentLoaded', async () => {
@@ -78,32 +78,31 @@
             // 4. Load Main UI Logic (uses cart functions, runs after initialization)
             await import(`/src/main.js${version}`); 
             
-            // --- INJECTED FIX: AGGRESSIVE TITLE CLEANUP ---
+            // --- INJECTED FIX: AGGRESSIVE TITLE CLEANUP (P1 Fix: Removing the fragile setTimeout) ---
             const originalTitleMeta = document.getElementById('original-title');
             const authoritativeTitle = originalTitleMeta ? originalTitleMeta.content : document.title;
 
             if (authoritativeTitle) {
-                setTimeout(() => {
-                    let attempts = 0;
-                    const maxAttempts = 10; 
-                    const interval = 50; 
+                // Run the cleanup loop immediately upon DOMContentLoaded
+                let attempts = 0;
+                const maxAttempts = 10; 
+                const interval = 50; 
 
-                    const fixTitleInterval = setInterval(() => {
+                const fixTitleInterval = setInterval(() => {
+                    if (document.title !== authoritativeTitle) {
+                        document.title = authoritativeTitle;
+                        console.log(`Title corruption fixed on attempt ${attempts + 1}.`);
+                    }
+                    
+                    attempts++;
+                    
+                    if (attempts >= maxAttempts) {
+                        clearInterval(fixTitleInterval);
                         if (document.title !== authoritativeTitle) {
-                            document.title = authoritativeTitle;
-                            console.log(`Title corruption fixed on attempt ${attempts + 1}.`);
+                            console.error("Critical: Failed to fix title after maximum attempts. Content is likely cached.");
                         }
-                        
-                        attempts++;
-                        
-                        if (attempts >= maxAttempts) {
-                            clearInterval(fixTitleInterval);
-                            if (document.title !== authoritativeTitle) {
-                                console.error("Critical: Failed to fix title after maximum attempts. Content is likely cached.");
-                            }
-                        }
-                    }, interval);
-                }, 500); 
+                    }
+                }, interval);
             }
             // --- END INJECTED FIX ---
             

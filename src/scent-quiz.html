@@ -270,8 +270,9 @@ title: Find Your Perfect Scent
         setTimeout(function() { // Use explicit function
             loadingResult.classList.add('hidden');
             resultFamilyTitle.textContent = familyData.name;
+            // P1 FIX: Explicitly direct user to the stock alert feature for the recommended item.
             resultDescription.textContent = familyData.description + 
-                                            " Click below to view your top recommended product. Since stock is currently low, the product page is set up to let you sign up for a **Back-in-Stock Alert!**";
+                                            " Click below to view your top recommended product. Since the recommended product is frequently out of stock, the product page is set up to let you sign up for a **Back-in-Stock Alert!**";
             
             resultFamilyTitle.classList.remove('hidden');
             resultDescription.classList.remove('hidden');

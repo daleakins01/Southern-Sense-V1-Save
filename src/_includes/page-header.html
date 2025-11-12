@@ -1,18 +1,94 @@
 <header 
     class="relative w-full h-64 md:h-80 bg-cover bg-center" 
+    id="page-header-container"
     style="background-image: url('{{ headerImage | default: "/src/candles-header.webp" }}');"
     role="img"
     aria-label="{{ pageTitle }} banner image: a cozy, high-quality, Southern-styled environment.">
     <div class="absolute inset-0 bg-charcoal/60 flex items-center justify-center">
         <div class="container mx-auto px-4 text-center">
-            {% if shortTitle %}
-            <p class="font-southern text-4xl font-bold text-burnt-orange drop-shadow-lg mb-4">
-                {{ shortTitle }}
-            </p>
-            {% endif %}
-            <h1 class="font-playfair text-5xl md:text-6xl font-extrabold text-parchment drop-shadow-lg">
-                {{ pageTitle }}
+            
+            <h1 id="cms-main-title" class="font-playfair text-5xl md:text-6xl font-extrabold text-parchment drop-shadow-lg">
+                {{ pageTitle }} 
             </h1>
         </div>
     </div>
+    
+    <script type="module">
+        // CRITICAL SYNTAX FIX: Removed the version variable and template literal.
+        import { db, doc, getDoc } from '/src/firebase-loader.js'; 
+        
+        // 2. DOM Elements
+        const cmsMainTitle = document.getElementById('cms-main-title');
+        const headerContainer = document.getElementById('page-header-container');
+        
+        /**
+         * Determines the Firestore document ID for the current page.
+         */
+        function getCurrentPageId() {
+            // Get path (e.g., /about/index.html or /about/privacy-policy/)
+            let path = window.location.pathname.toLowerCase();
+            
+            // Handle common cases: / and /index.html -> homepage
+            if (path === '/' || path.includes('/index.html')) {
+                return 'homepage'; 
+            }
+            
+            // Remove leading/trailing slashes and .html suffix
+            path = path.replace(/^\/|\/$/g, '');
+            path = path.replace(/\.html$/, '');
+            
+            // Use the last segment for multi-word pages (e.g., 'privacy-policy')
+            return path;
+        }
+
+        async function loadHeaderContent() {
+            const pageId = getCurrentPageId();
+            if (pageId === 'homepage') {
+                return; 
+            }
+
+            try {
+                // Determine the correct document ID for pages with specific camelCase in Firestore
+                let docId = pageId;
+                if (docId === 'candle-care') docId = 'candleCare';
+                else if (docId === 'refill-program') docId = 'refillProgram';
+                else if (docId === 'scent-quiz') docId = 'scent-quiz'; // Use scent-quiz docId
+                
+                const docRef = doc(db, "siteContent", docId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    
+                    // --- Inject Hero Title (Only one field now: heroTitle) ---
+                    if (cmsMainTitle && data.heroTitle) {
+                        cmsMainTitle.textContent = data.heroTitle;
+                        // Injecting the custom font/color styling for the hero section, as requested.
+                        cmsMainTitle.classList.remove('font-playfair', 'text-parchment'); 
+                        cmsMainTitle.classList.add('font-southern', 'text-burnt-orange'); 
+                    } else if (cmsMainTitle) {
+                         // Fallback to the original Eleventy pageTitle if CMS is empty
+                         cmsMainTitle.textContent = '{{ pageTitle }}'; 
+                         cmsMainTitle.classList.remove('font-southern', 'text-burnt-orange');
+                         cmsMainTitle.classList.add('font-playfair', 'text-parchment');
+                    }
+                    
+                    // --- Inject Hero Image (Optional) ---
+                    // Since the user requested ONE background image, we suppress the logic for dynamic image setting unless needed.
+                    if (headerContainer && data.heroImage && data.heroImage !== 'candles-header.webp') {
+                         if (typeof data.heroImage === 'string' && data.heroImage.length > 0) {
+                            const imageUrl = `/src/${data.heroImage}`;
+                            headerContainer.style.backgroundImage = `url('${imageUrl}')`;
+                        }
+                    }
+                }
+            } catch (error) {
+                // Log non-critical errors but let the page continue with default content (pageTitle)
+                console.warn(`CMS Header Fetch Warning for /${pageId}/:`, error.message);
+            }
+        }
+
+        // Run this script immediately after DOM elements are available
+        document.addEventListener('DOMContentLoaded', loadHeaderContent);
+    </script>
 </header>

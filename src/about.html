@@ -60,7 +60,7 @@ title: Our Story
     const loadingState = document.getElementById('loading-state');
     const aboutSection = document.getElementById('about-section');
     
-    // CMS Elements
+    // CMS Elements (Page content below the hero)
     const aboutTitle = document.getElementById('about-title');
     const aboutSubtitle = document.getElementById('about-subtitle');
     const aboutImage = document.getElementById('about-image');
@@ -71,6 +71,8 @@ title: Our Story
     const founderQuoteTitle = document.getElementById('founder-quote-title');
     const founderQuoteText = document.getElementById('founder-quote-text');
     
+    // NOTE: Removed logic to update cmsMainTitle/cmsShortTitle here. It is now in page-header.html.
+
     async function loadAboutContent() {
         console.log("About Us Page: Loading content from Firestore...");
         
@@ -84,22 +86,22 @@ title: Our Story
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 
-                // 1. Titles and Subtitles
+                // 2. Titles and Subtitles
                 aboutTitle.textContent = data.aboutTitle || "Our Story";
                 aboutSubtitle.textContent = data.aboutSubtitle || "A commitment to quality and southern tradition.";
                 
-                // 2. Image (Defaulting if field is missing)
+                // 3. Image (Defaulting if field is missing)
                 aboutImage.src = data.aboutImage ? `/src/${data.aboutImage}` : '/src/paula-bryan-portrait.webp';
                 
-                // 3. Core Text (HTML content)
+                // 4. Core Text (HTML content)
                 aboutParagraph1.innerHTML = data.aboutParagraph1 || "<p>Story paragraph 1 not set.</p>";
                 aboutParagraph2.innerHTML = data.aboutParagraph2 || "<p>Story paragraph 2 not set.</p>";
                 
-                // 4. Values Section
+                // 5. Values Section
                 valuesTitle.textContent = data.valuesTitle || "Our Commitment to Quality";
                 valuesContent.innerHTML = data.valuesContent || "<p>Values content not set.</p>";
                 
-                // 5. Quote Section
+                // 6. Quote Section
                 founderQuoteTitle.textContent = data.founderQuoteTitle || "Crafted with Integrity, Shared with Love.";
                 founderQuoteText.textContent = data.founderQuoteText || "Founder quote not set.";
 
@@ -108,7 +110,7 @@ title: Our Story
                 aboutSection.classList.remove('hidden');
 
             } else {
-                console.warn("About Us Page: Document 'siteContent/about' does not exist.");
+                console.warn("About Us Page: Document 'siteContent/about' does not exist. Using Eleventy defaults.");
                 loadingState.innerHTML = `<p class="font-playfair text-2xl text-red-600">Configuration Error: The 'siteContent/about' document is missing from Firestore. Please populate it in the Admin Panel.</p>`;
             }
         } catch (error) {
